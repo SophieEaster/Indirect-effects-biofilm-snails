@@ -1,0 +1,1166 @@
+---
+title: "NLFA_Snails_relative"
+author: "Sophie"
+date: "2024-01-23"
+output: html_document
+---
+
+# Relative NLFA results of snails (%).
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+# Load packages
+require(gridExtra)
+require(Hmisc)
+require(latticeExtra)
+require(vegan)
+require(multcomp)
+require(car)
+require(data.table)
+require(asbio)
+require(plotrix)
+library(readxl)
+library(rstatix)
+library(broom)
+library(lmtest)
+library(boot)
+library(ggplot2)
+library(ggrepel)
+library(gridExtra)
+library(dplyr)
+library(shades)
+library(ggpubr)
+```
+
+
+```{r, eval = TRUE, echo = FALSE}
+#Insert dataset
+FA_Snails_rel <- read.table(file = 'C:\\Users\\sophi\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\FA_UFZ_Magdeburg\\Snail experiment\\Snails_relative\\FA_Snails_rel.txt', 
+                      header = TRUE, sep = "\t")
+
+
+View(FA_Snails_rel)
+FA_Snails_rel <- na.omit(FA_Snails_rel)
+View(FA_Snails_rel)
+```
+
+
+
+```{r, eval = TRUE, echo = FALSE}
+#Run function one time, after that you can use the shortcut outlierKD (your subset, variable)
+
+outlierKD <- function(dt, var) {
+  var_name <- eval(substitute(var), eval(dt))
+  na1 <- sum(is.na(var_name))
+  m1 <- mean(var_name, na.rm = T)
+  par(mfrow = c(2, 2), oma = c(0, 0, 3, 0))
+  boxplot(var_name, main = "With outliers")
+  hist(var_name, main = "With outliers", xlab = NA, ylab = NA)
+  outlier <- boxplot.stats(var_name)$out
+  mo <- mean(outlier)
+  var_name <- ifelse(var_name %in% outlier, NA, var_name)
+  boxplot(var_name, main = "Without outliers")
+  hist(var_name, main = "Without outliers", xlab = NA, ylab = NA)
+  title("Outlier Check", outer = TRUE)
+  na2 <- sum(is.na(var_name))
+  cat("Outliers identified:", na2 - na1, "n")
+  cat("Propotion (%) of outliers:", round((na2 - na1) /
+    sum(!is.na(var_name)) * 100, 1), "n")
+  cat("Mean of the outliers:", round(mo, 2), "n")
+  m2 <- mean(var_name, na.rm = T)
+  cat("Mean without removing outliers:", round(m1, 2), "n")
+  cat("Mean if we remove outliers:", round(m2, 2), "n")
+  
+  dt[as.character(substitute(var))] <- invisible(var_name)
+  assign(as.character(as.list(match.call())$dt), dt, envir = .GlobalEnv)
+  cat("Outliers successfully removed", "n")
+
+}
+```
+
+
+## Create subgroups, to differ between FAs
+### C08:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C08_0 <- subset(FA_Snails_rel, Name == "C08:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C08_0)
+```
+
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, results = 'hide', include = FALSE}
+# Shortcut for outlier
+
+outlierKD(C08_0, FA_conc_rel)
+nooutlier_C08_0 <- na.omit(C08_0)
+nooutlier_C08_0
+View(nooutlier_C08_0)
+```
+
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C08_0 <- nooutlier_C08_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C08_0)
+
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C08_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C08_0$FA_conc_rel ~ nooutlier_C08_0$Treatment)
+```
+#### No significance.
+
+///
+
+### C10:0
+#### Not considered, too less values.
+
+///
+
+### C11:0
+#### not considered
+
+///
+
+### C12:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C12_0 <- subset(FA_Snails_rel, Name == "C12:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C12_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C12_0, FA_conc_rel)
+nooutlier_C12_0 <- na.omit(C12_0)
+nooutlier_C12_0
+View(nooutlier_C12_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C12_0 <- nooutlier_C12_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C12_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C12_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C12_0$FA_conc_rel ~ nooutlier_C12_0$Treatment)
+```
+#### No significance.
+
+///
+
+### C13:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C13_0 <- subset(FA_Snails_rel, Name == "C13:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C13_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C13_0, FA_conc_rel)
+nooutlier_C13_0 <- na.omit(C13_0)
+nooutlier_C13_0
+View(nooutlier_C13_0)
+```
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C13_0 <- nooutlier_C13_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C13_0)
+```
+
+##### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C13_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C13_0$FA_conc_rel ~ nooutlier_C13_0$Treatment)
+```
+#### No significance.
+
+///
+
+### C14:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C14_0 <- subset(FA_Snails_rel, Name == "C14:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C14_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C14_0, FA_conc_rel)
+nooutlier_C14_0 <- na.omit(C14_0)
+nooutlier_C14_0
+View(nooutlier_C14_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C14_0 <- nooutlier_C14_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C14_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C14_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C14_0$FA_conc_rel ~ nooutlier_C14_0$Treatment)
+```
+
+///
+
+### C14:1
+#### not considered
+
+///
+
+### C15:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C15_0 <- subset(FA_Snails_rel, Name == "C15:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C15_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C15_0, FA_conc_rel)
+nooutlier_C15_0 <- na.omit(C15_0)
+nooutlier_C15_0
+View(nooutlier_C15_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C15_0 <- nooutlier_C15_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C15_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C15_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C15_0)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C15_0 <- aov(nooutlier_C15_0$FA_conc_rel~nooutlier_C15_0$Treatment)
+summary(anova_C15_0)
+```
+#### p=0.0415*
+#### post-hoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+TukeyHSD(aov(nooutlier_C15_0$FA_conc_rel~nooutlier_C15_0$Treatment))
+```
+#### Only Cip with Mix significant.
+
+///
+
+### C15:1
+#### not considered
+
+///
+
+### C16:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C16_0 <- subset(FA_Snails_rel, Name == "C16:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C16_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C16_0, FA_conc_rel)
+nooutlier_C16_0 <- na.omit(C16_0)
+nooutlier_C16_0
+View(nooutlier_C16_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C16_0 <- nooutlier_C16_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C16_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C16_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C16_0)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C16_0 <- aov(nooutlier_C16_0$FA_conc_rel~nooutlier_C16_0$Treatment)
+summary(anova_C16_0)
+```
+#### p=0.00214**
+#### posthoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+TukeyHSD(aov(nooutlier_C16_0$FA_conc_rel~nooutlier_C16_0$Treatment))
+```
+#### NC:Cip p=0.0071004
+#### NC:Mix p=0.0085018
+#### NC:Pro p=0.0103712
+///
+
+### C16:1
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C16_1 <- subset(FA_Snails_rel, Name == "C16:1", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C16_1)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C16_1, FA_conc_rel)
+nooutlier_C16_1 <- na.omit(C16_1)
+nooutlier_C16_1
+View(nooutlier_C16_1)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C16_1 <- nooutlier_C16_1 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C16_1)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C16_1$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C16_1)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C16_1$FA_conc_rel ~ nooutlier_C16_1$Treatment)
+```
+#### p=0.002279
+#### posthoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+dunn_test(nooutlier_C16_1, FA_conc_rel ~ Treatment, p.adjust.method = "holm")
+```
+#### NC:Cip p=0.019030 *
+#### NC:Pro p=0.002265 **
+
+///
+
+### C17:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C17_0 <- subset(FA_Snails_rel, Name == "C17:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C17_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C17_0, FA_conc_rel)
+nooutlier_C17_0 <- na.omit(C17_0)
+nooutlier_C17_0
+View(nooutlier_C17_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C17_0 <- nooutlier_C17_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C17_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C17_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C17_0)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C17_0 <- aov(nooutlier_C17_0$FA_conc_rel~nooutlier_C17_0$Treatment)
+summary(anova_C17_0)
+```
+#### no significance
+
+///
+
+### C17:1
+#### not considered
+
+///
+
+### C18:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_0 <- subset(FA_Snails_rel, Name == "C18:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_0, FA_conc_rel)
+nooutlier_C18_0 <- na.omit(C18_0)
+nooutlier_C18_0
+View(nooutlier_C18_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_0 <- nooutlier_C18_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C18_0$FA_conc_rel ~ nooutlier_C18_0$Treatment)
+```
+#### p=0.0024
+#### post hoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+dunn_test(nooutlier_C18_0, FA_conc_rel ~ Treatment, p.adjust.method = "holm")
+```
+#### NC:Cip p=0.00187 *
+#### NC:Mix p=0.00285 **
+
+///
+
+### C18:1
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_1 <- subset(FA_Snails_rel, Name == "C18:1", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_1)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_1, FA_conc_rel)
+nooutlier_C18_1 <- na.omit(C18_1)
+nooutlier_C18_1
+View(nooutlier_C18_1)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_1 <- nooutlier_C18_1 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_1)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_1$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C18_1)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C18_1 <- aov(nooutlier_C18_1$FA_conc_rel~nooutlier_C18_1$Treatment)
+summary(anova_C18_1)
+```
+#### No significance.
+
+///
+
+### C18:2(n-6c)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_2c <- subset(FA_Snails_rel, Name == "C18:2(n-6c)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_2c)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_2c, FA_conc_rel)
+nooutlier_C18_2c <- na.omit(C18_2c)
+nooutlier_C18_2c
+View(nooutlier_C18_2c)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_2c <- nooutlier_C18_2c %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_2c)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_2c$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C18_2c)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C18_2c <- aov(nooutlier_C18_2c$FA_conc_rel~nooutlier_C18_2c$Treatment)
+summary(anova_C18_2c)
+```
+#### p=0.0114*
+#### post hoc Test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+TukeyHSD(aov(nooutlier_C18_2c$FA_conc_rel~nooutlier_C18_2c$Treatment))
+```
+#### NC-Cip: p=0.0101496 *
+#### NC-Mix: p=0.0521
+#### NC-Pro: p=0.06145
+
+///
+
+### C18:2(n-6t)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_2t <- subset(FA_Snails_rel, Name == "C18:2(n-6t)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_2t)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_2t, FA_conc_rel)
+nooutlier_C18_2t <- na.omit(C18_2t)
+nooutlier_C18_2t
+View(nooutlier_C18_2t)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_2t <- nooutlier_C18_2t %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_2t)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_2t$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C18_2t$FA_conc_rel~nooutlier_C18_2t$Treatment)
+```
+#### No significance.
+
+///
+
+### C18:3(n-3)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_33 <- subset(FA_Snails_rel, Name == "C18:3(n-3)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_33)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_33, FA_conc_rel)
+nooutlier_C18_33 <- na.omit(C18_33)
+nooutlier_C18_33
+View(nooutlier_C18_33)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_33 <- nooutlier_C18_33 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_33)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_33$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C18_33$FA_conc_rel~nooutlier_C18_33$Treatment)
+```
+#### p=0.01527
+#### posthoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+dunn_test(nooutlier_C18_33, FA_conc_rel ~ Treatment, p.adjust.method = "holm")
+```
+#### NC-Mix: p=0.021058 *
+
+///
+
+### C18:3(n-6)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_36 <- subset(FA_Snails_rel, Name == "C18:3(n-6)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_36)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_36, FA_conc_rel)
+nooutlier_C18_36 <- na.omit(C18_36)
+nooutlier_C18_36
+View(nooutlier_C18_36)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_36 <- nooutlier_C18_36 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_36)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_36$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C18_36$FA_conc_rel~nooutlier_C18_36$Treatment)
+```
+#### No significance.
+
+///
+
+### C18:4(n-3)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C18_4 <- subset(FA_Snails_rel, Name == "C18:4(n-3)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C18_4)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C18_4, FA_conc_rel)
+nooutlier_C18_4 <- na.omit(C18_4)
+nooutlier_C18_4
+View(nooutlier_C18_4)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C18_4 <- nooutlier_C18_4 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C18_4)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C18_4$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C18_4$FA_conc_rel~nooutlier_C18_4$Treatment)
+```
+#### No significance.
+
+///
+
+### C20:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C20_0 <- subset(FA_Snails_rel, Name == "C20:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C20_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C20_0, FA_conc_rel)
+nooutlier_C20_0 <- na.omit(C20_0)
+nooutlier_C20_0
+View(nooutlier_C20_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C20_0 <- nooutlier_C20_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C20_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C20_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C20_0$FA_conc_rel~nooutlier_C20_0$Treatment)
+```
+#### No significance.
+
+///
+
+### C20:1
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C20_1 <- subset(FA_Snails_rel, Name == "C20:1", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C20_1)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C20_1, FA_conc_rel)
+nooutlier_C20_1 <- na.omit(C20_1)
+nooutlier_C20_1
+View(nooutlier_C20_1)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C20_1 <- nooutlier_C20_1 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C20_1)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C20_1$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C20_1)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C20_1 <- aov(nooutlier_C20_1$FA_conc_rel~nooutlier_C20_1$Treatment)
+summary(anova_C20_1)
+```
+#### no significance
+
+///
+
+### C20:2(n-6)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C20_2 <- subset(FA_Snails_rel, Name == "C20:2(n-6)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C20_2)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C20_2, FA_conc_rel)
+nooutlier_C20_2 <- na.omit(C20_2)
+nooutlier_C20_2
+View(nooutlier_C20_2)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C20_2 <- nooutlier_C20_2 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C20_2)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C20_2$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C20_2)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C20_2 <- aov(nooutlier_C20_2$FA_conc_rel~nooutlier_C20_2$Treatment)
+summary(anova_C20_2)
+```
+#### p=0.00591**
+#### post hoc test:
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+TukeyHSD(aov(nooutlier_C20_2$FA_conc_rel~nooutlier_C20_2$Treatment))
+```
+#### NC-Cip: p=0.03699 *
+#### NC-Mix: p=0.0083896 **
+#### NC-Pro: p=0.0218484 *
+
+///
+
+### C20:3(n-3)
+#### not considered, too less values.
+
+///
+
+### C20:3(n-6)
+#### not considered, too less values.
+
+///
+
+### C20:4(n-6)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C20_4 <- subset(FA_Snails_rel, Name == "C20:4(n-6)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C20_4)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C20_4, FA_conc_rel)
+nooutlier_C20_4 <- na.omit(C20_4)
+nooutlier_C20_4
+View(nooutlier_C20_4)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C20_4 <- nooutlier_C20_4 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C20_4)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C20_4$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C20_4)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C20_4 <- aov(nooutlier_C20_4$FA_conc_rel~nooutlier_C20_4$Treatment)
+summary(anova_C20_4)
+```
+#### No significance.
+
+///
+
+### C20:5(n-3)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C20_5 <- subset(FA_Snails_rel, Name == "C20:5(n-3)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C20_5)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C20_5, FA_conc_rel)
+nooutlier_C20_5 <- na.omit(C20_5)
+nooutlier_C20_5
+View(nooutlier_C20_5)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C20_5 <- nooutlier_C20_5 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C20_5)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C20_5$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C20_5)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C20_5 <- aov(nooutlier_C20_5$FA_conc_rel~nooutlier_C20_5$Treatment)
+summary(anova_C20_5)
+```
+#### No significance.
+
+///
+
+### C21:0
+#### not considered, too less values
+
+///
+
+### C22:0
+#### not considered, too less values.
+
+///
+
+### C22:1
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C22_1 <- subset(FA_Snails_rel, Name == "C22:1", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C22_1)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C22_1, FA_conc_rel)
+nooutlier_C22_1 <- na.omit(C22_1)
+nooutlier_C22_1
+View(nooutlier_C22_1)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C22_1 <- nooutlier_C22_1 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C22_1)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C22_1$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C22_1$FA_conc_rel~nooutlier_C22_1$Treatment)
+```
+#### p=0.0005701
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+dunn_test(nooutlier_C22_1, FA_conc_rel ~ Treatment, p.adjust.method = "holm")
+```
+#### Cip-NC: p=0.00172 **
+#### Mix-NC: p=0.001580 **
+
+///
+
+### C22:2
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C22_2 <- subset(FA_Snails_rel, Name == "C22:2", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C22_2)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C22_2, FA_conc_rel)
+nooutlier_C22_2 <- na.omit(C22_2)
+nooutlier_C22_2
+View(nooutlier_C22_2)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C22_2 <- nooutlier_C22_2 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C22_2)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C22_2$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C22_2$FA_conc_rel~nooutlier_C22_2$Treatment)
+```
+#### No significance.
+
+///
+
+### C22:5(n-3)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C22_5 <- subset(FA_Snails_rel, Name == "C22:5(n-3)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C22_5)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C22_5, FA_conc_rel)
+nooutlier_C22_5 <- na.omit(C22_5)
+nooutlier_C22_5
+View(nooutlier_C22_5)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C22_5 <- nooutlier_C22_5 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C22_5)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C22_5$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C22_5)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C22_5 <- aov(nooutlier_C22_5$FA_conc_rel~nooutlier_C22_5$Treatment)
+summary(anova_C22_5)
+```
+#### No significance.
+
+///
+
+### C22:6(n-3)
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C22_6 <- subset(FA_Snails_rel, Name == "C22:6(n-3)", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C22_6)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C22_6, FA_conc_rel)
+nooutlier_C22_6 <- na.omit(C22_6)
+nooutlier_C22_6
+View(nooutlier_C22_6)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C22_6 <- nooutlier_C22_6 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C22_6)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C22_6$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+bartlett.test(FA_conc_rel ~ Treatment, nooutlier_C22_6)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+anova_C22_6 <- aov(nooutlier_C22_6$FA_conc_rel~nooutlier_C22_6$Treatment)
+summary(anova_C22_6)
+```
+#### p=0.0318*
+#### post hoc test
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+TukeyHSD(aov(nooutlier_C22_6$FA_conc_rel~nooutlier_C22_6$Treatment))
+```
+#### NC-Cip: p=0.04749 *
+#### NC-Pro: p=0.05070
+
+///
+
+### C24:0
+```{r, eval = TRUE, echo = FALSE, message = FALSE}
+C24_0 <- subset(FA_Snails_rel, Name == "C24:0", select = c(RUNINFO, FA, Treatment, FA_conc_rel))
+View(C24_0)
+```
+
+
+```{r, eval = TRUE, echo = FALSE, message = FALSE, include = FALSE, results = 'hide'}
+# shortcut for outlier
+
+outlierKD(C24_0, FA_conc_rel)
+nooutlier_C24_0 <- na.omit(C24_0)
+nooutlier_C24_0
+View(nooutlier_C24_0)
+```
+
+#### Median
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+median_C24_0 <- nooutlier_C24_0 %>%
+  group_by(Treatment) %>%
+  summarize(Median_FA_conc = median(FA_conc_rel, na.rm = TRUE))
+print(median_C24_0)
+```
+
+#### Significance testing
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+shapiro.test(nooutlier_C24_0$FA_conc_rel)
+```
+
+```{r, eval = TRUE, echo = FALSE, message = TRUE}
+kruskal.test(nooutlier_C24_0$FA_conc_rel~nooutlier_C24_0$Treatment)
+```
+#### No significance.
+
+///
+
+### C24:1
+#### not considered, too less values.
+
+///
+
+///
+
+///
+
+#### Now total SAFA, MUFA and PUFA comparisons
+```{r, eval = TRUE, echo = FALSE}
+# square root transformation to reduce the discriminatory power of dominant groups 
+#FA_Snails_R_sqrt <- sqrt(FA_Snails_R$FA_conc)
+#View(FA_Snails_R_sqrt)
+
+#now checking of multivariate homogeneity of group dispersion - avoiding statistically significant differences from within-group variability (i.e., dispersion effect)
+# bias.adjust = adjust for small sample bias in beta diversity estimates
+#betadisper(FA_Snails_R_sqrt, FA_Snails_R_sqrt$FA_conc, bias.adjust = FALSE)
+```
+
+
+Median NLFAs in % of snails. Values printed in bold indicate a statistically significant difference relative to the control and asterisks denote p-value below 0.05 (\*), 0.01 (\*\*) and 0.001 (\*\*\*).
+
+```{r, echo = FALSE, fig.align='center', out.width="500px"}
+library(knitr)
+include_graphics("median_relative.png")
+```
+
