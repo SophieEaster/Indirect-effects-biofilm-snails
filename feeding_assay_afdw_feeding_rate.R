@@ -10,6 +10,11 @@ library(broom)
 library(dunn.test)
 library(ggplot2)
 library(ggokabeito)
+library(moments)
+library(lme4)
+library(DAAG)
+library(performance)
+library(lsmeans)
 
 # insert data
 afdw_feeding_rate <-
@@ -18,7 +23,7 @@ afdw_feeding_rate <-
 
 View(afdw_feeding_rate)
 
-# NA's due to missing snail
+# NA's due to missing snail 
 # Zero values of feeding rate due to no measurable feeding in respective week
 # unit feeding rate: µg / day
 # unit ash free dry weight (afdw): mg / cm2
@@ -193,7 +198,7 @@ ggsave(feeding_boxplot,
 
 
 # plots afdw --------------------------------------------------------------
-# histogram feeding rate for all weeks
+# histogram afdw for all weeks
 ggplot(afdw_feeding_rate, aes(x = afdw)) +
   geom_histogram(bins = 330)
 
@@ -215,3 +220,64 @@ afdw_after_feeding_boxplot
 ggsave(afdw_after_feeding_boxplot, 
        filename = "afdw_after_feeding_boxplot.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\FA_UFZ_Magdeburg\\Indirect-effects-biofilm-snails\\output')
+
+
+
+# LMM feeding rate --------------------------------------------------------
+# Linear mixed model for feeding rate 
+# response variable: feeding rate, explanatory variables: treatment & timepoint (week)
+
+# timepoint week as factor and prefix "week"
+afdw_feeding_rate $ week <- paste("week", afdw_feeding_rate $ week, sep = "")
+
+afdw_feeding_rate $ week <- factor(afdw_feeding_rate $ week)
+
+ggplot(afdw_feeding_rate, aes(x = feeding_rate)) +
+  geom_histogram(binwidth = 1)
+# due to right skewed distribution, log 10 transformation of "feeding_rate" and 
+# first remove all rows in which feeding rate = 0 
+afdw_feeding_rate <- afdw_feeding_rate %>%
+  filter(feeding_rate != 0) %>%
+  mutate(log_feeding_rate = log10(feeding_rate))
+
+ggplot(afdw_feeding_rate, aes(x = log_feeding_rate)) +
+  geom_histogram(bins = 10)
+# normal distributed
+# check skewness
+skewness(afdw_feeding_rate $ log_feeding_rate)
+# 0.2735669
+# QQ Plot
+qqnorm(afdw_feeding_rate $ log_feeding_rate, datax = TRUE)
+qqline(afdw_feeding_rate $ log_feeding_rate, datax = TRUE)
+# not perfect fit, but normal distribution assumed
+
+# model building 
+# response variable: log_feeding_rate
+# fixed effects: week + treatment + week:treatment
+# random effect with constant intercept: (1|replicate)
+# grouping factor: replicate as factor
+afdw_feeding_rate $ replicate <- factor(afdw_feeding_rate $ replicate)
+feeding_rate_lmer <- lmer(log_feeding_rate ~ week + treatment + week:treatment + (1|replicate), data = afdw_feeding_rate)
+
+feeding_rate_lmer %>% r2
+# Conditional R2: explained portion of the variance of the fixed and random effect together
+# Marginal R2: declared share of the variance of the fixed components alone
+
+plot(feeding_rate_lmer) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(feeding_rate_lmer)) # normality
+
+drop1(feeding_rate_lmer, test = 'Chisq')
+# interaction of timepoint (week) and treatment highly significant
+# now check at which timepoints is a difference between treatments
+anova(feeding_rate_lmer)
+
+# conduct Tukey HSD-test for pairwise comparisons
+feeding_rate_tukey <- lsmeans(feeding_rate_lmer, ~ treatment | week)
+feeding_rate_tukey
+
+feeding_rate_tukey1 <- contrast(feeding_rate_tukey, 'pairwise')
+feeding_rate_tukey1
+
+feeding_rate_summary <- summary(feeding_rate_tukey1, infer = TRUE, adjust = 'mvt')
+feeding_rate_summary
