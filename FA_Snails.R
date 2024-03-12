@@ -23,6 +23,7 @@ library(plotrix)
 library(broom)
 library(lmtest)
 library(boot)
+library(rstatix)
 
 # FA_Snails_absolute ----------------------------------------------------
 
@@ -639,6 +640,27 @@ anova_PUFA_sa <- aov(total_PUFA_per_snail$sum_PUFA ~ total_PUFA_per_snail$treatm
 summary(anova_PUFA_sa)
 TukeyHSD(aov(anova_PUFA_sa)) # no significance
 
+
+# total FA 
+total_FA <- bind_rows(total_SAFA_per_snail, total_MUFA_per_snail, total_PUFA_per_snail)
+
+total_FA_per_snail <- total_FA %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
+print(total_FA_per_snail)
+
+# mean
+mean_total_FA_sa <- total_FA_per_snail %>%
+  group_by(treatment) %>%
+  summarize(mean_FA = mean(sum_FA, na.rm = TRUE))
+print(mean_total_FA_sa)
+
+# statistics
+shapiro.test(total_FA_per_snail $ sum_FA) # normal distributed
+bartlett.test(sum_FA ~ treatment, total_FA_per_snail) # variances equal
+anova_FA_sa <- aov(total_FA_per_snail$sum_FA ~ total_FA_per_snail$treatment)
+summary(anova_FA_sa)
+TukeyHSD(aov(anova_FA_sa)) # no significance
 
 # NMDS_Snails_absolute ----------------------------------------------------
 #change to wide format

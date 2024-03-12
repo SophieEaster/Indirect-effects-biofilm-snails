@@ -1,4 +1,4 @@
-# Fatty acid analyses of biofilm 
+# Fatty acid analyses for biofilm 
 # load packages
 library(vegan)
 library(data.table)
