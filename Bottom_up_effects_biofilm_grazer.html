@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.335">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Bottom-up effects of an herbicide and an antibiotic on Potamopyrgus antipodarum</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+</style>
+
+
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/clipboard/clipboard.min.js"></script>
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/quarto.js"></script>
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/popper.min.js"></script>
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/anchor.min.js"></script>
+<link href="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="Bottom_up_effects_biofilm_grazer_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="Bottom_up_effects_biofilm_grazer_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="Bottom_up_effects_biofilm_grazer_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="Bottom_up_effects_biofilm_grazer_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#packages-in-a-reproducible-environment" id="toc-packages-in-a-reproducible-environment" class="nav-link active" data-scroll-target="#packages-in-a-reproducible-environment">1 Packages in a reproducible environment</a></li>
+  <li><a href="#set-working-directory" id="toc-set-working-directory" class="nav-link" data-scroll-target="#set-working-directory">2 Set working directory</a></li>
+  <li><a href="#biofilm-endpoints" id="toc-biofilm-endpoints" class="nav-link" data-scroll-target="#biofilm-endpoints">3 Biofilm endpoints</a>
+  <ul class="collapse">
+  <li><a href="#chlorophyll-and-ash-free-dry-weight-of-biofilm-after-colonisation-chronic-contamination-of-14-days" id="toc-chlorophyll-and-ash-free-dry-weight-of-biofilm-after-colonisation-chronic-contamination-of-14-days" class="nav-link" data-scroll-target="#chlorophyll-and-ash-free-dry-weight-of-biofilm-after-colonisation-chronic-contamination-of-14-days">Chlorophyll and ash free dry weight of biofilm after colonisation + chronic contamination of 14 days</a></li>
+  <li><a href="#chlorophyll" id="toc-chlorophyll" class="nav-link" data-scroll-target="#chlorophyll">3.1 Chlorophyll</a></li>
+  <li><a href="#afdw-after-colonisation" id="toc-afdw-after-colonisation" class="nav-link" data-scroll-target="#afdw-after-colonisation">3.2 AFDW after colonisation</a></li>
+  </ul></li>
+  <li><a href="#feeding-rate-snails-and-ash-free-dry-weight-after-feeding" id="toc-feeding-rate-snails-and-ash-free-dry-weight-after-feeding" class="nav-link" data-scroll-target="#feeding-rate-snails-and-ash-free-dry-weight-after-feeding">4 Feeding rate snails and ash free dry weight after feeding</a>
+  <ul class="collapse">
+  <li><a href="#feeding-rate-snails" id="toc-feeding-rate-snails" class="nav-link" data-scroll-target="#feeding-rate-snails">4.1 Feeding rate snails</a></li>
+  <li><a href="#afdw-after-feeding" id="toc-afdw-after-feeding" class="nav-link" data-scroll-target="#afdw-after-feeding">4.2 AFDW after feeding</a></li>
+  </ul></li>
+  <li><a href="#fatty-acid-composition-snails" id="toc-fatty-acid-composition-snails" class="nav-link" data-scroll-target="#fatty-acid-composition-snails">5 Fatty acid composition snails</a></li>
+  <li><a href="#fatty-acid-composition-biofilm" id="toc-fatty-acid-composition-biofilm" class="nav-link" data-scroll-target="#fatty-acid-composition-biofilm">6 Fatty acid composition biofilm</a></li>
+  <li><a href="#temperature-and-light-conditions" id="toc-temperature-and-light-conditions" class="nav-link" data-scroll-target="#temperature-and-light-conditions">7 Temperature and light conditions</a>
+  <ul class="collapse">
+  <li><a href="#biofilm-colonisation-and-contamination" id="toc-biofilm-colonisation-and-contamination" class="nav-link" data-scroll-target="#biofilm-colonisation-and-contamination">7.1 Biofilm colonisation and contamination</a></li>
+  <li><a href="#feeding-assay" id="toc-feeding-assay" class="nav-link" data-scroll-target="#feeding-assay">7.2 Feeding assay</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Bottom-up effects of an herbicide and an antibiotic on <em>Potamopyrgus antipodarum</em></h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Sophie Oster, Verena C. Schreiner, Tobias Schmitt, Patrick Fink, Markus Weitere, Ibrahim Arayoe, Ralf Schulz, Mirco Bundschuh</p>
+<p>R script written by Sophie Oster<br>
+checked by Verena C. Schreiner<br>
+RPTU Kaiserslautern-Landau<br>
+Fortstrasse 7<br>
+76829 Landau in der Pfalz<br>
+GERMANY</p>
+<p>Corresponding authors email address:<br>
+1) Sophie Oster: oster@rptu.de<br>
+2) Mirco Bundschuh: mirco.bundschuh@rptu.de</p>
+<p>This study was conducted with four treatments and three time points explanatory variables</p>
+<ul>
+<li>treatment (categorical)
+<ul>
+<li>uncontaminated control (negative control, NC)</li>
+<li>herbicide propyzamide (Pro)</li>
+<li>antibiotic ciprofloxacin (Cip)</li>
+<li>mixture of propyzamide and ciprofloxacin (Mix)</li>
+</ul></li>
+<li>time.point (categorical)
+<ul>
+<li>week 1</li>
+<li>week 2</li>
+<li>week 3</li>
+</ul></li>
+</ul>
+<section id="packages-in-a-reproducible-environment" class="level1">
+<h1>1 Packages in a reproducible environment</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># renv::init() </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># renv::snapshot()</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stats)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rstatix)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyr)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dunn.test)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(vegan)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(data.table)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggrepel)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gridExtra)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(stringr)</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shades)</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggpubr)</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(base)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggokabeito)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(multcomp)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(asbio)</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotrix)</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(boot)</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(moments)</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lme4)</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DAAG)</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(performance)</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(emmeans)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="set-working-directory" class="level1">
+<h1>2 Set working directory</h1>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>prj <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setwd</span>(prj)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="biofilm-endpoints" class="level1">
+<h1>3 Biofilm endpoints</h1>
+<section id="chlorophyll-and-ash-free-dry-weight-of-biofilm-after-colonisation-chronic-contamination-of-14-days" class="level2">
+<h2 class="anchored" data-anchor-id="chlorophyll-and-ash-free-dry-weight-of-biofilm-after-colonisation-chronic-contamination-of-14-days">Chlorophyll and ash free dry weight of biofilm after colonisation + chronic contamination of 14 days</h2>
+<ul>
+<li><p>Unit chlorophyll a, b &amp; c: µg chlorophyll / cm²</p></li>
+<li><p>Unit afdw after colonisation: mg / cm²</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># insert data</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>biofilm_endpoints <span class="ot">&lt;-</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read.table</span>(<span class="fu">file.path</span>(prj, <span class="st">"data</span><span class="sc">\\</span><span class="st">biofilm_endpoints.txt"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(biofilm_endpoints)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="chlorophyll" class="level2">
+<h2 class="anchored" data-anchor-id="chlorophyll">3.1 Chlorophyll</h2>
+<section id="caclulate-mean-chla-chlb-chlc-of-each-treatment-to-compare-in-manuscript" class="level4">
+<h4 class="anchored" data-anchor-id="caclulate-mean-chla-chlb-chlc-of-each-treatment-to-compare-in-manuscript">Caclulate mean chla, chlb + chlc of each treatment, to compare in manuscript</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#chl a</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mean_chlorophyll_a <span class="ot">&lt;-</span> biofilm_endpoints <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_chlorophyll_a =</span> <span class="fu">mean</span>(chla))</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_chlorophyll_a)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+    week treatment mean_chlorophyll_a
+   &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;
+ 1     1 Cip                   0.157 
+ 2     1 Mix                   0.189 
+ 3     1 NC                    0.154 
+ 4     1 Pro                   0.191 
+ 5     2 Cip                   0.0954
+ 6     2 Mix                   0.0317
+ 7     2 NC                    0.181 
+ 8     2 Pro                   0.0920
+ 9     3 Cip                   0.250 
+10     3 Mix                   0.680 
+11     3 NC                    0.586 
+12     3 Pro                   0.629 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chl b</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>mean_chlorophyll_b <span class="ot">&lt;-</span> biofilm_endpoints <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_chlorophyll_b =</span> <span class="fu">mean</span>(chlb))</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_chlorophyll_b)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+    week treatment mean_chlorophyll_b
+   &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;
+ 1     1 Cip                   0.0434
+ 2     1 Mix                   0.0773
+ 3     1 NC                    0.0443
+ 4     1 Pro                   0.0487
+ 5     2 Cip                   0.0442
+ 6     2 Mix                   0.0242
+ 7     2 NC                    0.0370
+ 8     2 Pro                   0.0353
+ 9     3 Cip                   0.0661
+10     3 Mix                   0.127 
+11     3 NC                    0.105 
+12     3 Pro                   0.0964</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chl c</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>mean_chlorophyll_c <span class="ot">&lt;-</span> biofilm_endpoints <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_chlorophyll_c =</span> <span class="fu">mean</span>(chlc))</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_chlorophyll_c)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+    week treatment mean_chlorophyll_c
+   &lt;int&gt; &lt;chr&gt;                  &lt;dbl&gt;
+ 1     1 Cip                   0.0481
+ 2     1 Mix                   0.0958
+ 3     1 NC                    0.0468
+ 4     1 Pro                   0.0522
+ 5     2 Cip                   0.0535
+ 6     2 Mix                   0.0319
+ 7     2 NC                    0.0341
+ 8     2 Pro                   0.0440
+ 9     3 Cip                   0.0479
+10     3 Mix                   0.0972
+11     3 NC                    0.0880
+12     3 Pro                   0.0858</code></pre>
+</div>
+</div>
+</section>
+<section id="histogram-chlorophyll-a-b-c" class="level4">
+<h4 class="anchored" data-anchor-id="histogram-chlorophyll-a-b-c">Histogram chlorophyll a, b + c</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chl a</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>a <span class="ot">&lt;-</span> <span class="fu">hist</span>(biofilm_endpoints <span class="sc">$</span> chla) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(biofilm_endpoints <span class="sc">$</span> chla, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.601648</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chl b</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">hist</span>(biofilm_endpoints <span class="sc">$</span> chlb) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-5-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(biofilm_endpoints <span class="sc">$</span> chlb, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.452618</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chl c</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>c <span class="ot">&lt;-</span> <span class="fu">hist</span>(biofilm_endpoints <span class="sc">$</span> chlc) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-5-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(biofilm_endpoints <span class="sc">$</span> chlc, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.253578</code></pre>
+</div>
+</div>
+<p>All not normal distributed and right skewed -&gt; log10 transformation in model</p>
+</section>
+<section id="model-chla" class="level4">
+<h4 class="anchored" data-anchor-id="model-chla">Model chla</h4>
+<p>Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.</p>
+<p>model_chla &lt;- lm(log10(chla) ~ week + treatment + week:treatment, data = biofilm_endpoints)</p>
+<p>drop1(model_chla, test = ‘F’)</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># week as factor</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>biofilm_endpoints <span class="sc">$</span> week <span class="ot">&lt;-</span> <span class="fu">factor</span>(biofilm_endpoints <span class="sc">$</span> week)</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>model_chla <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log10</span>(chla) <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment, <span class="at">data =</span> biofilm_endpoints)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_chla, <span class="at">test =</span> <span class="st">'F'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log10(chla) ~ week + treatment + week:treatment
+               Df Sum of Sq    RSS     AIC F value  Pr(&gt;F)  
+&lt;none&gt;                      1.2564 -96.788                  
+week:treatment  6   0.90254 2.1590 -89.300  2.8733 0.02965 *
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>Interaction week:treatment significant (p=0.02965). Now check differences between treatments within weeks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>chla_inter <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_chla, <span class="sc">~</span> treatment <span class="sc">|</span> week )</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>chla_inter_dunn1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(chla_inter, <span class="st">'pairwise'</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>(chla_inter_dunn_sum1 <span class="ot">&lt;-</span> <span class="fu">summary</span>(chla_inter_dunn1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  -0.1285 0.187 24   -0.644   0.3868  -0.688  0.9008
+ Cip - NC   -0.0231 0.187 24   -0.538   0.4922  -0.124  0.9993
+ Cip - Pro  -0.1161 0.187 24   -0.631   0.3992  -0.622  0.9242
+ Mix - NC    0.1054 0.187 24   -0.410   0.6207   0.564  0.9417
+ Mix - Pro   0.0124 0.187 24   -0.503   0.5277   0.066  0.9999
+ NC - Pro   -0.0930 0.187 24   -0.608   0.4223  -0.498  0.9588
+
+week = 2:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix   0.3553 0.187 24   -0.160   0.8706   1.902  0.2539
+ Cip - NC   -0.3855 0.187 24   -0.901   0.1298  -2.064  0.1936
+ Cip - Pro  -0.0739 0.187 24   -0.589   0.4413  -0.396  0.9785
+ Mix - NC   -0.7408 0.187 24   -1.256  -0.2255  -3.966  0.0031
+ Mix - Pro  -0.4293 0.187 24   -0.945   0.0860  -2.298  0.1264
+ NC - Pro    0.3116 0.187 24   -0.204   0.8269   1.668  0.3620
+
+week = 3:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  -0.4446 0.187 24   -0.960   0.0705  -2.380  0.1084
+ Cip - NC   -0.3119 0.187 24   -0.827   0.2032  -1.670  0.3608
+ Cip - Pro  -0.4035 0.187 24   -0.919   0.1116  -2.160  0.1634
+ Mix - NC    0.1327 0.187 24   -0.382   0.6478   0.710  0.8921
+ Mix - Pro   0.0411 0.187 24   -0.474   0.5562   0.220  0.9961
+ NC - Pro   -0.0915 0.187 24   -0.607   0.4236  -0.490  0.9606
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+<p>No significant differences of the treatments within week 1 and 3. Only NC-Mix significant in week 2 (p=0.0029).</p>
+<p>Now check for differences between weeks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_chla)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: log10(chla)
+               Df Sum Sq Mean Sq F value    Pr(&gt;F)    
+week            2 3.6638 1.83191 34.9922 7.689e-08 ***
+treatment       3 0.3323 0.11076  2.1156   0.12473    
+week:treatment  6 0.9025 0.15042  2.8733   0.02965 *  
+Residuals      24 1.2564 0.05235                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># week variable highly significant (p=7.689e-08)</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>chla_inter2 <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_chla, <span class="sc">~</span> week <span class="sc">|</span>  treatment)</span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>chla_inter_dunn3 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(chla_inter2, <span class="st">'pairwise'</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>(chla_inter_dunn_sum3 <span class="ot">&lt;-</span> <span class="fu">summary</span>(chla_inter_dunn3, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>treatment = Cip:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.2843 0.187 24   -0.182   0.7508   1.522  0.2987
+ week1 - week3  -0.2296 0.187 24   -0.696   0.2369  -1.229  0.4479
+ week2 - week3  -0.5140 0.187 24   -0.980  -0.0475  -2.751  0.0290
+
+treatment = Mix:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.7682 0.187 24    0.302   1.2344   4.112  0.0011
+ week1 - week3  -0.5458 0.187 24   -1.012  -0.0796  -2.921  0.0195
+ week2 - week3  -1.3139 0.187 24   -1.780  -0.8477  -7.033  &lt;.0001
+
+treatment = NC:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2  -0.0781 0.187 24   -0.545   0.3887  -0.418  0.9086
+ week1 - week3  -0.5185 0.187 24   -0.985  -0.0517  -2.775  0.0273
+ week2 - week3  -0.4404 0.187 24   -0.907   0.0264  -2.357  0.0667
+
+treatment = Pro:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.3265 0.187 24   -0.140   0.7929   1.748  0.2085
+ week1 - week3  -0.5170 0.187 24   -0.983  -0.0506  -2.767  0.0278
+ week2 - week3  -0.8435 0.187 24   -1.310  -0.3772  -4.515  0.0004
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 3 estimates 
+P value adjustment: mvt method for 3 tests </code></pre>
+</div>
+</div>
+<ul>
+<li>NC<br>
+
+<ul>
+<li>Week 1 &amp; 2 similar<br>
+</li>
+<li>Week 2 &amp; 3 similar<br>
+</li>
+<li>difference between week 1 &amp; 3</li>
+</ul></li>
+<li>Cip<br>
+
+<ul>
+<li>Week 1 &amp; 2 similar<br>
+</li>
+<li>Week 1 &amp; 3 similar<br>
+</li>
+<li>difference between week 2 &amp; 3</li>
+</ul></li>
+<li>Pro<br>
+
+<ul>
+<li>Week 1 &amp; 2 similar<br>
+</li>
+<li>differences between week 1 &amp; 3 and 2 &amp; 3</li>
+</ul></li>
+<li>Mix<br>
+
+<ul>
+<li>all weeks different</li>
+</ul></li>
+</ul>
+<p>Week 1 &amp; 2 quite similar, expect of Mix treatment. Week 3 quite different to week 1 &amp; 2 despite of Cip tretment.</p>
+</section>
+<section id="model-chlb" class="level4">
+<h4 class="anchored" data-anchor-id="model-chlb">Model chlb</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>model_chlb <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log10</span>(chlb) <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment, <span class="at">data =</span> biofilm_endpoints)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_chlb, <span class="at">test =</span> <span class="st">'F'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log10(chlb) ~ week + treatment + week:treatment
+               Df Sum of Sq     RSS     AIC F value Pr(&gt;F)
+&lt;none&gt;                      0.97703 -105.84               
+week:treatment  6   0.26855 1.24558 -109.10  1.0995 0.3913</code></pre>
+</div>
+</div>
+<p>No significant differences. Still check for differences between treatments.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>chlb_inter <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_chlb, <span class="sc">~</span> treatment <span class="sc">|</span> week )</span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>chlb_inter_dunn1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(chlb_inter, <span class="st">'pairwise'</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>(chlb_inter_dunn_sum1 <span class="ot">&lt;-</span> <span class="fu">summary</span>(chlb_inter_dunn1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix -0.27433 0.165 24   -0.729    0.180  -1.665  0.3632
+ Cip - NC  -0.01900 0.165 24   -0.474    0.436  -0.115  0.9994
+ Cip - Pro -0.05266 0.165 24   -0.507    0.402  -0.320  0.9884
+ Mix - NC   0.25533 0.165 24   -0.199    0.710   1.550  0.4251
+ Mix - Pro  0.22167 0.165 24   -0.233    0.676   1.346  0.5442
+ NC - Pro  -0.03366 0.165 24   -0.488    0.421  -0.204  0.9969
+
+week = 2:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  0.18670 0.165 24   -0.268    0.641   1.133  0.6731
+ Cip - NC  -0.00461 0.165 24   -0.459    0.450  -0.028  1.0000
+ Cip - Pro  0.03588 0.165 24   -0.419    0.491   0.218  0.9963
+ Mix - NC  -0.19130 0.165 24   -0.646    0.263  -1.161  0.6562
+ Mix - Pro -0.15082 0.165 24   -0.606    0.304  -0.916  0.7968
+ NC - Pro   0.04048 0.165 24   -0.414    0.495   0.246  0.9946
+
+week = 3:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix -0.27781 0.165 24   -0.732    0.176  -1.686  0.3525
+ Cip - NC  -0.11586 0.165 24   -0.570    0.338  -0.703  0.8948
+ Cip - Pro -0.15717 0.165 24   -0.611    0.297  -0.954  0.7762
+ Mix - NC   0.16195 0.165 24   -0.292    0.616   0.983  0.7603
+ Mix - Pro  0.12064 0.165 24   -0.333    0.575   0.732  0.8832
+ NC - Pro  -0.04131 0.165 24   -0.495    0.413  -0.251  0.9943
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+<p>No differences between treatments for chlb.</p>
+<p>Now check for differences between weeks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_chlb)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: log10(chlb)
+               Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+week            2 1.24370 0.62185 15.2753 5.259e-05 ***
+treatment       3 0.06804 0.02268  0.5572    0.6484    
+week:treatment  6 0.26855 0.04476  1.0995    0.3913    
+Residuals      24 0.97703 0.04071                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># week variable highly significant (p=5.259e-05)</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>chlb_inter2 <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_chlb, <span class="sc">~</span> week <span class="sc">|</span>  treatment)</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>chlb_inter_dunn3 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(chlb_inter2, <span class="st">'pairwise'</span>)</span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>(chlb_inter_dunn_sum3 <span class="ot">&lt;-</span> <span class="fu">summary</span>(chlb_inter_dunn3, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>treatment = Cip:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.0629 0.165 24   -0.349   0.4743   0.382  0.9231
+ week1 - week3  -0.1994 0.165 24   -0.611   0.2120  -1.210  0.4587
+ week2 - week3  -0.2623 0.165 24   -0.674   0.1491  -1.592  0.2683
+
+treatment = Mix:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.5239 0.165 24    0.112   0.9354   3.180  0.0109
+ week1 - week3  -0.2029 0.165 24   -0.614   0.2086  -1.232  0.4466
+ week2 - week3  -0.7268 0.165 24   -1.138  -0.3153  -4.412  0.0005
+
+treatment = NC:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.0773 0.165 24   -0.334   0.4887   0.469  0.8864
+ week1 - week3  -0.2963 0.165 24   -0.708   0.1152  -1.798  0.1913
+ week2 - week3  -0.3735 0.165 24   -0.785   0.0379  -2.267  0.0801
+
+treatment = Pro:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.1514 0.165 24   -0.260   0.5632   0.919  0.6338
+ week1 - week3  -0.3039 0.165 24   -0.716   0.1079  -1.845  0.1768
+ week2 - week3  -0.4553 0.165 24   -0.867  -0.0435  -2.764  0.0282
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 3 estimates 
+P value adjustment: mvt method for 3 tests </code></pre>
+</div>
+</div>
+<p>Similar results/trends as for chla. Week 1 &amp; 2 quite similar; differences in:</p>
+<ul>
+<li><p>Pro treatment: week 2 &amp; 3</p></li>
+<li><p>Mix treatment: week 1 &amp; 2; 2 &amp; 3</p></li>
+</ul>
+</section>
+<section id="model-chlc" class="level4">
+<h4 class="anchored" data-anchor-id="model-chlc">Model chlc</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>model_chlc <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log10</span>(chlc) <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment, <span class="at">data =</span> biofilm_endpoints)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_chlc, <span class="at">test =</span> <span class="st">'F'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log10(chlc) ~ week + treatment + week:treatment
+               Df Sum of Sq    RSS      AIC F value Pr(&gt;F)
+&lt;none&gt;                      1.1848  -98.901               
+week:treatment  6   0.29873 1.4836 -102.807  1.0085  0.443</code></pre>
+</div>
+</div>
+<p>No significant differences. Still check for differences between treatments.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>chlc_inter <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_chlc, <span class="sc">~</span> treatment <span class="sc">|</span> week )</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>chlc_inter_dunn1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(chlc_inter, <span class="st">'pairwise'</span>)</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>(chlc_inter_dunn_sum1 <span class="ot">&lt;-</span> <span class="fu">summary</span>(chlc_inter_dunn1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix -0.33795 0.181 24   -0.838    0.162  -1.863  0.2700
+ Cip - NC  -0.00342 0.181 24   -0.504    0.497  -0.019  1.0000
+ Cip - Pro -0.05013 0.181 24   -0.551    0.450  -0.276  0.9924
+ Mix - NC   0.33453 0.181 24   -0.166    0.835   1.844  0.2782
+ Mix - Pro  0.28782 0.181 24   -0.213    0.788   1.587  0.4048
+ NC - Pro  -0.04671 0.181 24   -0.547    0.454  -0.257  0.9938
+
+week = 2:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  0.17126 0.181 24   -0.329    0.672   0.944  0.7816
+ Cip - NC   0.13832 0.181 24   -0.362    0.639   0.762  0.8704
+ Cip - Pro  0.03741 0.181 24   -0.463    0.538   0.206  0.9968
+ Mix - NC  -0.03294 0.181 24   -0.533    0.467  -0.182  0.9978
+ Mix - Pro -0.13386 0.181 24   -0.634    0.367  -0.738  0.8809
+ NC - Pro  -0.10092 0.181 24   -0.601    0.399  -0.556  0.9439
+
+week = 3:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix -0.29281 0.181 24   -0.793    0.207  -1.614  0.3900
+ Cip - NC  -0.13817 0.181 24   -0.638    0.362  -0.762  0.8708
+ Cip - Pro -0.24547 0.181 24   -0.746    0.255  -1.353  0.5396
+ Mix - NC   0.15464 0.181 24   -0.346    0.655   0.852  0.8289
+ Mix - Pro  0.04734 0.181 24   -0.453    0.548   0.261  0.9936
+ NC - Pro  -0.10730 0.181 24   -0.608    0.393  -0.591  0.9337
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+</section>
+<section id="boxplots-chlorophyll-a-b-c" class="level4">
+<h4 class="anchored" data-anchor-id="boxplots-chlorophyll-a-b-c">Boxplots chlorophyll a, b + c</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chlorophyll a</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>chla <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> biofilm_endpoints, </span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y =</span> chla, </span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>                             <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Chlorophyll a (µg/cm"</span><span class="sc">^</span><span class="st">"2"</span><span class="sc">*</span><span class="st">")"</span>), <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>))</span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a>chla </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(chla, </span>
+<span id="cb40-3"><a href="#cb40-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"chla.png"</span>, </span>
+<span id="cb40-4"><a href="#cb40-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chlorophyll b</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a>chlb <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> biofilm_endpoints, </span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb42-4"><a href="#cb42-4" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y =</span> chlb, </span>
+<span id="cb42-5"><a href="#cb42-5" aria-hidden="true" tabindex="-1"></a>                             <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb42-6"><a href="#cb42-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb42-7"><a href="#cb42-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb42-8"><a href="#cb42-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb42-9"><a href="#cb42-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb42-10"><a href="#cb42-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Chlorophyll b (µg/cm"</span><span class="sc">^</span><span class="st">"2"</span><span class="sc">*</span><span class="st">")"</span>), <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb42-11"><a href="#cb42-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>))</span>
+<span id="cb42-12"><a href="#cb42-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb42-13"><a href="#cb42-13" aria-hidden="true" tabindex="-1"></a>chlb </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-14-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(chlb, </span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"chlb.png"</span>, </span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># chlorophyll c</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>chlc <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> biofilm_endpoints, </span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y =</span> chlc, </span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>                             <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Chlorophyll c (µg/cm"</span><span class="sc">^</span><span class="st">"2"</span><span class="sc">*</span><span class="st">")"</span>), <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>))</span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>chlc </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-14-3.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(chlc, </span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"chlc.png"</span>, </span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="afdw-after-colonisation" class="level2">
+<h2 class="anchored" data-anchor-id="afdw-after-colonisation">3.2 AFDW after colonisation</h2>
+<section id="calculate-mean-afdw-of-each-treatment-for-manuscript." class="level4">
+<h4 class="anchored" data-anchor-id="calculate-mean-afdw-of-each-treatment-for-manuscript.">Calculate mean afdw of each treatment for manuscript.</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1" aria-hidden="true" tabindex="-1"></a>mean_afdw_after_colonisation <span class="ot">&lt;-</span> biofilm_endpoints <span class="sc">%&gt;%</span></span>
+<span id="cb48-2"><a href="#cb48-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb48-3"><a href="#cb48-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_afdw_after_colonisation =</span> <span class="fu">mean</span>(afdw_after_colonisation))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'week'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb50"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_afdw_after_colonisation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+   week  treatment mean_afdw_after_colonisation
+   &lt;fct&gt; &lt;chr&gt;                            &lt;dbl&gt;
+ 1 1     Cip                             0.0785
+ 2 1     Mix                             0.0666
+ 3 1     NC                              0.0837
+ 4 1     Pro                             0.135 
+ 5 2     Cip                             0.109 
+ 6 2     Mix                             0.0785
+ 7 2     NC                              0.215 
+ 8 2     Pro                             0.0699
+ 9 3     Cip                             0.188 
+10 3     Mix                             0.280 
+11 3     NC                              0.520 
+12 3     Pro                             0.474 </code></pre>
+</div>
+</div>
+</section>
+<section id="histogram-afdw-after-colonisation" class="level4">
+<h4 class="anchored" data-anchor-id="histogram-afdw-after-colonisation">Histogram afdw after colonisation</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb52"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb52-1"><a href="#cb52-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(biofilm_endpoints <span class="sc">$</span> afdw_after_colonisation) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb53"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb53-1"><a href="#cb53-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(biofilm_endpoints <span class="sc">$</span> afdw_after_colonisation, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.433642</code></pre>
+</div>
+</div>
+<p>Not normal distributed and right skewed. Log10 transformation for model</p>
+</section>
+<section id="model-afdw-after-colonisation" class="level4">
+<h4 class="anchored" data-anchor-id="model-afdw-after-colonisation">Model afdw after colonisation</h4>
+<p>Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb55"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb55-1"><a href="#cb55-1" aria-hidden="true" tabindex="-1"></a>model_afdw_after_colonisation <span class="ot">&lt;-</span> <span class="fu">lm</span>(<span class="fu">log10</span>(afdw_after_colonisation) <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment, <span class="at">data =</span> biofilm_endpoints)</span>
+<span id="cb55-2"><a href="#cb55-2" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(model_afdw_after_colonisation, <span class="at">test =</span> <span class="st">'F'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log10(afdw_after_colonisation) ~ week + treatment + week:treatment
+               Df Sum of Sq     RSS     AIC F value   Pr(&gt;F)   
+&lt;none&gt;                      0.49635 -130.22                    
+week:treatment  6   0.46424 0.96059 -118.45  3.7412 0.009063 **
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<p>No significant differences. Still check differences between treatments within weeks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb57"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb57-1"><a href="#cb57-1" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_inter <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_afdw_after_colonisation, <span class="sc">~</span> treatment <span class="sc">|</span> week )</span>
+<span id="cb57-2"><a href="#cb57-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-3"><a href="#cb57-3" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_inter_dunn1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(afdw_after_colonisation_inter, <span class="st">'pairwise'</span>)</span>
+<span id="cb57-4"><a href="#cb57-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb57-5"><a href="#cb57-5" aria-hidden="true" tabindex="-1"></a>(afdw_after_colonisation_inter_dunn_sum1 <span class="ot">&lt;-</span> <span class="fu">summary</span>(afdw_after_colonisation_inter_dunn1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix   0.0646 0.117 24   -0.259   0.3885   0.550  0.9457
+ Cip - NC   -0.0310 0.117 24   -0.355   0.2929  -0.264  0.9934
+ Cip - Pro  -0.2277 0.117 24   -0.552   0.0962  -1.939  0.2387
+ Mix - NC   -0.0956 0.117 24   -0.420   0.2284  -0.814  0.8472
+ Mix - Pro  -0.2923 0.117 24   -0.616   0.0317  -2.489  0.0874
+ NC - Pro   -0.1967 0.117 24   -0.521   0.1273  -1.675  0.3581
+
+week = 2:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix   0.1341 0.117 24   -0.190   0.4581   1.142  0.6677
+ Cip - NC   -0.2737 0.117 24   -0.598   0.0503  -2.331  0.1193
+ Cip - Pro   0.1747 0.117 24   -0.149   0.4987   1.488  0.4601
+ Mix - NC   -0.4078 0.117 24   -0.732  -0.0838  -3.473  0.0099
+ Mix - Pro   0.0406 0.117 24   -0.283   0.3646   0.346  0.9855
+ NC - Pro    0.4484 0.117 24    0.124   0.7723   3.818  0.0044
+
+week = 3:
+ contrast  estimate    SE df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  -0.1194 0.117 24   -0.443   0.2047  -1.017  0.7414
+ Cip - NC   -0.4240 0.117 24   -0.748  -0.1000  -3.611  0.0072
+ Cip - Pro  -0.3942 0.117 24   -0.718  -0.0701  -3.357  0.0131
+ Mix - NC   -0.3046 0.117 24   -0.629   0.0194  -2.594  0.0707
+ Mix - Pro  -0.2748 0.117 24   -0.599   0.0492  -2.340  0.1166
+ NC - Pro    0.0298 0.117 24   -0.294   0.3539   0.254  0.9941
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+<p>Now check for differences within weeks.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(model_afdw_after_colonisation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+
+Response: log10(afdw_after_colonisation)
+               Df  Sum Sq Mean Sq F value    Pr(&gt;F)    
+week            2 2.31759 1.15880 56.0312 9.072e-10 ***
+treatment       3 0.43663 0.14554  7.0375  0.001477 ** 
+week:treatment  6 0.46424 0.07737  3.7412  0.009063 ** 
+Residuals      24 0.49635 0.02068                      
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1" aria-hidden="true" tabindex="-1"></a><span class="co"># week variable highly significant (p=2.541e-07)</span></span>
+<span id="cb61-2"><a href="#cb61-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-3"><a href="#cb61-3" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_inter2 <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(model_afdw_after_colonisation, <span class="sc">~</span> week <span class="sc">|</span>  treatment)</span>
+<span id="cb61-4"><a href="#cb61-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-5"><a href="#cb61-5" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_inter_dunn3 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(afdw_after_colonisation_inter2, <span class="st">'pairwise'</span>)</span>
+<span id="cb61-6"><a href="#cb61-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb61-7"><a href="#cb61-7" aria-hidden="true" tabindex="-1"></a>(afdw_after_colonisation_inter_dunn_sum3 <span class="ot">&lt;-</span> <span class="fu">summary</span>(afdw_after_colonisation_inter_dunn3, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>treatment = Cip:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2  -0.1304 0.117 24  -0.4237   0.1629  -1.111  0.5168
+ week1 - week3  -0.3852 0.117 24  -0.6785  -0.0919  -3.281  0.0085
+ week2 - week3  -0.2548 0.117 24  -0.5481   0.0385  -2.170  0.0972
+
+treatment = Mix:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2  -0.0609 0.117 24  -0.3540   0.2323  -0.518  0.8631
+ week1 - week3  -0.5691 0.117 24  -0.8623  -0.2760  -4.847  0.0001
+ week2 - week3  -0.5083 0.117 24  -0.8014  -0.2151  -4.329  0.0006
+
+treatment = NC:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2  -0.3730 0.117 24  -0.6661  -0.0800  -3.177  0.0109
+ week1 - week3  -0.7782 0.117 24  -1.0712  -0.4851  -6.627  &lt;.0001
+ week2 - week3  -0.4051 0.117 24  -0.6982  -0.1121  -3.450  0.0058
+
+treatment = Pro:
+ contrast      estimate    SE df lower.CL upper.CL t.ratio p.value
+ week1 - week2   0.2720 0.117 24  -0.0212   0.5651   2.316  0.0725
+ week1 - week3  -0.5517 0.117 24  -0.8448  -0.2585  -4.698  0.0003
+ week2 - week3  -0.8236 0.117 24  -1.1168  -0.5305  -7.015  &lt;.0001
+
+Results are given on the log10 (not the response) scale. 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 3 estimates 
+P value adjustment: mvt method for 3 tests </code></pre>
+</div>
+</div>
+</section>
+<section id="boxplot-afdw-after-colonisation" class="level4">
+<h4 class="anchored" data-anchor-id="boxplot-afdw-after-colonisation">Boxplot afdw after colonisation</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_boxplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> biofilm_endpoints, </span>
+<span id="cb63-2"><a href="#cb63-2" aria-hidden="true" tabindex="-1"></a>               <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb63-3"><a href="#cb63-3" aria-hidden="true" tabindex="-1"></a>                             <span class="at">y =</span> afdw_after_colonisation, </span>
+<span id="cb63-4"><a href="#cb63-4" aria-hidden="true" tabindex="-1"></a>                             <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb63-5"><a href="#cb63-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb63-6"><a href="#cb63-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb63-7"><a href="#cb63-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb63-8"><a href="#cb63-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb63-9"><a href="#cb63-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Ash free dry weight (mg/cm"</span><span class="sc">^</span><span class="st">"2"</span><span class="sc">*</span><span class="st">")"</span>), <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb63-10"><a href="#cb63-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>))</span>
+<span id="cb63-11"><a href="#cb63-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb63-12"><a href="#cb63-12" aria-hidden="true" tabindex="-1"></a>afdw_after_colonisation_boxplot </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1" aria-hidden="true" tabindex="-1"></a><span class="co"># @ VS: Hier auch log Skala, um die Daten besser zu sehen?</span></span>
+<span id="cb64-2"><a href="#cb64-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb64-3"><a href="#cb64-3" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb64-4"><a href="#cb64-4" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(afdw_after_colonisation_boxplot, </span>
+<span id="cb64-5"><a href="#cb64-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"afdw_after_colonisation.png"</span>, </span>
+<span id="cb64-6"><a href="#cb64-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="feeding-rate-snails-and-ash-free-dry-weight-after-feeding" class="level1">
+<h1>4 Feeding rate snails and ash free dry weight after feeding</h1>
+<ul>
+<li><p>NA’s due to missing snail and zero values of feeding rate due to no measurable feeding in respective week</p></li>
+<li><p>Unit feeding rate: µg / day and unit ash free dry weight (afdw): mg / cm²</p></li>
+<li><p>Column “used_for_FA_analysis” highlights the ten snails used for FA analyses for each treatment</p></li>
+</ul>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1" aria-hidden="true" tabindex="-1"></a><span class="co"># insert data</span></span>
+<span id="cb66-2"><a href="#cb66-2" aria-hidden="true" tabindex="-1"></a>afdw_feeding_rate <span class="ot">&lt;-</span></span>
+<span id="cb66-3"><a href="#cb66-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read.table</span>(<span class="fu">file.path</span>(prj, <span class="st">"data</span><span class="sc">\\</span><span class="st">feeding_assay_afdw_feeding_rate.txt"</span>),</span>
+<span id="cb66-4"><a href="#cb66-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span>)</span>
+<span id="cb66-5"><a href="#cb66-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb66-6"><a href="#cb66-6" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(afdw_feeding_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<section id="feeding-rate-snails" class="level2">
+<h2 class="anchored" data-anchor-id="feeding-rate-snails">4.1 Feeding rate snails</h2>
+<section id="calculate-mean-feeding-rate-for-each-week" class="level4">
+<h4 class="anchored" data-anchor-id="calculate-mean-feeding-rate-for-each-week">Calculate mean feeding rate for each week</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1" aria-hidden="true" tabindex="-1"></a>mean_feeding_rate <span class="ot">&lt;-</span> afdw_feeding_rate <span class="sc">%&gt;%</span></span>
+<span id="cb67-2"><a href="#cb67-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb67-3"><a href="#cb67-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_feeding_rate =</span> <span class="fu">mean</span>(feeding_rate))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'week'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_feeding_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+    week treatment mean_feeding_rate
+   &lt;int&gt; &lt;chr&gt;                 &lt;dbl&gt;
+ 1     1 Cip                  NA    
+ 2     1 Mix                   2.49 
+ 3     1 NC                   NA    
+ 4     1 Pro                  NA    
+ 5     2 Cip                  NA    
+ 6     2 Mix                   0.841
+ 7     2 NC                   NA    
+ 8     2 Pro                  NA    
+ 9     3 Cip                  NA    
+10     3 Mix                   1.55 
+11     3 NC                   NA    
+12     3 Pro                  NA    </code></pre>
+</div>
+</div>
+</section>
+<section id="histogram-feeding-rate" class="level4">
+<h4 class="anchored" data-anchor-id="histogram-feeding-rate">Histogram feeding rate</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb71"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb71-1"><a href="#cb71-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(afdw_feeding_rate <span class="sc">$</span> feeding_rate) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-23-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(afdw_feeding_rate <span class="sc">$</span> feeding_rate, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 3.865973</code></pre>
+</div>
+</div>
+<p>Feeding rate variable not normal distributed and right skewed -&gt; log10 transformation for model</p>
+</section>
+<section id="model-feeding-rate" class="level4">
+<h4 class="anchored" data-anchor-id="model-feeding-rate">Model feeding rate</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="co"># week and beaker as factor</span></span>
+<span id="cb74-2"><a href="#cb74-2" aria-hidden="true" tabindex="-1"></a>afdw_feeding_rate <span class="sc">$</span> week <span class="ot">&lt;-</span> <span class="fu">factor</span>(afdw_feeding_rate <span class="sc">$</span> week)</span>
+<span id="cb74-3"><a href="#cb74-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-4"><a href="#cb74-4" aria-hidden="true" tabindex="-1"></a>afdw_feeding_rate <span class="sc">$</span> beaker <span class="ot">&lt;-</span> <span class="fu">factor</span>(afdw_feeding_rate <span class="sc">$</span> beaker)</span>
+<span id="cb74-5"><a href="#cb74-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-6"><a href="#cb74-6" aria-hidden="true" tabindex="-1"></a><span class="co"># log10 transformation; adding 0.001 to variable for samples with feeding rate = 0</span></span>
+<span id="cb74-7"><a href="#cb74-7" aria-hidden="true" tabindex="-1"></a>afdw_feeding_rate <span class="ot">&lt;-</span> afdw_feeding_rate <span class="sc">%&gt;%</span></span>
+<span id="cb74-8"><a href="#cb74-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_feeding_rate =</span> <span class="fu">log10</span>(feeding_rate <span class="sc">+</span> <span class="fl">0.001</span>))</span>
+<span id="cb74-9"><a href="#cb74-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb74-10"><a href="#cb74-10" aria-hidden="true" tabindex="-1"></a><span class="co"># response variable: log_feeding_rate</span></span>
+<span id="cb74-11"><a href="#cb74-11" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed effects: week + treatment + week:treatment</span></span>
+<span id="cb74-12"><a href="#cb74-12" aria-hidden="true" tabindex="-1"></a><span class="co"># random effect with constant intercept: (1|beaker)</span></span>
+<span id="cb74-13"><a href="#cb74-13" aria-hidden="true" tabindex="-1"></a>feeding_rate_lmer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(log_feeding_rate <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>beaker), <span class="at">data =</span> afdw_feeding_rate)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>boundary (singular) fit: see help('isSingular')</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a>feeding_rate_lmer <span class="sc">%&gt;%</span> r2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Can't compute random effect variances. Some variance components equal
+  zero. Your model may suffer from singularity (see `?lme4::isSingular`
+  and `?performance::check_singularity`).
+  Solution: Respecify random structure! You may also decrease the
+  `tolerance` level to enforce the calculation of random effect variances.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Random effect variances not available. Returned R2 does not account for random effects.</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># R2 for Mixed Models
+
+  Conditional R2: NA
+     Marginal R2: 0.108</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb80"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb80-1"><a href="#cb80-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Conditional R2: explained portion of the variance of the fixed and random effect together</span></span>
+<span id="cb80-2"><a href="#cb80-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Marginal R2: declared share of the variance of the fixed components alone</span></span>
+<span id="cb80-3"><a href="#cb80-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb80-4"><a href="#cb80-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(feeding_rate_lmer) <span class="co"># point cloud looks evenly distributed --&gt; normal distribution</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-24-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb81"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb81-1"><a href="#cb81-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qreference</span>(<span class="fu">residuals</span>(feeding_rate_lmer)) <span class="co"># normality</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-24-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb82"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb82-1"><a href="#cb82-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(feeding_rate_lmer, <span class="at">test =</span> <span class="st">'Chisq'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>boundary (singular) fit: see help('isSingular')</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log_feeding_rate ~ week + treatment + week:treatment + (1 | beaker)
+               npar    AIC    LRT   Pr(Chi)    
+&lt;none&gt;              891.73                     
+week:treatment    6 903.01 23.285 0.0007066 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb85"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb85-1"><a href="#cb85-1" aria-hidden="true" tabindex="-1"></a><span class="co"># interaction of timepoint (week) and treatment highly significant</span></span>
+<span id="cb85-2"><a href="#cb85-2" aria-hidden="true" tabindex="-1"></a><span class="co"># now check at which timepoints is a difference between treatments</span></span>
+<span id="cb85-3"><a href="#cb85-3" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(feeding_rate_lmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+               npar  Sum Sq Mean Sq F value
+week              2  8.3221  4.1611  4.9990
+treatment         3  5.6002  1.8667  2.2427
+week:treatment    6 19.3512  3.2252  3.8747</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb87"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="co"># conduct Tukey HSD-test for pairwise comparisons</span></span>
+<span id="cb87-2"><a href="#cb87-2" aria-hidden="true" tabindex="-1"></a>feeding_rate_tukey <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(feeding_rate_lmer, <span class="sc">~</span> treatment <span class="sc">|</span> week)</span>
+<span id="cb87-3"><a href="#cb87-3" aria-hidden="true" tabindex="-1"></a>feeding_rate_tukey</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ treatment  lsmean    SE  df lower.CL upper.CL
+ Cip       -0.3182 0.182 318   -0.677  0.04080
+ Mix       -0.0200 0.167 318   -0.348  0.30770
+ NC         0.2386 0.172 318   -0.101  0.57781
+ Pro        0.7784 0.176 318    0.433  1.12384
+
+week = 2:
+ treatment  lsmean    SE  df lower.CL upper.CL
+ Cip       -0.4496 0.182 318   -0.809 -0.09064
+ Mix       -0.3245 0.167 318   -0.652  0.00321
+ NC         0.1426 0.172 318   -0.197  0.48178
+ Pro       -0.2442 0.176 318   -0.590  0.10124
+
+week = 3:
+ treatment  lsmean    SE  df lower.CL upper.CL
+ Cip        0.1146 0.182 318   -0.244  0.47357
+ Mix        0.0703 0.167 318   -0.257  0.39801
+ NC        -0.0691 0.172 318   -0.408  0.27011
+ Pro       -0.2726 0.176 318   -0.618  0.07281
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb89"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb89-1"><a href="#cb89-1" aria-hidden="true" tabindex="-1"></a>feeding_rate_tukey1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(feeding_rate_tukey, <span class="st">'pairwise'</span>)</span>
+<span id="cb89-2"><a href="#cb89-2" aria-hidden="true" tabindex="-1"></a>feeding_rate_tukey1</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE  df t.ratio p.value
+ Cip - Mix  -0.2982 0.247 318  -1.207  0.6229
+ Cip - NC   -0.5568 0.251 318  -2.218  0.1206
+ Cip - Pro  -1.0966 0.253 318  -4.330  0.0001
+ Mix - NC   -0.2586 0.240 318  -1.079  0.7028
+ Mix - Pro  -0.7984 0.242 318  -3.299  0.0059
+ NC - Pro   -0.5398 0.246 318  -2.194  0.1272
+
+week = 2:
+ contrast  estimate    SE  df t.ratio p.value
+ Cip - Mix  -0.1251 0.247 318  -0.506  0.9575
+ Cip - NC   -0.5922 0.251 318  -2.359  0.0873
+ Cip - Pro  -0.2054 0.253 318  -0.811  0.8491
+ Mix - NC   -0.4671 0.240 318  -1.948  0.2102
+ Mix - Pro  -0.0803 0.242 318  -0.332  0.9874
+ NC - Pro    0.3868 0.246 318   1.572  0.3963
+
+week = 3:
+ contrast  estimate    SE  df t.ratio p.value
+ Cip - Mix   0.0443 0.247 318   0.179  0.9980
+ Cip - NC    0.1837 0.251 318   0.732  0.8843
+ Cip - Pro   0.3872 0.253 318   1.529  0.4213
+ Mix - NC    0.1394 0.240 318   0.581  0.9376
+ Mix - Pro   0.3429 0.242 318   1.417  0.4897
+ NC - Pro    0.2035 0.246 318   0.827  0.8416
+
+Degrees-of-freedom method: kenward-roger 
+P value adjustment: tukey method for comparing a family of 4 estimates </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb91"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb91-1"><a href="#cb91-1" aria-hidden="true" tabindex="-1"></a>feeding_rate_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(feeding_rate_tukey1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>)</span>
+<span id="cb91-2"><a href="#cb91-2" aria-hidden="true" tabindex="-1"></a>feeding_rate_summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate    SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  -0.2982 0.247 318   -0.937   0.3403  -1.207  0.6228
+ Cip - NC   -0.5568 0.251 318   -1.206   0.0920  -2.218  0.1204
+ Cip - Pro  -1.0966 0.253 318   -1.751  -0.4422  -4.330  0.0001
+ Mix - NC   -0.2586 0.240 318   -0.878   0.3609  -1.079  0.7027
+ Mix - Pro  -0.7984 0.242 318   -1.424  -0.1730  -3.299  0.0062
+ NC - Pro   -0.5398 0.246 318   -1.176   0.0961  -2.194  0.1272
+
+week = 2:
+ contrast  estimate    SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  -0.1251 0.247 318   -0.763   0.5127  -0.506  0.9575
+ Cip - NC   -0.5922 0.251 318   -1.240   0.0559  -2.359  0.0873
+ Cip - Pro  -0.2054 0.253 318   -0.859   0.4483  -0.811  0.8491
+ Mix - NC   -0.4671 0.240 318   -1.086   0.1518  -1.948  0.2101
+ Mix - Pro  -0.0803 0.242 318   -0.705   0.5445  -0.332  0.9874
+ NC - Pro    0.3868 0.246 318   -0.248   1.0220   1.572  0.3961
+
+week = 3:
+ contrast  estimate    SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix   0.0443 0.247 318   -0.594   0.6822   0.179  0.9980
+ Cip - NC    0.1837 0.251 318   -0.464   0.8319   0.732  0.8843
+ Cip - Pro   0.3872 0.253 318   -0.267   1.0410   1.529  0.4212
+ Mix - NC    0.1394 0.240 318   -0.480   0.7584   0.581  0.9376
+ Mix - Pro   0.3429 0.242 318   -0.282   0.9678   1.417  0.4895
+ NC - Pro    0.2035 0.246 318   -0.432   0.8389   0.827  0.8415
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+</section>
+<section id="boxplot-feeding-rate-after-71421-days" class="level4">
+<h4 class="anchored" data-anchor-id="boxplot-feeding-rate-after-71421-days">Boxplot feeding rate after 7/14/21 days</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb93"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_boxplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> afdw_feeding_rate, </span>
+<span id="cb93-2"><a href="#cb93-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb93-3"><a href="#cb93-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">y =</span> afdw, </span>
+<span id="cb93-4"><a href="#cb93-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb93-5"><a href="#cb93-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb93-6"><a href="#cb93-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb93-7"><a href="#cb93-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb93-8"><a href="#cb93-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb93-9"><a href="#cb93-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb93-10"><a href="#cb93-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>)) <span class="sc">+</span></span>
+<span id="cb93-11"><a href="#cb93-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">trans =</span> <span class="st">"log10"</span>) <span class="sc">+</span></span>
+<span id="cb93-12"><a href="#cb93-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"Feeding rate (µg/day)"</span> <span class="sc">~</span> log[<span class="dv">10</span>]))</span>
+<span id="cb93-13"><a href="#cb93-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb93-14"><a href="#cb93-14" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_boxplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 30 rows containing non-finite values (`stat_boxplot()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-25-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb95"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb95-1"><a href="#cb95-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb95-2"><a href="#cb95-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(afdw_after_feeding_boxplot, </span>
+<span id="cb95-3"><a href="#cb95-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"afdw_after_feeding_boxplot.png"</span>, </span>
+<span id="cb95-4"><a href="#cb95-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 30 rows containing non-finite values (`stat_boxplot()`).</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="afdw-after-feeding" class="level2">
+<h2 class="anchored" data-anchor-id="afdw-after-feeding">4.2 AFDW after feeding</h2>
+<section id="calculate-mean-of-afdw-after-feeding-for-each-week" class="level4">
+<h4 class="anchored" data-anchor-id="calculate-mean-of-afdw-after-feeding-for-each-week">Calculate mean of afdw after feeding for each week</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb98"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb98-1"><a href="#cb98-1" aria-hidden="true" tabindex="-1"></a>mean_afdw_after_feeding <span class="ot">&lt;-</span> afdw_feeding_rate <span class="sc">%&gt;%</span></span>
+<span id="cb98-2"><a href="#cb98-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(week, treatment) <span class="sc">%&gt;%</span></span>
+<span id="cb98-3"><a href="#cb98-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">mean_afdw_after_feeding =</span> <span class="fu">mean</span>(afdw))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`summarise()` has grouped output by 'week'. You can override using the
+`.groups` argument.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb100"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(mean_afdw_after_feeding)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 12 × 3
+# Groups:   week [3]
+   week  treatment mean_afdw_after_feeding
+   &lt;fct&gt; &lt;chr&gt;                       &lt;dbl&gt;
+ 1 1     Cip                        NA    
+ 2 1     Mix                         0.129
+ 3 1     NC                         NA    
+ 4 1     Pro                        NA    
+ 5 2     Cip                        NA    
+ 6 2     Mix                         0.130
+ 7 2     NC                         NA    
+ 8 2     Pro                        NA    
+ 9 3     Cip                        NA    
+10 3     Mix                         0.292
+11 3     NC                         NA    
+12 3     Pro                        NA    </code></pre>
+</div>
+</div>
+</section>
+<section id="histogram-afdw-after-feeding" class="level4">
+<h4 class="anchored" data-anchor-id="histogram-afdw-after-feeding">Histogram afdw after feeding</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb102"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(afdw_feeding_rate <span class="sc">$</span> afdw) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-27-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb103"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skewness</span>(afdw_feeding_rate <span class="sc">$</span> afdw, <span class="at">na.rm =</span> <span class="cn">TRUE</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1.052855</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb105"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(afdw_feeding_rate <span class="sc">$</span> afdw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  afdw_feeding_rate$afdw
+W = 0.90351, p-value = 1.164e-13</code></pre>
+</div>
+</div>
+<p>AFDW after feeding not normal distributed. Log10 transformation for model.</p>
+</section>
+<section id="model-afdw-after-feeding" class="level4">
+<h4 class="anchored" data-anchor-id="model-afdw-after-feeding">Model afdw after feeding</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb107"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="co"># log10 transformation; adding 0.001 to variable for samples with feeding rate = 0</span></span>
+<span id="cb107-2"><a href="#cb107-2" aria-hidden="true" tabindex="-1"></a>afdw_feeding_rate <span class="ot">&lt;-</span> afdw_feeding_rate <span class="sc">%&gt;%</span></span>
+<span id="cb107-3"><a href="#cb107-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">log_afdw =</span> <span class="fu">log10</span>(afdw <span class="sc">+</span> <span class="fl">0.001</span>))</span>
+<span id="cb107-4"><a href="#cb107-4" aria-hidden="true" tabindex="-1"></a><span class="co"># @ VS: Die Addition von 0.001 auch bei afdw machen, obwohl es keine 0-Werte gibt?</span></span>
+<span id="cb107-5"><a href="#cb107-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-6"><a href="#cb107-6" aria-hidden="true" tabindex="-1"></a><span class="co"># response variable: log_afdw</span></span>
+<span id="cb107-7"><a href="#cb107-7" aria-hidden="true" tabindex="-1"></a><span class="co"># fixed effects: week + treatment + week:treatment</span></span>
+<span id="cb107-8"><a href="#cb107-8" aria-hidden="true" tabindex="-1"></a><span class="co"># random effect with constant intercept: (1|beaker)</span></span>
+<span id="cb107-9"><a href="#cb107-9" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_lmer <span class="ot">&lt;-</span> <span class="fu">lmer</span>(log_afdw <span class="sc">~</span> week <span class="sc">+</span> treatment <span class="sc">+</span> week<span class="sc">:</span>treatment <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>beaker), <span class="at">data =</span> afdw_feeding_rate)</span>
+<span id="cb107-10"><a href="#cb107-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb107-11"><a href="#cb107-11" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_lmer <span class="sc">%&gt;%</span> r2</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># R2 for Mixed Models
+
+  Conditional R2: 0.680
+     Marginal R2: 0.652</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb109"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Conditional R2: explained portion of the variance of the fixed and random effect together</span></span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Marginal R2: declared share of the variance of the fixed components alone</span></span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(afdw_after_feeding_lmer) <span class="co"># point cloud looks evenly distributed --&gt; normal distribution</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-28-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb110"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="fu">qreference</span>(<span class="fu">residuals</span>(afdw_after_feeding_lmer)) <span class="co"># normality</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-28-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb111"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="fu">drop1</span>(afdw_after_feeding_lmer, <span class="at">test =</span> <span class="st">'Chisq'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>boundary (singular) fit: see help('isSingular')</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Single term deletions
+
+Model:
+log_afdw ~ week + treatment + week:treatment + (1 | beaker)
+               npar     AIC    LRT   Pr(Chi)    
+&lt;none&gt;              -261.21                     
+week:treatment    6 -211.06 62.152 1.643e-11 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb114"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="co"># interaction of timepoint (week) and treatment highly significant</span></span>
+<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a><span class="co"># now check at which timepoints is a difference between treatments</span></span>
+<span id="cb114-3"><a href="#cb114-3" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(afdw_after_feeding_lmer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Analysis of Variance Table
+               npar  Sum Sq Mean Sq F value
+week              2 11.5445  5.7722 246.883
+treatment         3  1.9791  0.6597  28.216
+week:treatment    6  1.6158  0.2693  11.518</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb116"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="co"># conduct Tukey HSD-test for pairwise comparisons</span></span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>afdw_tukey <span class="ot">&lt;-</span> <span class="fu">lsmeans</span>(afdw_after_feeding_lmer, <span class="sc">~</span> treatment <span class="sc">|</span> week)</span>
+<span id="cb116-3"><a href="#cb116-3" aria-hidden="true" tabindex="-1"></a>afdw_tukey</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.791 0.0319 314   -0.854   -0.729
+ Mix       -0.936 0.0291 314   -0.994   -0.879
+ NC        -0.934 0.0302 314   -0.993   -0.874
+ Pro       -0.757 0.0307 314   -0.818   -0.697
+
+week = 2:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.559 0.0319 314   -0.622   -0.496
+ Mix       -0.906 0.0291 314   -0.963   -0.848
+ NC        -0.609 0.0302 314   -0.669   -0.550
+ Pro       -0.753 0.0307 314   -0.814   -0.693
+
+week = 3:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.446 0.0319 314   -0.508   -0.383
+ Mix       -0.563 0.0291 314   -0.620   -0.505
+ NC        -0.344 0.0302 314   -0.403   -0.284
+ Pro       -0.276 0.0307 314   -0.336   -0.215
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb118"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>afdw_tukey1 <span class="ot">&lt;-</span> <span class="fu">contrast</span>(afdw_tukey, <span class="st">'pairwise'</span>)</span>
+<span id="cb118-2"><a href="#cb118-2" aria-hidden="true" tabindex="-1"></a>afdw_tukey</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.791 0.0319 314   -0.854   -0.729
+ Mix       -0.936 0.0291 314   -0.994   -0.879
+ NC        -0.934 0.0302 314   -0.993   -0.874
+ Pro       -0.757 0.0307 314   -0.818   -0.697
+
+week = 2:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.559 0.0319 314   -0.622   -0.496
+ Mix       -0.906 0.0291 314   -0.963   -0.848
+ NC        -0.609 0.0302 314   -0.669   -0.550
+ Pro       -0.753 0.0307 314   -0.814   -0.693
+
+week = 3:
+ treatment lsmean     SE  df lower.CL upper.CL
+ Cip       -0.446 0.0319 314   -0.508   -0.383
+ Mix       -0.563 0.0291 314   -0.620   -0.505
+ NC        -0.344 0.0302 314   -0.403   -0.284
+ Pro       -0.276 0.0307 314   -0.336   -0.215
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb120"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a>afdw_summary <span class="ot">&lt;-</span> <span class="fu">summary</span>(afdw_tukey1, <span class="at">infer =</span> <span class="cn">TRUE</span>, <span class="at">adjust =</span> <span class="st">'mvt'</span>)</span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a>afdw_summary</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>week = 1:
+ contrast  estimate     SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  0.14503 0.0432 314  0.03340   0.2567   3.357  0.0046
+ Cip - NC   0.14234 0.0439 314  0.02891   0.2558   3.242  0.0070
+ Cip - Pro -0.03413 0.0443 314 -0.14854   0.0803  -0.771  0.8676
+ Mix - NC  -0.00269 0.0419 314 -0.11101   0.1056  -0.064  0.9999
+ Mix - Pro -0.17916 0.0423 314 -0.28851  -0.0698  -4.233  0.0002
+ NC - Pro  -0.17647 0.0430 314 -0.28765  -0.0653  -4.101  0.0003
+
+week = 2:
+ contrast  estimate     SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  0.34644 0.0432 314  0.23478   0.4581   8.019  &lt;.0001
+ Cip - NC   0.05002 0.0439 314 -0.06344   0.1635   1.139  0.6653
+ Cip - Pro  0.19399 0.0443 314  0.07954   0.3084   4.381  0.0001
+ Mix - NC  -0.29642 0.0419 314 -0.40478  -0.1881  -7.071  &lt;.0001
+ Mix - Pro -0.15245 0.0423 314 -0.26184  -0.0431  -3.602  0.0020
+ NC - Pro   0.14397 0.0430 314  0.03275   0.2552   3.346  0.0048
+
+week = 3:
+ contrast  estimate     SE  df lower.CL upper.CL t.ratio p.value
+ Cip - Mix  0.11718 0.0432 314  0.00554   0.2288   2.712  0.0358
+ Cip - NC  -0.10178 0.0439 314 -0.21522   0.0117  -2.319  0.0959
+ Cip - Pro -0.16991 0.0443 314 -0.28433  -0.0555  -3.837  0.0008
+ Mix - NC  -0.21896 0.0419 314 -0.32728  -0.1106  -5.223  &lt;.0001
+ Mix - Pro -0.28709 0.0423 314 -0.39644  -0.1777  -6.783  &lt;.0001
+ NC - Pro  -0.06813 0.0430 314 -0.17932   0.0431  -1.583  0.3895
+
+Degrees-of-freedom method: kenward-roger 
+Confidence level used: 0.95 
+Conf-level adjustment: mvt method for 6 estimates 
+P value adjustment: mvt method for 6 tests </code></pre>
+</div>
+</div>
+</section>
+<section id="boxplot-afdw-after-feeding-of-71421-days" class="level4">
+<h4 class="anchored" data-anchor-id="boxplot-afdw-after-feeding-of-71421-days">Boxplot afdw after feeding of 7/14/21 days</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb122"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_boxplot <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> afdw_feeding_rate, </span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a>       <span class="at">mapping =</span> <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(week), </span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a>                     <span class="at">y =</span> afdw, </span>
+<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a>                     <span class="at">fill =</span> <span class="fu">factor</span>(treatment, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"NC"</span>, <span class="st">"Cip"</span>, <span class="st">"Pro"</span>, <span class="st">"Mix"</span>)))) <span class="sc">+</span></span>
+<span id="cb122-5"><a href="#cb122-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb122-6"><a href="#cb122-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"NC"</span> <span class="ot">=</span> <span class="st">"#009E73"</span>, <span class="st">"Cip"</span> <span class="ot">=</span> <span class="st">"#56B4E9"</span>, <span class="st">"Pro"</span> <span class="ot">=</span> <span class="st">"#E69F00"</span>, <span class="st">"Mix"</span> <span class="ot">=</span> <span class="st">"#F0E442"</span>)) <span class="sc">+</span> </span>
+<span id="cb122-7"><a href="#cb122-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_okabe_ito</span>() <span class="sc">+</span> </span>
+<span id="cb122-8"><a href="#cb122-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb122-9"><a href="#cb122-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span> , <span class="at">fill =</span> <span class="st">"Treatment"</span>) <span class="sc">+</span></span>
+<span id="cb122-10"><a href="#cb122-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Week 1"</span>, <span class="st">"Week 2"</span>, <span class="st">"Week 3"</span>)) <span class="sc">+</span></span>
+<span id="cb122-11"><a href="#cb122-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">trans =</span> <span class="st">"log10"</span>) <span class="sc">+</span></span>
+<span id="cb122-12"><a href="#cb122-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">y =</span> <span class="fu">expression</span>(<span class="st">"AFDW (mg/cm"</span><span class="sc">^</span><span class="st">"2"</span><span class="sc">*</span><span class="st">")"</span> <span class="sc">~</span> log[<span class="dv">10</span>]))</span>
+<span id="cb122-13"><a href="#cb122-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb122-14"><a href="#cb122-14" aria-hidden="true" tabindex="-1"></a>afdw_after_feeding_boxplot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 30 rows containing non-finite values (`stat_boxplot()`).</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-29-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb124"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(afdw_after_feeding_boxplot, </span>
+<span id="cb124-3"><a href="#cb124-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"afdw_after_feeding_boxplot.png"</span>, </span>
+<span id="cb124-4"><a href="#cb124-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Removed 30 rows containing non-finite values (`stat_boxplot()`).</code></pre>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="fatty-acid-composition-snails" class="level1">
+<h1>5 Fatty acid composition snails</h1>
+</section>
+<section id="fatty-acid-composition-biofilm" class="level1">
+<h1>6 Fatty acid composition biofilm</h1>
+<p>Mach ich dann so wie Fatty acid composition snails</p>
+</section>
+<section id="temperature-and-light-conditions" class="level1">
+<h1>7 Temperature and light conditions</h1>
+<section id="biofilm-colonisation-and-contamination" class="level2">
+<h2 class="anchored" data-anchor-id="biofilm-colonisation-and-contamination">7.1 Biofilm colonisation and contamination</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb127"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb127-1"><a href="#cb127-1" aria-hidden="true" tabindex="-1"></a><span class="co"># insert data</span></span>
+<span id="cb127-2"><a href="#cb127-2" aria-hidden="true" tabindex="-1"></a>colonisation_temp_light <span class="ot">&lt;-</span></span>
+<span id="cb127-3"><a href="#cb127-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read.table</span>(<span class="fu">file.path</span>(prj, <span class="st">"data</span><span class="sc">\\</span><span class="st">colonisation_temp_light.txt"</span>),</span>
+<span id="cb127-4"><a href="#cb127-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">header =</span> <span class="cn">TRUE</span>, <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span>)</span>
+<span id="cb127-5"><a href="#cb127-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-6"><a href="#cb127-6" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(colonisation_temp_light)</span>
+<span id="cb127-7"><a href="#cb127-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb127-8"><a href="#cb127-8" aria-hidden="true" tabindex="-1"></a><span class="co"># average temperature</span></span>
+<span id="cb127-9"><a href="#cb127-9" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(colonisation_temp_light <span class="sc">$</span> temperature_colonisation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 18.28751</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb129"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb129-1"><a href="#cb129-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 18.28751 °C</span></span>
+<span id="cb129-2"><a href="#cb129-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb129-3"><a href="#cb129-3" aria-hidden="true" tabindex="-1"></a><span class="co"># mean light intensity</span></span>
+<span id="cb129-4"><a href="#cb129-4" aria-hidden="true" tabindex="-1"></a><span class="co"># filter only daytime</span></span>
+<span id="cb129-5"><a href="#cb129-5" aria-hidden="true" tabindex="-1"></a>average_light_intensity_colonisation <span class="ot">&lt;-</span> colonisation_temp_light <span class="sc">%&gt;%</span></span>
+<span id="cb129-6"><a href="#cb129-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(light_intensity_colonisation <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb129-7"><a href="#cb129-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">average_light_intensity_colonisation =</span> <span class="fu">mean</span>(light_intensity_colonisation))</span>
+<span id="cb129-8"><a href="#cb129-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb129-9"><a href="#cb129-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(average_light_intensity_colonisation)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  average_light_intensity_colonisation
+1                             14019.26</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb131"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb131-1"><a href="#cb131-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 14019.26 lux</span></span>
+<span id="cb131-2"><a href="#cb131-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-3"><a href="#cb131-3" aria-hidden="true" tabindex="-1"></a><span class="co"># temperature plot</span></span>
+<span id="cb131-4"><a href="#cb131-4" aria-hidden="true" tabindex="-1"></a><span class="co"># add a small amount of random noise to the y-values</span></span>
+<span id="cb131-5"><a href="#cb131-5" aria-hidden="true" tabindex="-1"></a>colonisation_temp_light <span class="sc">$</span> temperature_colonisation <span class="ot">&lt;-</span> <span class="fu">jitter</span>(colonisation_temp_light <span class="sc">$</span> temperature_colonisation)</span>
+<span id="cb131-6"><a href="#cb131-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-7"><a href="#cb131-7" aria-hidden="true" tabindex="-1"></a>t2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb131-8"><a href="#cb131-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> colonisation_temp_light,</span>
+<span id="cb131-9"><a href="#cb131-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mapping =</span> <span class="fu">aes</span>( <span class="at">x =</span> day, <span class="at">y =</span> temperature_colonisation, <span class="at">color =</span> time_of_day)) <span class="sc">+</span></span>
+<span id="cb131-10"><a href="#cb131-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span>  <span class="co"># Individual measurements with transparency</span></span>
+<span id="cb131-11"><a href="#cb131-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb131-12"><a href="#cb131-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb131-13"><a href="#cb131-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Temperature profile during biofilm colonisation"</span>,</span>
+<span id="cb131-14"><a href="#cb131-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Day"</span>, <span class="at">y =</span> <span class="st">"Temperature (°C)"</span></span>
+<span id="cb131-15"><a href="#cb131-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb131-16"><a href="#cb131-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb131-17"><a href="#cb131-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">77</span>, <span class="at">by =</span> <span class="dv">5</span>)) <span class="sc">+</span></span>
+<span id="cb131-18"><a href="#cb131-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(</span>
+<span id="cb131-19"><a href="#cb131-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Time of Day"</span>,  </span>
+<span id="cb131-20"><a href="#cb131-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>),</span>
+<span id="cb131-21"><a href="#cb131-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0:00 am"</span>, <span class="st">"05:00 am"</span>, <span class="st">"10:00 am"</span>, <span class="st">"03:00 pm"</span>, <span class="st">"08:00 pm"</span>),</span>
+<span id="cb131-22"><a href="#cb131-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">22</span>),</span>
+<span id="cb131-23"><a href="#cb131-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb131-24"><a href="#cb131-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb131-25"><a href="#cb131-25" aria-hidden="true" tabindex="-1"></a>t2 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The following aesthetics were dropped during statistical transformation: colour
+ℹ This can happen when ggplot fails to infer the correct grouping structure in
+  the data.
+ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+  variable into a factor?</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-30-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb134"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb134-2"><a href="#cb134-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(t2, </span>
+<span id="cb134-3"><a href="#cb134-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"temperature_colonisation.png"</span>, </span>
+<span id="cb134-4"><a href="#cb134-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image
+`geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The following aesthetics were dropped during statistical transformation: colour
+ℹ This can happen when ggplot fails to infer the correct grouping structure in
+  the data.
+ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+  variable into a factor?</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb137"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="co"># light intensity plot</span></span>
+<span id="cb137-2"><a href="#cb137-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the data to include only rows where light_intensity &gt; 0</span></span>
+<span id="cb137-3"><a href="#cb137-3" aria-hidden="true" tabindex="-1"></a>filtered_data2 <span class="ot">&lt;-</span> colonisation_temp_light <span class="sc">%&gt;%</span> </span>
+<span id="cb137-4"><a href="#cb137-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(light_intensity_colonisation <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb137-5"><a href="#cb137-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb137-6"><a href="#cb137-6" aria-hidden="true" tabindex="-1"></a><span class="co"># add a small amount of random noise to the y-values</span></span>
+<span id="cb137-7"><a href="#cb137-7" aria-hidden="true" tabindex="-1"></a>filtered_data2 <span class="sc">$</span> light_intensity_colonisation <span class="ot">&lt;-</span> <span class="fu">jitter</span>(filtered_data2 <span class="sc">$</span> light_intensity_colonisation)</span>
+<span id="cb137-8"><a href="#cb137-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb137-9"><a href="#cb137-9" aria-hidden="true" tabindex="-1"></a>l2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb137-10"><a href="#cb137-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> filtered_data2,</span>
+<span id="cb137-11"><a href="#cb137-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">mapping =</span> <span class="fu">aes</span>( <span class="at">x =</span> day, <span class="at">y =</span> light_intensity_colonisation)) <span class="sc">+</span></span>
+<span id="cb137-12"><a href="#cb137-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span>  <span class="co"># Individual measurements with transparency</span></span>
+<span id="cb137-13"><a href="#cb137-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"#E69F00"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb137-14"><a href="#cb137-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb137-15"><a href="#cb137-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Light intensity profile during biofilm colonisation"</span>,</span>
+<span id="cb137-16"><a href="#cb137-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Day"</span>, <span class="at">y =</span> <span class="st">"Light intensity (lux)"</span></span>
+<span id="cb137-17"><a href="#cb137-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb137-18"><a href="#cb137-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb137-19"><a href="#cb137-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">77</span>, <span class="at">by =</span> <span class="dv">5</span>)) </span>
+<span id="cb137-20"><a href="#cb137-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb137-21"><a href="#cb137-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb137-22"><a href="#cb137-22" aria-hidden="true" tabindex="-1"></a>l2 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-30-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb139"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb139-1"><a href="#cb139-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb139-2"><a href="#cb139-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(l2, </span>
+<span id="cb139-3"><a href="#cb139-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"light_intensity_colonisation.png"</span>, </span>
+<span id="cb139-4"><a href="#cb139-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image
+`geom_smooth()` using method = 'gam' and formula = 'y ~ s(x, bs = "cs")'</code></pre>
+</div>
+</div>
+</section>
+<section id="feeding-assay" class="level2">
+<h2 class="anchored" data-anchor-id="feeding-assay">7.2 Feeding assay</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb141"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb141-1"><a href="#cb141-1" aria-hidden="true" tabindex="-1"></a><span class="co"># insert data</span></span>
+<span id="cb141-2"><a href="#cb141-2" aria-hidden="true" tabindex="-1"></a>feeding_assay_temp_light <span class="ot">&lt;-</span></span>
+<span id="cb141-3"><a href="#cb141-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read.table</span>(<span class="fu">file.path</span>(prj, <span class="st">"data</span><span class="sc">\\</span><span class="st">feeding_assay_temp_light.txt"</span>),</span>
+<span id="cb141-4"><a href="#cb141-4" aria-hidden="true" tabindex="-1"></a>             <span class="at">header =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb141-5"><a href="#cb141-5" aria-hidden="true" tabindex="-1"></a>             <span class="at">sep =</span> <span class="st">"</span><span class="sc">\t</span><span class="st">"</span></span>
+<span id="cb141-6"><a href="#cb141-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb141-7"><a href="#cb141-7" aria-hidden="true" tabindex="-1"></a>             </span>
+<span id="cb141-8"><a href="#cb141-8" aria-hidden="true" tabindex="-1"></a><span class="fu">View</span>(feeding_assay_temp_light)</span>
+<span id="cb141-9"><a href="#cb141-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb141-10"><a href="#cb141-10" aria-hidden="true" tabindex="-1"></a><span class="co"># average temperature</span></span>
+<span id="cb141-11"><a href="#cb141-11" aria-hidden="true" tabindex="-1"></a><span class="fu">mean</span>(feeding_assay_temp_light <span class="sc">$</span> temperature)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 13.27927</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb143"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb143-1"><a href="#cb143-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 13.27927 °C</span></span>
+<span id="cb143-2"><a href="#cb143-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb143-3"><a href="#cb143-3" aria-hidden="true" tabindex="-1"></a><span class="co"># mean light intensity</span></span>
+<span id="cb143-4"><a href="#cb143-4" aria-hidden="true" tabindex="-1"></a><span class="co"># filter only daytime</span></span>
+<span id="cb143-5"><a href="#cb143-5" aria-hidden="true" tabindex="-1"></a>average_light_intensity_feeding <span class="ot">&lt;-</span> feeding_assay_temp_light <span class="sc">%&gt;%</span></span>
+<span id="cb143-6"><a href="#cb143-6" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">filter</span>(light_intensity <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb143-7"><a href="#cb143-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">average_light_intensity_feeding =</span> <span class="fu">mean</span>(light_intensity))</span>
+<span id="cb143-8"><a href="#cb143-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb143-9"><a href="#cb143-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(average_light_intensity_feeding)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  average_light_intensity_feeding
+1                        330.3552</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb145"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb145-1"><a href="#cb145-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 330.3552 lux</span></span>
+<span id="cb145-2"><a href="#cb145-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-3"><a href="#cb145-3" aria-hidden="true" tabindex="-1"></a><span class="co"># temperature plot</span></span>
+<span id="cb145-4"><a href="#cb145-4" aria-hidden="true" tabindex="-1"></a><span class="co"># add a small amount of random noise to the y-values</span></span>
+<span id="cb145-5"><a href="#cb145-5" aria-hidden="true" tabindex="-1"></a>feeding_assay_temp_light <span class="sc">$</span> temperature <span class="ot">&lt;-</span> <span class="fu">jitter</span>(feeding_assay_temp_light <span class="sc">$</span> temperature)</span>
+<span id="cb145-6"><a href="#cb145-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-7"><a href="#cb145-7" aria-hidden="true" tabindex="-1"></a>t1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb145-8"><a href="#cb145-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> feeding_assay_temp_light,</span>
+<span id="cb145-9"><a href="#cb145-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">mapping =</span> <span class="fu">aes</span>( <span class="at">x =</span> day, <span class="at">y =</span> temperature, <span class="at">color =</span> time_of_day)) <span class="sc">+</span></span>
+<span id="cb145-10"><a href="#cb145-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span>  <span class="co"># Individual measurements with transparency</span></span>
+<span id="cb145-11"><a href="#cb145-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>() <span class="sc">+</span></span>
+<span id="cb145-12"><a href="#cb145-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb145-13"><a href="#cb145-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Temperature profile during 21-day feeding assay"</span>,</span>
+<span id="cb145-14"><a href="#cb145-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Day"</span>, <span class="at">y =</span> <span class="st">"Temperature (°C)"</span></span>
+<span id="cb145-15"><a href="#cb145-15" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb145-16"><a href="#cb145-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb145-17"><a href="#cb145-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">21</span>) <span class="sc">+</span></span>
+<span id="cb145-18"><a href="#cb145-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_color_continuous</span>(</span>
+<span id="cb145-19"><a href="#cb145-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Time of Day"</span>,  </span>
+<span id="cb145-20"><a href="#cb145-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">breaks =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>, <span class="dv">10</span>, <span class="dv">15</span>, <span class="dv">20</span>),</span>
+<span id="cb145-21"><a href="#cb145-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"0:00 am"</span>, <span class="st">"05:00 am"</span>, <span class="st">"10:00 am"</span>, <span class="st">"03:00 pm"</span>, <span class="st">"08:00 pm"</span>),</span>
+<span id="cb145-22"><a href="#cb145-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">limits =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">22</span>),</span>
+<span id="cb145-23"><a href="#cb145-23" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb145-24"><a href="#cb145-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb145-25"><a href="#cb145-25" aria-hidden="true" tabindex="-1"></a>t1 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The following aesthetics were dropped during statistical transformation: colour
+ℹ This can happen when ggplot fails to infer the correct grouping structure in
+  the data.
+ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+  variable into a factor?</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-31-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb148"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb148-1"><a href="#cb148-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb148-2"><a href="#cb148-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(t1, </span>
+<span id="cb148-3"><a href="#cb148-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"temperature_feeding_assay.png"</span>, </span>
+<span id="cb148-4"><a href="#cb148-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: The following aesthetics were dropped during statistical transformation: colour
+ℹ This can happen when ggplot fails to infer the correct grouping structure in
+  the data.
+ℹ Did you forget to specify a `group` aesthetic or to convert a numerical
+  variable into a factor?</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb151"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb151-1"><a href="#cb151-1" aria-hidden="true" tabindex="-1"></a><span class="co"># light intensity plot</span></span>
+<span id="cb151-2"><a href="#cb151-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter the data to include only rows where light_intensity &gt; 0</span></span>
+<span id="cb151-3"><a href="#cb151-3" aria-hidden="true" tabindex="-1"></a>filtered_data1 <span class="ot">&lt;-</span> feeding_assay_temp_light <span class="sc">%&gt;%</span> </span>
+<span id="cb151-4"><a href="#cb151-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(light_intensity <span class="sc">&gt;</span> <span class="dv">0</span>)</span>
+<span id="cb151-5"><a href="#cb151-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-6"><a href="#cb151-6" aria-hidden="true" tabindex="-1"></a><span class="co"># add a small amount of random noise to the y-values</span></span>
+<span id="cb151-7"><a href="#cb151-7" aria-hidden="true" tabindex="-1"></a>filtered_data1 <span class="sc">$</span> light_intensity <span class="ot">&lt;-</span> <span class="fu">jitter</span>(filtered_data1 <span class="sc">$</span> light_intensity)</span>
+<span id="cb151-8"><a href="#cb151-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-9"><a href="#cb151-9" aria-hidden="true" tabindex="-1"></a>l1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(</span>
+<span id="cb151-10"><a href="#cb151-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> filtered_data1,</span>
+<span id="cb151-11"><a href="#cb151-11" aria-hidden="true" tabindex="-1"></a>  <span class="at">mapping =</span> <span class="fu">aes</span>( <span class="at">x =</span> day, <span class="at">y =</span> light_intensity)) <span class="sc">+</span></span>
+<span id="cb151-12"><a href="#cb151-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">1</span>) <span class="sc">+</span>  <span class="co"># Individual measurements with transparency</span></span>
+<span id="cb151-13"><a href="#cb151-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">color =</span> <span class="st">"#E69F00"</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb151-14"><a href="#cb151-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb151-15"><a href="#cb151-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Light intensity profile during 21-day feeding assay"</span>,</span>
+<span id="cb151-16"><a href="#cb151-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Day"</span>, <span class="at">y =</span> <span class="st">"Light intensity (lux)"</span></span>
+<span id="cb151-17"><a href="#cb151-17" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb151-18"><a href="#cb151-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_bw</span>() <span class="sc">+</span></span>
+<span id="cb151-19"><a href="#cb151-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">breaks =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">21</span>) </span>
+<span id="cb151-20"><a href="#cb151-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-21"><a href="#cb151-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb151-22"><a href="#cb151-22" aria-hidden="true" tabindex="-1"></a>l1 </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="Bottom_up_effects_biofilm_grazer_files/figure-html/unnamed-chunk-31-2.png" class="img-fluid" width="672"></p>
+</div>
+<div class="sourceCode cell-code" id="cb153"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb153-1"><a href="#cb153-1" aria-hidden="true" tabindex="-1"></a><span class="co"># save the plot</span></span>
+<span id="cb153-2"><a href="#cb153-2" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(l1, </span>
+<span id="cb153-3"><a href="#cb153-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">filename =</span> <span class="st">"light_intensity_feeding_assay.png"</span>, </span>
+<span id="cb153-4"><a href="#cb153-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">path =</span> <span class="st">'C:</span><span class="sc">\\</span><span class="st">Users</span><span class="sc">\\</span><span class="st">Oster Test</span><span class="sc">\\</span><span class="st">OneDrive</span><span class="sc">\\</span><span class="st">Desktop</span><span class="sc">\\</span><span class="st">Promotion</span><span class="sc">\\</span><span class="st">Bioassays</span><span class="sc">\\</span><span class="st">Schneckenversuch 2023</span><span class="sc">\\</span><span class="st">Bottom_up_effects_biofilm_grazer</span><span class="sc">\\</span><span class="st">output'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Saving 7 x 5 in image
+`geom_smooth()` using method = 'loess' and formula = 'y ~ x'</code></pre>
+</div>
+</div>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

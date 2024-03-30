@@ -1,0 +1,1665 @@
+---
+title: "Bottom-up effects of an herbicide and an antibiotic on *Potamopyrgus antipodarum*"
+format: 
+  html:
+    toc: true
+    style: "floating"
+---
+
+Sophie Oster, Verena C. Schreiner, Tobias Schmitt, Patrick Fink, Markus Weitere, Ibrahim Arayoe, Ralf Schulz, Mirco Bundschuh
+
+R script written by Sophie Oster\
+checked by Verena C. Schreiner\
+RPTU Kaiserslautern-Landau\
+Fortstrasse 7\
+76829 Landau in der Pfalz\
+GERMANY
+
+Corresponding authors email address:\
+1) Sophie Oster: oster\@rptu.de\
+2) Mirco Bundschuh: mirco.bundschuh\@rptu.de
+
+This study was conducted with four treatments and three time points explanatory variables
+
+-   treatment (categorical)
+    -   uncontaminated control (negative control, NC)
+    -   herbicide propyzamide (Pro)
+    -   antibiotic ciprofloxacin (Cip)
+    -   mixture of propyzamide and ciprofloxacin (Mix)
+-   time.point (categorical)
+    -   week 1
+    -   week 2
+    -   week 3
+
+# 1 Packages in a reproducible environment
+
+```{r, message = FALSE, warning = FALSE}
+# renv::init() 
+# renv::snapshot()
+
+library(stats)
+library(rstatix)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(broom)
+library(dunn.test)
+library(patchwork)
+library(vegan)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(gridExtra)
+library(stringr)
+library(shades)
+library(ggpubr)
+library(base)
+library(ggokabeito)
+library(multcomp)
+library(car)
+library(asbio)
+library(plotrix)
+library(lmtest)
+library(boot)
+library(moments)
+library(lme4)
+library(DAAG)
+library(performance)
+library(emmeans)
+library(purrr)
+library(DT)
+```
+
+# 2 Set working directory
+
+```{r}
+prj <- getwd()
+setwd(prj)
+```
+
+# 3 Biofilm endpoints
+
+## Chlorophyll and ash free dry weight of biofilm after colonisation + chronic contamination of 14 days
+
+-   Unit chlorophyll a, b & c: µg chlorophyll / cm²
+
+-   Unit afdw after colonisation: mg / cm²
+
+```{r}
+# insert data
+biofilm_endpoints <-
+  read.table(file.path(prj, "data\\biofilm_endpoints.txt"),
+             header = TRUE, sep = "\t")
+
+View(biofilm_endpoints)
+```
+
+## 3.1 Chlorophyll
+
+#### Caclulate mean chla, chlb + chlc of each treatment, to compare in manuscript
+
+```{r, message = FALSE, warning = FALSE}
+#chl a
+mean_chlorophyll_a <- biofilm_endpoints %>%
+  group_by(week, treatment) %>%
+  summarize(mean_chlorophyll_a = mean(chla))
+
+print(mean_chlorophyll_a)
+
+# chl b
+mean_chlorophyll_b <- biofilm_endpoints %>%
+  group_by(week, treatment) %>%
+  summarize(mean_chlorophyll_b = mean(chlb))
+
+print(mean_chlorophyll_b)
+
+# chl c
+mean_chlorophyll_c <- biofilm_endpoints %>%
+  group_by(week, treatment) %>%
+  summarize(mean_chlorophyll_c = mean(chlc))
+
+print(mean_chlorophyll_c)
+```
+
+#### Histogram chlorophyll a, b + c
+
+```{r}
+# chl a
+a <- hist(biofilm_endpoints $ chla) 
+skewness(biofilm_endpoints $ chla, na.rm = TRUE) 
+
+# chl b
+b <- hist(biofilm_endpoints $ chlb) 
+skewness(biofilm_endpoints $ chlb, na.rm = TRUE) 
+
+# chl c
+c <- hist(biofilm_endpoints $ chlc) 
+skewness(biofilm_endpoints $ chlc, na.rm = TRUE) 
+```
+
+All not normal distributed and right skewed -\> log10 transformation in model
+
+#### Model chla
+
+Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.
+
+```{r}
+# week as factor
+biofilm_endpoints $ week <- factor(biofilm_endpoints $ week)
+
+model_chla <- lm(log10(chla) ~ week + treatment + week:treatment, data = biofilm_endpoints)
+
+plot(model_chla) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chla)) # normal distribution assumed
+
+drop1(model_chla, test = 'F')
+
+```
+
+Interaction week:treatment significant (p=0.02965). Now check differences between treatments within weeks.
+
+```{r}
+chla_inter <- lsmeans(model_chla, ~ treatment | week )
+chla_inter_dunn1 <- contrast(chla_inter, 'pairwise')
+(chla_inter_dunn_sum1 <- summary(chla_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+No significant differences of the treatments within week 1 and 3. Only NC-Mix significant in week 2 (p=0.003).
+
+Now check for differences between weeks.
+
+```{r}
+anova(model_chla)
+# week variable highly significant (p=7.689e-08)
+
+chla_inter2 <- lsmeans(model_chla, ~ week |  treatment)
+chla_inter_dunn2 <- contrast(chla_inter2, 'pairwise')
+(chla_inter_dunn_sum2 <- summary(chla_inter_dunn2, infer = TRUE, adjust = 'mvt'))
+
+```
+
+-   NC\
+    -   Week 1 & 2 similar\
+    -   Week 2 & 3 similar\
+    -   difference between week 1 & 3
+-   Cip\
+    -   Week 1 & 2 similar\
+    -   Week 1 & 3 similar\
+    -   difference between week 2 & 3
+-   Pro\
+    -   Week 1 & 2 similar\
+    -   differences between week 1 & 3 and 2 & 3
+-   Mix\
+    -   all weeks different
+
+Week 1 & 2 quite similar, expect of Mix treatment. Week 3 quite different to week 1 & 2 despite of Cip tretment.
+
+#### Model chlb
+
+```{r}
+model_chlb <- lm(log10(chlb) ~ week + treatment + week:treatment, data = biofilm_endpoints)
+
+plot(model_chlb) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chlb)) # normal distribution assumed
+
+drop1(model_chlb, test = 'F')
+```
+
+No significant differences. Still check for differences between treatments.
+
+```{r}
+chlb_inter <- lsmeans(model_chlb, ~ treatment | week )
+chlb_inter_dunn1 <- contrast(chlb_inter, 'pairwise')
+(chlb_inter_dunn_sum1 <- summary(chlb_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+No differences between treatments for chlb.
+
+Now check for differences between weeks.
+
+```{r}
+anova(model_chlb)
+# week variable highly significant (p=5.259e-05)
+
+chlb_inter2 <- lsmeans(model_chlb, ~ week |  treatment)
+chlb_inter_dunn3 <- contrast(chlb_inter2, 'pairwise')
+(chlb_inter_dunn_sum3 <- summary(chlb_inter_dunn3, infer = TRUE, adjust = 'mvt'))
+```
+
+Similar results/trends as for chla. Week 1 & 2 quite similar; differences in:
+
+-   Pro treatment: week 2 & 3
+
+-   Mix treatment: week 1 & 2; 2 & 3
+
+#### Model chlc
+
+```{r}
+model_chlc <- lm(log10(chlc) ~ week + treatment + week:treatment, data = biofilm_endpoints)
+
+plot(model_chlc) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chlc)) # normal distribution assumed
+
+drop1(model_chlc, test = 'F')
+```
+
+No significant differences. Still check for differences between treatments.
+
+```{r}
+chlc_inter <- lsmeans(model_chlc, ~ treatment | week )
+chlc_inter_dunn1 <- contrast(chlc_inter, 'pairwise')
+(chlc_inter_dunn_sum1 <- summary(chlc_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+No differences between treatments for chlorophyll c.
+
+#### Boxplots chlorophyll a, b + c
+
+```{r}
+# chlorophyll a
+chla <- ggplot(data = biofilm_endpoints, 
+               mapping = aes(x = factor(week), 
+                             y = chla, 
+                             fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , y = expression("Chlorophyll a (µg/cm"^"2"*")"), fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3"))
+
+chla 
+
+# save the plot
+ggsave(chla, 
+       filename = "chla.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+# chlorophyll b
+chlb <- ggplot(data = biofilm_endpoints, 
+               mapping = aes(x = factor(week), 
+                             y = chlb, 
+                             fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , y = expression("Chlorophyll b (µg/cm"^"2"*")"), fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3"))
+
+chlb 
+
+# save the plot
+ggsave(chlb, 
+       filename = "chlb.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+# chlorophyll c
+chlc <- ggplot(data = biofilm_endpoints, 
+               mapping = aes(x = factor(week), 
+                             y = chlc, 
+                             fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , y = expression("Chlorophyll c (µg/cm"^"2"*")"), fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3"))
+
+chlc 
+
+# save the plot
+ggsave(chlc, 
+       filename = "chlc.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+```
+
+## 3.2 AFDW after colonisation
+
+#### Calculate mean afdw of each treatment for manuscript.
+
+```{r}
+mean_afdw_after_colonisation <- biofilm_endpoints %>%
+  group_by(week, treatment) %>%
+  summarize(mean_afdw_after_colonisation = mean(afdw_after_colonisation))
+
+print(mean_afdw_after_colonisation)
+```
+
+#### Histogram afdw after colonisation
+
+```{r}
+hist(biofilm_endpoints $ afdw_after_colonisation) 
+skewness(biofilm_endpoints $ afdw_after_colonisation, na.rm = TRUE) 
+```
+
+Not normal distributed and right skewed. Log10 transformation for model
+
+#### Model afdw after colonisation
+
+Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.
+
+```{r}
+model_afdw_after_colonisation <- lm(log10(afdw_after_colonisation) ~ week + treatment + week:treatment, data = biofilm_endpoints)
+
+plot(model_afdw_after_colonisation) # not perfectly even distributed, but ok
+
+qreference(residuals(model_afdw_after_colonisation)) # normal distribution assumed
+
+drop1(model_afdw_after_colonisation, test = 'F')
+```
+
+Significant difference for week:treatment (p=0.009063). Check differences between treatments within weeks.
+
+```{r}
+afdw_after_colonisation_inter <- lsmeans(model_afdw_after_colonisation, ~ treatment | week )
+
+afdw_after_colonisation_inter_dunn1 <- contrast(afdw_after_colonisation_inter, 'pairwise')
+
+(afdw_after_colonisation_inter_dunn_sum1 <- summary(afdw_after_colonisation_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+Significant differences between week 2 Mix-NC and NC-Pro; and week 3 Cip-NC and Cip-Pro.
+
+Now check for differences within weeks.
+
+```{r}
+anova(model_afdw_after_colonisation)
+# week variable highly significant (p=2.541e-07)
+
+afdw_after_colonisation_inter2 <- lsmeans(model_afdw_after_colonisation, ~ week |  treatment)
+
+afdw_after_colonisation_inter_dunn2 <- contrast(afdw_after_colonisation_inter2, 'pairwise')
+
+(afdw_after_colonisation_inter_dunn_sum2 <- summary(afdw_after_colonisation_inter_dunn2, infer = TRUE, adjust = 'mvt'))
+```
+
+-   Cip
+
+    -   Difference between week 1 and 3
+
+-   Mix
+
+    -   Week 1 & 2 similar; week 1 & 3 and 2 & 3 different.
+
+-   NC
+
+    -   all weeks different from each other
+
+-   Pro
+
+    -   Week 1 & 2 similar; week 1 & 3 and 2 & 3 different.
+
+#### Boxplot afdw after colonisation
+
+```{r}
+afdw_after_colonisation_boxplot <- ggplot(data = biofilm_endpoints, 
+               mapping = aes(x = factor(week), 
+                             y = afdw_after_colonisation, 
+                             fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , y = expression("Ash free dry weight (mg/cm"^"2"*")"), fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3"))
+
+afdw_after_colonisation_boxplot 
+
+# @ VS: Hier auch log Skala, um die Daten besser zu sehen?
+
+# save the plot
+ggsave(afdw_after_colonisation_boxplot, 
+       filename = "afdw_after_colonisation.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+```
+
+# 4 Feeding rate snails and ash free dry weight after feeding
+
+-   NA's due to missing snail and zero values of feeding rate due to no measurable feeding in respective week
+
+-   Unit feeding rate: µg / day and unit ash free dry weight (afdw): mg / cm²
+
+-   Column "used_for_FA_analysis" highlights the ten snails used for FA analyses for each treatment
+
+```{r}
+# insert data
+afdw_feeding_rate <-
+  read.table(file.path(prj, "data\\feeding_assay_afdw_feeding_rate.txt"),
+             header = TRUE, sep = "\t")
+
+View(afdw_feeding_rate)
+```
+
+## 4.1 Feeding rate snails
+
+#### Calculate mean feeding rate for each week
+
+```{r}
+mean_feeding_rate <- afdw_feeding_rate %>%
+  group_by(week, treatment) %>%
+  summarize(mean_feeding_rate = mean(feeding_rate, na.rm = TRUE))
+
+print(mean_feeding_rate)
+```
+
+#### Histogram feeding rate
+
+```{r}
+hist(afdw_feeding_rate $ feeding_rate) 
+skewness(afdw_feeding_rate $ feeding_rate, na.rm = TRUE) 
+```
+
+Feeding rate variable not normal distributed and right skewed -\> log10 transformation for model
+
+#### Model feeding rate
+
+```{r}
+# week and beaker as factor
+afdw_feeding_rate $ week <- factor(afdw_feeding_rate $ week)
+
+afdw_feeding_rate $ beaker <- factor(afdw_feeding_rate $ beaker)
+
+# @ VS: muss die explanatory variable "treatment" auch ein faktor sein? (Frage gilt auch für alle anderen Modelle)
+
+# log10 transformation; adding 0.001 to variable for samples with feeding rate = 0
+afdw_feeding_rate <- afdw_feeding_rate %>%
+  mutate(log_feeding_rate = log10(feeding_rate + 0.001))
+
+# response variable: log_feeding_rate
+# fixed effects: week + treatment + week:treatment
+# random effect with constant intercept: (1|beaker)
+# first remove NAs
+afdw_feeding_rate <- na.omit(afdw_feeding_rate)
+
+feeding_rate_lmer <- lmer(log_feeding_rate ~ week + treatment + week:treatment + (1|beaker), data = afdw_feeding_rate)
+```
+
+Warning "boundary (singular) fit" because random effects of beaker are very small.
+
+```{r}
+isSingular(feeding_rate_lmer)
+# isSingular = TRUE
+
+# look at fitted model
+ranef(feeding_rate_lmer)
+```
+
+No systematic effect by "beaker", so simplify model:
+
+```{r}
+model_feeding_rate <- lm(log_feeding_rate ~ week + treatment + week:treatment, data = afdw_feeding_rate)
+
+plot(model_feeding_rate) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_feeding_rate)) # normality not perfect, but ok
+
+drop1(model_feeding_rate, test = 'Chisq')
+# interaction of timepoint (week) and treatment highly significant
+# now check at which timepoints is a difference between treatments
+anova(model_feeding_rate)
+
+# conduct Tukey HSD-test for pairwise comparisons
+feeding_rate_tukey <- lsmeans(model_feeding_rate, ~ treatment | week)
+feeding_rate_tukey
+
+feeding_rate_tukey1 <- contrast(feeding_rate_tukey, 'pairwise')
+feeding_rate_tukey1
+
+feeding_rate_summary <- summary(feeding_rate_tukey1, infer = TRUE, adjust = 'mvt')
+feeding_rate_summary
+
+```
+
+Treatments within week 2 & 3 similar. Within week 2 differences between Cip-Pro and Mix-Pro. Now check differences between weeks.
+
+```{r}
+feeding_rate_inter1 <- lsmeans(model_feeding_rate, ~ week |  treatment)
+
+feeding_rate_inter_dunn1 <- contrast(feeding_rate_inter1, 'pairwise')
+
+(feeding_rate_inter_dunn_sum1 <- summary(feeding_rate_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+Weeks for all treatments similiar, only difference for treatment Pro week 1 & 2 and 1 & 3.
+
+#### Boxplot feeding rate after 7/14/21 days
+
+```{r}
+afdw_after_feeding_boxplot <- ggplot(data = afdw_feeding_rate, 
+       mapping = aes(x = factor(week), 
+                     y = afdw, 
+                     fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3")) +
+  scale_y_continuous(trans = "log10") +
+  labs(y = expression("Feeding rate (µg/day)" ~ log[10]))
+
+afdw_after_feeding_boxplot
+
+# save the plot
+ggsave(afdw_after_feeding_boxplot, 
+       filename = "afdw_after_feeding_boxplot.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+```
+
+## 4.2 AFDW after feeding
+
+#### Calculate mean of afdw after feeding for each week
+
+```{r}
+mean_afdw_after_feeding <- afdw_feeding_rate %>%
+  group_by(week, treatment) %>%
+  summarize(mean_afdw_after_feeding = mean(afdw))
+
+print(mean_afdw_after_feeding)
+```
+
+#### Histogram afdw after feeding
+
+```{r}
+hist(afdw_feeding_rate $ afdw) 
+skewness(afdw_feeding_rate $ afdw, na.rm = TRUE) 
+```
+
+AFDW after feeding not normal distributed. Log10 transformation for model.
+
+#### Model afdw after feeding
+
+```{r}
+# log10 transformation; adding 0.001 
+afdw_feeding_rate <- afdw_feeding_rate %>%
+  mutate(log_afdw = log10(afdw + 0.001))
+# @ VS: Die Addition von 0.001 auch bei afdw machen, obwohl es keine 0-Werte gibt?
+
+# response variable: log_afdw
+# fixed effects: week + treatment + week:treatment
+# random effect with constant intercept: (1|beaker)
+afdw_after_feeding_lmer <- lmer(log_afdw ~ week + treatment + week:treatment + (1|beaker), data = afdw_feeding_rate)
+
+afdw_after_feeding_lmer %>% r2
+# Conditional R2: explained portion of the variance of the fixed and random effect together
+# Marginal R2: declared share of the variance of the fixed components alone
+
+plot(afdw_after_feeding_lmer) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(afdw_after_feeding_lmer)) # normality
+
+drop1(afdw_after_feeding_lmer, test = 'Chisq')
+# interaction of timepoint (week) and treatment highly significant
+# now check at which timepoints is a difference between treatments
+anova(afdw_after_feeding_lmer)
+
+# conduct Tukey HSD-test for pairwise comparisons
+afdw_tukey <- lsmeans(afdw_after_feeding_lmer, ~ treatment | week)
+afdw_tukey
+
+afdw_tukey1 <- contrast(afdw_tukey, 'pairwise')
+afdw_tukey
+
+afdw_summary <- summary(afdw_tukey1, infer = TRUE, adjust = 'mvt')
+afdw_summary
+```
+
+Here treatments quite different within weeks. Compare weeks:
+
+```{r}
+afdw_after_feeding_inter1 <- lsmeans(afdw_after_feeding_lmer, ~ week |  treatment)
+
+afdw_after_feeding_dunn1 <- contrast(afdw_after_feeding_inter1, 'pairwise')
+
+(afdw_after_feeding_dunn_sum1 <- summary(afdw_after_feeding_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+Week 1 & 2 for treatments Mix & Pro similar. Everything else shows differences.
+
+#### Boxplot afdw after feeding of 7/14/21 days
+
+```{r}
+afdw_after_feeding_boxplot <- ggplot(data = afdw_feeding_rate, 
+       mapping = aes(x = factor(week), 
+                     y = afdw, 
+                     fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , fill = "Treatment") +
+  scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3")) +
+  scale_y_continuous(trans = "log10") +
+  labs(y = expression("AFDW (mg/cm"^"2"*")" ~ log[10]))
+
+afdw_after_feeding_boxplot
+
+# save the plot
+ggsave(afdw_after_feeding_boxplot, 
+       filename = "afdw_after_feeding_boxplot.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+```
+
+# 5 Dryweight and growth snails
+
+\@ VS: Ich hatte 20 Schnecken aus der Zucht eingewogen, um das Wachstum zu berechnen. Ich habe 3 Schnecken verloren, und die restlichen 7 (in der alten Tabelle, die du gesehen hast, waren es 10 Culture Schnecken) in der neuen Tabelle ergänzt. Die Schnecken wurden alle trocken gewogen. Also das ist das Gewicht nach Gefriertrocknung und ohne Schale, die habe ich bei allen Schnecken immer entfernt, da da teilweise Biofilm drauf gewachsen ist. Ich würde den Endpunkt an sich gerne drinlassen, du hast aber natürlich Recht, dass die Standardabweichung sehr groß ist, aber das stelle ich in den Boxplots ja dar.. was denkst du? Du hast da mehr Erfahrung, wenn du davon abrätst, dann nehme ich ihn raus. Ich habe die Schneckenzucht auch noch, also könnte ich noch mehr Culture snails einwiegen? Der Versuch aber dann 1 Jahr her.. Wahrscheinlich nicht mehr vergleichbar?
+
+```{r}
+# insert data
+dryweight_snails <-
+  read.table(file.path(prj, "data\\dryweight_snails.txt"),
+             header = TRUE, sep = "\t")
+
+View(dryweight_snails)
+# 3 snails from the 20 baseline (culture) snails were lost during the analyses.
+```
+
+#### Calculate mean dryweight of all treatments and the culture snails
+
+```{r}
+mean_dryweight_snails <- dryweight_snails %>%
+              group_by(treatment) %>%
+              summarize(mean_dryweight_snails = mean(dryweight_mg))
+
+print(mean_dryweight_snails)
+```
+
+Snails from feeding assay (fed with biofilm) heavier than snails from culture (fed with Tetraphyll flakes).
+
+Calculate growth:
+
+```{r}
+growth_snails <- dryweight_snails %>%
+  dplyr::mutate(growth_µg_dw_per_day = ((dryweight_mg - median(dryweight_mg[treatment == "Culture"])) / 7) * 1000) 
+# multiply by 1000 to obtain a growth unit of µg dryweight per day
+
+# calculate the growth in percentage in comparison to culture snails
+percental_growth <- growth_snails %>%
+  group_by(treatment) %>%
+  summarize(mean_dryweight = mean(dryweight_mg)) %>%
+  mutate(percental_growth = (mean_dryweight / mean_dryweight[treatment == "Culture"]) * 100 - 100)
+
+percental_growth
+
+```
+
+#### Histogram snail growth
+
+```{r}
+# filter culture snails
+filtered_growth <- growth_snails %>%
+  filter(!treatment %in% c("Culture"))
+
+hist(filtered_growth $ growth_µg_dw_per_day) 
+skewness(filtered_growth $ growth_µg_dw_per_day, na.rm = TRUE) 
+shapiro.test(filtered_growth $ growth_µg_dw_per_day)
+```
+
+Growth normal distributed.
+
+#### Model growth snails
+
+```{r}
+model_growth_snails <- lm(growth_µg_dw_per_day ~ treatment, data = filtered_growth)
+
+plot(model_growth_snails) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_growth_snails)) # normal distribution
+
+anova(model_growth_snails)
+```
+
+Explanatory variable "treatment" highly significant. Now check differences between treatments:
+
+```{r}
+growth_snails_inter <- lsmeans(model_growth_snails, ~ treatment)
+
+growth_snails_inter_dunn1 <- contrast(growth_snails_inter, 'pairwise')
+
+growth_snails_inter_dunn_sum1 <- summary(growth_snails_inter_dunn1, infer = TRUE, adjust = 'mvt')
+
+growth_snails_inter_dunn1
+
+```
+
+-   Significant difference between growth of Cip and Mix snails compared to NC; almost significant difference (p=0.0564) between Pro treatment and NC
+
+#### Boxplot growth snails
+
+```{r}
+# plot
+growth_snails_boxplot <- ggplot(data = filtered_growth, 
+                                mapping = aes(x = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")), 
+                                              y = growth_µg_dw_per_day, 
+                                              fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442"),
+                    breaks = c("NC", "Cip", "Pro", "Mix")) + 
+  scale_color_okabe_ito() + 
+  theme_bw() +
+  labs(x = NULL , y = "Growth (µg dryweight / day)", fill = "Treatment") +
+  scale_x_discrete(labels = c("NC", "Cip", "Pro", "Mix")) +
+  labs(title = expression(paste("Growth of ", italic("Potamopyrgus antipodarum"), " after 21-day feeding assay"))) +
+  annotate("text", x = 1.5, y = max(filtered_growth$growth_µg_dw_per_day) + 2.5, 
+           label = "*", size = 6) +
+  geom_segment(aes(x = 1, xend = 2, y = max(growth_µg_dw_per_day) + 2, yend = max(growth_µg_dw_per_day) + 2),
+               lineend = "round", linewidth = 0.8) +
+  annotate("text", x = 2.5, y = max(filtered_growth$growth_µg_dw_per_day) + 6, 
+           label = "**", size = 6) +
+  geom_segment(aes(x = 1, xend = 4, y = max(growth_µg_dw_per_day) + 5, yend = max(growth_µg_dw_per_day) + 5),
+               lineend = "round", linewidth = 0.8) 
+
+
+growth_snails_boxplot
+
+# save the plot
+ggsave(growth_snails_boxplot, 
+       filename = "growth_snails_boxplot.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+```
+
+# 6 Fatty acid composition snails
+
+```{r}
+# insert data
+FA_Snails_absolute <-
+  read.table(file.path(prj, "data\\FA_Snails_absolute.txt"),
+             header = TRUE, sep = "\t")
+
+View(FA_Snails_absolute)
+
+# remove NAs, measurement < LOQ
+FA_Snails_absolute <- na.omit(FA_Snails_absolute)
+```
+
+In FA_Snails_absolute.txt: Snail 13, 14 and 29 (S_13, S_14, S_29) removed due to strongly deviating measured values compared to other snails.
+
+Following fatty acids were not considered for FA content in snails due to too less values: C10:0, C11:0, C14:1, C15:1, C17:1, C20:3(n-3), C20:3(n-6), C21:0, C22:0 and C24:1.
+
+Therefore, delete rows with respective fatty acids:
+
+```{r}
+FA_Snails_absolute <- FA_Snails_absolute %>%
+  filter(!fa %in% c("C10:0", "C11:0", "C14:1", "C15:1", "C17:1", "C20:3(n-3)", "C20:3(n-6)", "C21:0", "C22:0", "C24:1"))
+```
+
+#### Histogram FA Snails
+
+```{r}
+hist(FA_Snails_absolute $ fa_conc) 
+skewness(FA_Snails_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Snails_absolute $ fa_conc)
+```
+
+Fatty acid concentration not normal distributed and right skewed.
+
+#### Model FA Snails
+
+```{r}
+# log10 transformation; adding 0.001 
+FA_Snails_absolute <- FA_Snails_absolute %>%
+  mutate(log_fa_conc = log10(fa_conc + 0.001))
+
+# response variable: log_fa_conc
+# fixed effects: treatment + fa + treatment:fa
+# random effect with constant intercept: (1|replicate); first change to factor
+FA_Snails_absolute $ replicate <- as.factor(FA_Snails_absolute $ replicate)
+
+FA_snails_lmer <- lmer(log_fa_conc ~ treatment + fa + treatment:fa + (1|replicate), data = FA_Snails_absolute)
+```
+
+```{r}
+plot(FA_snails_lmer) 
+# @ VS: das sieht nicht wirklich gleichmäßig verteilt aus, oder? Was würdest du jetzt machen?
+
+qreference(residuals(FA_snails_lmer)) 
+# @ VS: das sieht schon wieder okay aus 
+
+anova(FA_snails_lmer)
+```
+
+```{r}
+FA_snails_inter <- lsmeans(FA_snails_lmer, ~ treatment | fa)
+FA_snails_inter
+
+FA_snails_inter_dunn1 <- contrast(FA_snails_inter, 'pairwise')
+
+FA_snails_inter_dunn_sum1 <- summary(FA_snails_inter_dunn1, infer = TRUE, adjust = 'mvt')
+
+FA_snails_inter_dunn_sum1
+
+```
+
+#### Total SAFA, MUFA & PUFA content
+
+1\) Total SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; sa = "snail absolute"
+# total SAFA content
+# filter saturated fatty acids in new table
+SAFA_sa <- FA_Snails_absolute %>%
+    filter(fa %in% c("C08:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C24:0"))
+
+# calculate the total SAFA content per snail
+total_SAFA_per_snail <- SAFA_sa %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_SAFA = sum(fa_conc))
+print(total_SAFA_per_snail)
+
+# mean
+mean_SAFA_sa <- total_SAFA_per_snail %>%
+  group_by(treatment) %>%
+  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
+print(mean_SAFA_sa)
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_sa <- FA_Snails_absolute %>%
+  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
+
+# total MUFA content per snail
+total_MUFA_per_snail <- MUFA_sa %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_MUFA = sum(fa_conc))
+print(total_MUFA_per_snail)
+
+# mean
+mean_MUFA_sa <- total_MUFA_per_snail %>%
+  group_by(treatment) %>%
+  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
+print(mean_MUFA_sa)
+```
+
+3\) Total PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_sa <- FA_Snails_absolute %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
+  
+# calculate total PUFA content per snail
+total_PUFA_per_snail <- PUFA_sa %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_PUFA = sum(fa_conc))
+print(total_PUFA_per_snail)
+
+# mean
+mean_PUFA_sa <- total_PUFA_per_snail %>%
+  group_by(treatment) %>%
+  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
+print(mean_PUFA_sa)
+```
+
+4\) Total FA per snail
+
+```{r}
+# total FA 
+total_FA_snails <- bind_rows(total_SAFA_per_snail, total_MUFA_per_snail, total_PUFA_per_snail)
+
+total_FA_per_snail <- total_FA_snails %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
+print(total_FA_per_snail)
+
+# mean
+mean_total_FA_sa <- total_FA_per_snail %>%
+  group_by(treatment) %>%
+  summarize(mean_FA = mean(sum_FA, na.rm = TRUE))
+print(mean_total_FA_sa)
+```
+
+#### NMDS FA snails
+
+Change table to wide format:
+
+```{r}
+# change table to wide format
+FA_Snails_absolute_filtered <- FA_Snails_absolute %>%
+   dplyr::select(-log_fa_conc)
+
+
+FA_Snails_absolute_wide <-
+  pivot_wider(FA_Snails_absolute_filtered,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation, to reduce discriminatory power of dominant fa groups
+FA_Snails_absolute_wide <- sqrt(FA_Snails_absolute_wide[, -c(1, 2)])
+View(FA_Snails_absolute_wide)
+
+#set NA to 0 
+FA_Snails_absolute_wide[is.na(FA_Snails_absolute_wide)] <- 0
+View(FA_Snails_absolute_wide)
+```
+
+Perform metaMDS:
+
+```{r}
+NMDS_Snails_absolute <-
+  metaMDS(
+    FA_Snails_absolute_wide,
+    autotransform = FALSE,
+    k = 2 ,
+    distance = "bray",
+    na.rm = TRUE
+  )
+
+NMDS_Snails_absolute$stress # stress = 0.098
+```
+
+Create NMDS:
+
+```{r}
+#add treatment column
+colnames(FA_Snails_absolute_wide) <-
+  c(
+    "C08:0",
+    "C12:0",
+    "C13:0",
+    "C14:0",
+    "C15:0",
+    "C16:0",
+    "C16:1",
+    "C17:0",
+    "C18:0",
+    "C18:1",
+    "C18:2(n-6t)",
+    "C18:2(n-6c)",
+    "C18:3(n-6)",
+    "C18:3(n-3)",
+    "C18:4(n-3)",
+    "C20:0",
+    "C20:1",
+    "C20:2(n-6)",
+    "C20:4(n-6)",
+    "C20:5(n-3)",
+    "C22:1",
+    "C22:2",
+    "C22:5(n-3)",
+    "C22:6(n-3)",
+    "C24:0"
+  )
+
+# separation in SAFA; MUFA & PUFA to build vectors in NMDS
+# "sa" = snail absolute
+FA_variables.SAFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide,
+      select = c(
+        "C08:0",
+        "C12:0",
+        "C13:0",
+        "C14:0",
+        "C15:0",
+        "C16:0",
+        "C17:0",
+        "C18:0",
+        "C20:0",
+        "C24:0"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.MUFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide,
+      select = c(
+        "C16:1",
+        "C18:1",
+        "C20:1",
+        "C22:1"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.PUFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide,
+      select = c(
+        "C18:2(n-6t)",
+        "C18:2(n-6c)",
+        "C18:3(n-6)",
+        "C18:3(n-3)",
+        "C18:4(n-3)",
+        "C20:2(n-6)",
+        "C20:4(n-6)",
+        "C20:5(n-3)",
+        "C22:5(n-3)",
+        "C22:6(n-3)"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+#data frame
+data.scores_snail_absolute = as.data.frame(scores(NMDS_Snails_absolute)$sites)
+
+Treatments <-
+  FA_Snails_absolute $ treatment[FA_Snails_absolute $ fa == "C16:0"]
+
+data.scores_snail_absolute$treatment = Treatments
+
+# vectors for SAFA, MUFA and PUFA
+SAFAs_coord_cont_sa = as.data.frame(scores(FA_variables.SAFAs_sa, "vectors")) * ordiArrowMul(FA_variables.SAFAs_sa)
+MUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.MUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.MUFAs_sa)
+PUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.PUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.PUFAs_sa)
+
+
+#plot
+absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(
+    aes(shape = treatment, color = treatment),
+    size = 5,
+    alpha = 1,
+    stroke = 2,
+    show.legend = TRUE
+  ) +
+  scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) +
+  stat_conf_ellipse(
+    aes(colour = treatment, fill = treatment),
+    alpha = 0.3,
+    geom = "polygon",
+    show.legend = FALSE
+  ) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) +  
+  scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) + 
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1 * 0.1, yend = NMDS2 * 0.1), 
+               data = PUFAs_coord_cont_sa, linewidth =1, alpha = 0.5, colour = "black") +
+  geom_text_repel(
+    data = PUFAs_coord_cont_sa, 
+    aes(x = NMDS1 * 0.1, y = NMDS2 * 0.1, label = row.names(PUFAs_coord_cont_sa)), 
+    colour = "grey30",
+    size = 3,
+    segment.color = "black",  # Color of the segment connecting the label to its point
+    segment.size = 0.5,  # Size of the segment connecting the label to its point
+    direction = "both",  # Allow labels to repel in both directions
+    force = 2.5,  # Strength of the repulsion
+    box.padding = unit(0.15, "lines")  # Padding around labels
+  ) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    panel.background = element_blank(),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    legend.key = element_blank(),
+    legend.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    legend.text = element_text(size = 10, colour = "grey30"),
+    plot.margin = margin(
+      t = 0.2,
+      b = 0.2,
+      l = 0.2,
+      r = 0.2,
+      unit = "cm"
+    ),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) #+
+  #annotate(
+  #  "text",
+  #  x = -0.23,
+  #  y = -0.19,
+  #  label = paste("stress:", NMDS_Snails_absolute$stress %>% round(2)),
+  #  size = 3.5
+  #)
+
+
+absol_Snail
+# position of FA names manually adjusted in vector graphic
+
+# save the plot
+ggsave(absol_Snail, 
+       filename = "NMDS_snails_absolute.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+```
+
+# 7 Fatty acid composition biofilm
+
+```{r}
+# insert data
+FA_Biofilm_absolute <-
+  read.table(file.path(prj, "data\\FA_Biofilm_absolute.txt"),
+             header = TRUE, sep = "\t")
+
+View(FA_Biofilm_absolute)
+
+# remove NAs, measurement < LOQ
+FA_Biofilm_absolute <- na.omit(FA_Biofilm_absolute)
+```
+
+Following fatty acids were not considered for biofilm analysis due to too less values: C11:0, C14:1, C15:1, C21:0, C22:1 and C24:1.
+
+Therefore, delete rows with respective fatty acids:
+
+```{r}
+FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
+  filter(!fa %in% c("C11:0", "C14:1", "C15:1", "C21:0", "C22:1", "C24:1"))
+```
+
+#### Histogram FA Biofilm
+
+```{r}
+hist(FA_Biofilm_absolute $ fa_conc) 
+skewness(FA_Biofilm_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Biofilm_absolute $ fa_conc)
+```
+
+Fatty acid concentration not normal distributed and right skewed.
+
+#### Model FA Biofilm
+
+```{r}
+
+```
+
+#### Total SAFA, MUFA & PUFA content
+
+1\) Total SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; ba = "biofilm absolute"
+# total SAFA content
+# filter saturated fatty acids in new table
+SAFA_ba <- FA_Biofilm_absolute %>%
+    filter(fa %in% c("C08:0", "C10:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C22:0", "C24:0"))
+
+# calculate the total SAFA content per replicate
+total_SAFA_per_replicate <- SAFA_ba %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_SAFA = sum(fa_conc))
+print(total_SAFA_per_replicate)
+
+# mean
+mean_SAFA_ba <- total_SAFA_per_replicate %>%
+  group_by(treatment) %>%
+  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
+print(mean_SAFA_ba)
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_ba <- FA_Biofilm_absolute %>%
+  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1"))
+
+# total MUFA content per replicate
+total_MUFA_per_replicate <- MUFA_ba %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_MUFA = sum(fa_conc))
+print(total_MUFA_per_replicate)
+
+# mean
+mean_MUFA_ba <- total_MUFA_per_replicate %>%
+  group_by(treatment) %>%
+  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
+print(mean_MUFA_ba)
+```
+
+3\) Total PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_ba <- FA_Biofilm_absolute %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:3(n-3)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
+  
+# calculate total PUFA content per replicate
+total_PUFA_per_replicate <- PUFA_ba %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_PUFA = sum(fa_conc))
+print(total_PUFA_per_replicate)
+
+# mean
+mean_PUFA_ba <- total_PUFA_per_replicate %>%
+  group_by(treatment) %>%
+  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
+print(mean_PUFA_ba)
+```
+
+4\) Total FA content
+
+```{r}
+# total FA 
+total_FA_biofilm <- bind_rows(total_SAFA_per_replicate, total_MUFA_per_replicate, total_PUFA_per_replicate)
+
+total_FA_per_replicate <- total_FA_biofilm %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
+print(total_FA_per_replicate)
+
+# mean
+mean_total_FA_ba <- total_FA_per_replicate %>%
+  group_by(treatment) %>%
+  summarize(mean_FA = mean(sum_FA, na.rm = TRUE))
+print(mean_total_FA_ba)
+```
+
+#### NMDS FA Biofilm
+
+Change table to wide format:
+
+```{r}
+# change table to wide format
+FA_Biofilm_absolute_filtered <- FA_Biofilm_absolute %>%
+   dplyr::select(-log_fa_conc)
+
+
+FA_Biofilm_absolute_wide <-
+  pivot_wider(FA_Biofilm_absolute_filtered,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation, to reduce discriminatory power of dominant fa groups
+FA_Biofilm_absolute_wide <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2)])
+View(FA_Biofilm_absolute_wide)
+
+#set NA to 0 
+FA_Biofilm_absolute_wide[is.na(FA_Biofilm_absolute_wide)] <- 0
+View(FA_Biofilm_absolute_wide)
+```
+
+Perform metaMDS:
+
+```{r}
+NMDS_Biofilm_absolute <-
+  metaMDS(
+    FA_Biofilm_absolute_wide,
+    autotransform = FALSE,
+    k = 2 ,
+    distance = "bray",
+    na.rm = TRUE
+  )
+
+NMDS_Biofilm_absolute$stress
+```
+
+Create NMDS:
+
+```{r}
+#add treatment column
+colnames(FA_Biofilm_absolute_wide) <-
+  c(
+    "C08:0",
+    "C10:0",
+    "C12:0",
+    "C13:0",
+    "C14:0",
+    "C15:0",
+    "C16:0",
+    "C16:1",
+    "C17:0",
+    "C17:1",
+    "C18:0",
+    "C18:1",
+    "C18:2(n-6t)",
+    "C18:2(n-6c)",
+    "C18:3(n-6)",
+    "C18:3(n-3)",
+    "C18:4(n-3)",
+    "C20:0",
+    "C20:1",
+    "C20:2(n-6)",
+    "C20:3(n-6)",
+    "C20:4(n-6)",
+    "C20:5(n-3)",
+    "C22:0",
+    "C22:5(n-3)",
+    "C22:6(n-3)",
+    "C24:0"
+  )
+
+# separation in SAFA; MUFA & PUFA to build vectors in NMDS
+# "ba" = biofilm absolute
+FA_variables.SAFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide,
+      select = c(
+        "C08:0",
+        "C10:0",
+        "C12:0",
+        "C13:0",
+        "C14:0",
+        "C15:0",
+        "C16:0",
+        "C17:0",
+        "C18:0",
+        "C20:0",
+        "C22:0",
+        "C24:0"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.MUFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide,
+      select = c(
+        "C16:1",
+        "C17:1",
+        "C18:1",
+        "C20:1"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.PUFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide,
+      select = c(
+        "C18:2(n-6t)",
+        "C18:2(n-6c)",
+        "C18:3(n-6)",
+        "C18:3(n-3)",
+        "C18:4(n-3)",
+        "C20:2(n-6)",
+        "C20:3(n-6)",
+        "C20:4(n-6)",
+        "C20:5(n-3)",
+        "C22:5(n-3)",
+        "C22:6(n-3)"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+#data frame
+data.scores_biofilm_absolute = as.data.frame(scores(NMDS_Biofilm_absolute)$sites)
+
+Treatments <-
+  FA_Biofilm_absolute$treatment[FA_Biofilm_absolute$fa == "C16:0"]
+
+data.scores_biofilm_absolute$treatment = Treatments
+
+# create weeks as subgroups for plotting
+data.scores_biofilm_absolute <- data.scores_biofilm_absolute %>%
+  mutate(subgroup = case_when(
+    str_detect(treatment, "^1_") ~ "Week1",
+    str_detect(treatment, "^2_") ~ "Week2",
+    str_detect(treatment, "^3_") ~ "Week3",
+    TRUE ~ "Other"
+  ))
+
+# plot NMDS
+
+absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = NMDS2)) +
+  geom_point(
+    data = data.scores_biofilm_absolute,
+    aes(colour = subgroup),
+    size = 5,
+    alpha = 0.5
+  ) +
+  geom_text_repel(
+    aes(label = str_sub(treatment, start = 3)),
+    box.padding = 0.5, # increase padding around text
+    force = 10, # increase the repulsion strength
+    segment.color = NA, # to remove connecting line
+    size = 3
+  ) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    panel.background = element_blank(),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    #axis.ticks = element_blank(),
+    #axis.text = element_blank(),
+    legend.key = element_blank(),
+    legend.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    legend.text = element_text(size = 10, colour = "grey30"),
+    plot.margin = margin(
+      t = 0.2,
+      b = 0.2,
+      l = 0.2,
+      r = 0.2,
+      unit = "cm"
+    ),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) +
+  annotate(
+    "text",
+    x = 0.3,
+    y = -0.15,
+    label = paste("stress:", NMDS_Biofilm_absolute$stress %>% round(2)),
+    size = 3
+  )
+
+absol_Biofilm
+
+# VS wenn ich es richtig verstanden habe, ist das nur der Plot? Dann fehlt noch die Statistik dazu. z.B. Permanova oder Anova
+# VS Im Meeting hatten wir auch darüber gesprochen, dass du im Moment nur die Woche codest und das Treatment daneben steht
+# VS Ich würde vorschlagen Zeitpunkt und Treatment als Farbe und Form zu definieren. Dabei sollte das in der Hypothese wichtigere als Farbe gecoded werden. Das sieht man schneller / besser
+# VS zudem solltest du rot und grün in einem Plot vermeiden, weil Farbenblinde das nicht unterscheiden können
+
+# save the plot
+```
+
+# 8 Temperature and light conditions
+
+@ VS: Dieses Skript ist nur zum plotten der Temperatur und Lichtverhältnisse dar. Mirco möchte diese Plots gerne in den Anhang.
+
+## 8.1 Biofilm colonisation and contamination
+
+```{r}
+# insert data
+colonisation_temp_light <-
+  read.table(file.path(prj, "data\\colonisation_temp_light.txt"),
+             header = TRUE, sep = "\t")
+
+View(colonisation_temp_light)
+
+# average temperature
+mean(colonisation_temp_light $ temperature_colonisation)
+# 18.28751 °C
+
+# mean light intensity
+# filter only daytime
+average_light_intensity_colonisation <- colonisation_temp_light %>%
+  dplyr::filter(light_intensity_colonisation > 0) %>%
+  summarize(average_light_intensity_colonisation = mean(light_intensity_colonisation))
+
+print(average_light_intensity_colonisation)
+# 14019.26 lux
+
+# temperature plot
+# add a small amount of random noise to the y-values
+colonisation_temp_light $ temperature_colonisation <- jitter(colonisation_temp_light $ temperature_colonisation)
+
+t2 <- ggplot(
+  data = colonisation_temp_light,
+  mapping = aes( x = day, y = temperature_colonisation, color = time_of_day)) +
+  geom_point(alpha = 0.5) +  # Individual measurements with transparency
+  geom_smooth() +
+  labs(
+    title = "Temperature profile during biofilm colonisation",
+    x = "Day", y = "Temperature (°C)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(0, 77, by = 5)) +
+  scale_color_continuous(
+    name = "Time of Day",  
+    breaks = c(0, 5, 10, 15, 20),
+    labels = c("0:00 am", "05:00 am", "10:00 am", "03:00 pm", "08:00 pm"),
+    limits = c(0, 22),
+  )
+
+t2 
+
+# save the plot
+ggsave(t2, 
+       filename = "temperature_colonisation.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+# light intensity plot
+# Filter the data to include only rows where light_intensity > 0
+filtered_data2 <- colonisation_temp_light %>% 
+  filter(light_intensity_colonisation > 0)
+
+# add a small amount of random noise to the y-values
+filtered_data2 $ light_intensity_colonisation <- jitter(filtered_data2 $ light_intensity_colonisation)
+
+l2 <- ggplot(
+  data = filtered_data2,
+  mapping = aes( x = day, y = light_intensity_colonisation)) +
+  geom_point(size = 1) +  # Individual measurements with transparency
+  geom_smooth(color = "#E69F00", linewidth = 1) +
+  labs(
+    title = "Light intensity profile during biofilm colonisation",
+    x = "Day", y = "Light intensity (lux)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(0, 77, by = 5)) 
+
+
+l2 
+
+# save the plot
+ggsave(l2, 
+       filename = "light_intensity_colonisation.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+```
+
+## 8.2 Feeding assay
+
+```{r}
+# insert data
+feeding_assay_temp_light <-
+  read.table(file.path(prj, "data\\feeding_assay_temp_light.txt"),
+             header = TRUE, 
+             sep = "\t"
+  )
+             
+View(feeding_assay_temp_light)
+
+# average temperature
+mean(feeding_assay_temp_light $ temperature)
+# 13.27927 °C
+
+# mean light intensity
+# filter only daytime
+average_light_intensity_feeding <- feeding_assay_temp_light %>%
+  dplyr::filter(light_intensity > 0) %>%
+  summarize(average_light_intensity_feeding = mean(light_intensity))
+
+print(average_light_intensity_feeding)
+# 330.3552 lux
+
+# temperature plot
+# add a small amount of random noise to the y-values
+feeding_assay_temp_light $ temperature <- jitter(feeding_assay_temp_light $ temperature)
+
+t1 <- ggplot(
+  data = feeding_assay_temp_light,
+  mapping = aes( x = day, y = temperature, color = time_of_day)) +
+  geom_point(alpha = 0.5) +  # Individual measurements with transparency
+  geom_smooth() +
+  labs(
+    title = "Temperature profile during 21-day feeding assay",
+    x = "Day", y = "Temperature (°C)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:21) +
+  scale_color_continuous(
+    name = "Time of Day",  
+    breaks = c(0, 5, 10, 15, 20),
+    labels = c("0:00 am", "05:00 am", "10:00 am", "03:00 pm", "08:00 pm"),
+    limits = c(0, 22),
+  )
+
+t1 
+
+# save the plot
+ggsave(t1, 
+       filename = "temperature_feeding_assay.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+# light intensity plot
+# Filter the data to include only rows where light_intensity > 0
+filtered_data1 <- feeding_assay_temp_light %>% 
+  filter(light_intensity > 0)
+
+# add a small amount of random noise to the y-values
+filtered_data1 $ light_intensity <- jitter(filtered_data1 $ light_intensity)
+
+l1 <- ggplot(
+  data = filtered_data1,
+  mapping = aes( x = day, y = light_intensity)) +
+  geom_point(size = 1) +  # Individual measurements with transparency
+  geom_smooth(color = "#E69F00", linewidth = 1) +
+  labs(
+    title = "Light intensity profile during 21-day feeding assay",
+    x = "Day", y = "Light intensity (lux)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:21) 
+
+
+l1 
+
+# save the plot
+ggsave(l1, 
+       filename = "light_intensity_feeding_assay.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+
+
+```

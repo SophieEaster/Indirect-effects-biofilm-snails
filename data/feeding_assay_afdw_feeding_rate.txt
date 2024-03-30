@@ -1,4 +1,4 @@
-replicate	treatment	week	used_in_feeding_assay	afdw	feeding_rate
+beaker	treatment	week	used_for_FA_analysis	afdw	feeding_rate
 1	NC	1	no	NA	NA
 2	NC	1	no	0.09280217	2.246657134
 3	NC	1	yes_NC5	0.10140335	2.203944326

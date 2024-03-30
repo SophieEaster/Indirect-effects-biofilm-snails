@@ -49,3 +49,10 @@ samples	treatment	name_feeding_assay	dryweight_mg
 48	Culture	NA	0.45
 49	Culture	NA	0.3514
 50	Culture	NA	0.5651
+51	Culture	NA	0.5412
+52	Culture	NA	0.5004
+53	Culture	NA	0.2863
+54	Culture	NA	0.5957
+55	Culture	NA	0.2824
+56	Culture	NA	0.4218
+57	Culture	NA	0.3129
