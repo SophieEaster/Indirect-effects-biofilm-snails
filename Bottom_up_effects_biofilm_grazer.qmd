@@ -839,6 +839,18 @@ FA_snails_inter_dunn_sum1
 
 ```
 
+Except the following remarks, fatty acid concentration of the 4 treatments quite similar.
+
+-   C12:0 : Ciprofloxacin treatment to Mix and NC (and almost to Pro) significantly different
+
+-   C13:0 : Ciprofloxacin to all other treatments significantly different. Mix and Pro also different
+
+-   C14:0 : Cip-Mix and Mix-NC different
+
+-   C18:3(n-6) : Cip-NC and almost Mix-NC different
+
+-   C22:1 : NC different to all chemical treatments. Mix and Pro also different.
+
 #### Total SAFA, MUFA & PUFA content
 
 1\) Total SAFA content
@@ -963,7 +975,7 @@ NMDS_Snails_absolute$stress # stress = 0.098
 Create NMDS:
 
 ```{r}
-#add treatment column
+# add treatment column
 colnames(FA_Snails_absolute_wide) <-
   c(
     "C08:0",
@@ -1058,12 +1070,13 @@ FA_variables.PUFAs_sa <-
     na.rm = TRUE
   )
 
-#data frame
+# Extract NMDS scores 
 data.scores_snail_absolute = as.data.frame(scores(NMDS_Snails_absolute)$sites)
 
 Treatments <-
   FA_Snails_absolute $ treatment[FA_Snails_absolute $ fa == "C16:0"]
 
+# add treatment column to NMDS scores
 data.scores_snail_absolute$treatment = Treatments
 
 # vectors for SAFA, MUFA and PUFA
@@ -1071,8 +1084,12 @@ SAFAs_coord_cont_sa = as.data.frame(scores(FA_variables.SAFAs_sa, "vectors")) * 
 MUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.MUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.MUFAs_sa)
 PUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.PUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.PUFAs_sa)
 
+```
 
-#plot
+Plot NMDS:
+
+```{r}
+# plot
 absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
   geom_point(
     aes(shape = treatment, color = treatment),
@@ -1146,6 +1163,57 @@ absol_Snail
 ggsave(absol_Snail, 
        filename = "NMDS_snails_absolute.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
+```
+
+New try NMDS:
+
+```{r}
+
+```
+
+#### Permanova FA Snails
+
+Create distance matrix with fatty acids
+
+```{r}
+FA_Snails_dist <- vegdist(FA_Snails_absolute_wide, method = 'bray')
+```
+
+Separate explanatory variables from fatty acid information
+
+```{r}
+expl_FA_Snails <-
+  pivot_wider(FA_Snails_absolute_filtered,
+              names_from = fa,
+              values_from = fa_conc)
+
+# delete fa columns
+expl_FA_Snails <- expl_FA_Snails[, c(1, 2)]
+expl_FA_Snails$treatment <- as.factor(expl_FA_Snails$treatment)
+```
+
+Make Permanova
+
+```{r}
+perm_FA_Snails <- adonis2(FA_Snails_dist ~ treatment, data = expl_FA_Snails, permutations = 999)
+```
+
+Make anova
+
+```{r}
+rda_FA_Snails_1 <- rda(decostand(FA_Snails_dist, "hellinger")
+                                   ~ treatment, data = expl_FA_Snails)
+
+summary(rda_FA_Snails_1, display = NULL)
+
+anova_result <- anova(rda_FA_Snails_1, by = "margin")
+
+```
+
+Explanatory variable "treatment" significant, now perform pairwise comparisons
+
+```{r}
+# @ VS: hier komme ich nicht weiter, ich hab multiconstrained und normale post-hoc tests probiert.. wie würdest du hier weitermachen?
 
 ```
 
@@ -1185,7 +1253,42 @@ Fatty acid concentration not normal distributed and right skewed.
 #### Model FA Biofilm
 
 ```{r}
+# log10 transformation; adding 0.001 
+FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
+  mutate(log_fa_conc = log10(fa_conc + 0.001))
 
+# response variable: log_fa_conc
+# fixed effects: treatment + fa +  + week + treatment:fa + week:fa + treatment:week
+# random effect with constant intercept: (1|replicate); first change to factor
+FA_Biofilm_absolute $ replicate <- as.factor(FA_Biofilm_absolute $ replicate)
+FA_Biofilm_absolute $ week <- as.factor(FA_Biofilm_absolute $ week)
+
+FA_Biofilm_lmer <- lmer(log_fa_conc ~ treatment + fa + + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_absolute)
+# @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
+```
+
+```{r}
+plot(FA_Biofilm_lmer) 
+# @ VS: das sieht nicht wirklich gleichmäßig verteilt aus, oder? Was würdest du jetzt machen?
+
+qreference(residuals(FA_Biofilm_lmer)) 
+# @ VS: das sieht schon wieder okay aus 
+
+anova(FA_Biofilm_lmer)
+
+drop1(FA_Biofilm_lmer, test = 'Chisq')
+```
+
+```{r}
+FA_Biofilm_inter <- lsmeans(FA_Biofilm_lmer, ~ treatment | fa)
+FA_Biofilm_inter
+
+FA_Biofilm_inter_dunn1 <- contrast(FA_Biofilm_inter, 'pairwise')
+
+FA_Biofilm_inter_dunn_sum1 <- summary(FA_Biofilm_inter_dunn1, infer = TRUE, adjust = 'mvt')
+
+FA_Biofilm_inter_dunn_sum1
+# @ VS hier kommen bei mir "Inf" Werte raus, irgendwie klappt das so nicht, ich habe nicht herausgefunden, was ich ändern muss
 ```
 
 #### Total SAFA, MUFA & PUFA content
@@ -1286,7 +1389,7 @@ FA_Biofilm_absolute_wide <-
               values_from = fa_conc)
 
 # square root transformation, to reduce discriminatory power of dominant fa groups
-FA_Biofilm_absolute_wide <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2)])
+FA_Biofilm_absolute_wide <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2, 3)])
 View(FA_Biofilm_absolute_wide)
 
 #set NA to 0 
@@ -1412,12 +1515,13 @@ FA_variables.PUFAs_ba <-
     na.rm = TRUE
   )
 
-#data frame
+# Extract NMDS scores
 data.scores_biofilm_absolute = as.data.frame(scores(NMDS_Biofilm_absolute)$sites)
 
 Treatments <-
   FA_Biofilm_absolute$treatment[FA_Biofilm_absolute$fa == "C16:0"]
 
+# add treatment column to NMDS scores
 data.scores_biofilm_absolute$treatment = Treatments
 
 # create weeks as subgroups for plotting
@@ -1429,7 +1533,12 @@ data.scores_biofilm_absolute <- data.scores_biofilm_absolute %>%
     TRUE ~ "Other"
   ))
 
-# plot NMDS
+```
+
+Plot NMDS:
+
+```{r}
+# @VS: wird noch geändert, nicht beachten
 
 absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = NMDS2)) +
   geom_point(
@@ -1489,6 +1598,12 @@ absol_Biofilm
 # VS zudem solltest du rot und grün in einem Plot vermeiden, weil Farbenblinde das nicht unterscheiden können
 
 # save the plot
+```
+
+#### Permanova FA Biofilm
+
+```{r}
+# @ VS: Hier muss die Woche als explanatory variable wieder dazu, oder? Dann muss ich die Tabellen wahrscheinlich anders formen, als für die FA der Schnecken?
 ```
 
 # 8 Temperature and light conditions
