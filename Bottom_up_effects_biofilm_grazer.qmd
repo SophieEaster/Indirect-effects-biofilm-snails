@@ -49,6 +49,8 @@ library(vegan)
 library(data.table)
 library(ggplot2)
 library(ggrepel)
+library(ggforce)
+library(concaveman)
 library(gridExtra)
 library(stringr)
 library(shades)
@@ -960,6 +962,37 @@ View(FA_Snails_absolute_wide)
 Perform metaMDS:
 
 ```{r}
+# Add treatment column and rename (- C, - () ) fatty acids for later plot
+colnames(FA_Snails_absolute_wide) <-
+  c(
+    "8:0",
+    "12:0",
+    "13:0",
+    "14:0",
+    "15:0",
+    "16:0",
+    "16:1",
+    "17:0",
+    "18:0",
+    "18:1",
+    "18:2n-6t",
+    "18:2n-6c",
+    "18:3n-6",
+    "18:3n-3",
+    "18:4n-3",
+    "20:0",
+    "20:1",
+    "20:2n-6",
+    "20:4n-6",
+    "20:5n-3",
+    "22:1",
+    "22:2",
+    "22:5n-3",
+    "22:6n-3",
+    "24:0"
+  )
+
+
 NMDS_Snails_absolute <-
   metaMDS(
     FA_Snails_absolute_wide,
@@ -972,39 +1005,9 @@ NMDS_Snails_absolute <-
 NMDS_Snails_absolute$stress # stress = 0.098
 ```
 
-Create NMDS:
+Create fa vectors
 
 ```{r}
-# add treatment column
-colnames(FA_Snails_absolute_wide) <-
-  c(
-    "C08:0",
-    "C12:0",
-    "C13:0",
-    "C14:0",
-    "C15:0",
-    "C16:0",
-    "C16:1",
-    "C17:0",
-    "C18:0",
-    "C18:1",
-    "C18:2(n-6t)",
-    "C18:2(n-6c)",
-    "C18:3(n-6)",
-    "C18:3(n-3)",
-    "C18:4(n-3)",
-    "C20:0",
-    "C20:1",
-    "C20:2(n-6)",
-    "C20:4(n-6)",
-    "C20:5(n-3)",
-    "C22:1",
-    "C22:2",
-    "C22:5(n-3)",
-    "C22:6(n-3)",
-    "C24:0"
-  )
-
 # separation in SAFA; MUFA & PUFA to build vectors in NMDS
 # "sa" = snail absolute
 FA_variables.SAFAs_sa <-
@@ -1013,16 +1016,16 @@ FA_variables.SAFAs_sa <-
     subset(
       FA_Snails_absolute_wide,
       select = c(
-        "C08:0",
-        "C12:0",
-        "C13:0",
-        "C14:0",
-        "C15:0",
-        "C16:0",
-        "C17:0",
-        "C18:0",
-        "C20:0",
-        "C24:0"
+        "8:0",
+        "12:0",
+        "13:0",
+        "14:0",
+        "15:0",
+        "16:0",
+        "17:0",
+        "18:0",
+        "20:0",
+        "24:0"
       )
     )
     ,
@@ -1036,10 +1039,10 @@ FA_variables.MUFAs_sa <-
     subset(
       FA_Snails_absolute_wide,
       select = c(
-        "C16:1",
-        "C18:1",
-        "C20:1",
-        "C22:1"
+        "16:1",
+        "18:1",
+        "20:1",
+        "22:1"
       )
     )
     ,
@@ -1053,16 +1056,16 @@ FA_variables.PUFAs_sa <-
     subset(
       FA_Snails_absolute_wide,
       select = c(
-        "C18:2(n-6t)",
-        "C18:2(n-6c)",
-        "C18:3(n-6)",
-        "C18:3(n-3)",
-        "C18:4(n-3)",
-        "C20:2(n-6)",
-        "C20:4(n-6)",
-        "C20:5(n-3)",
-        "C22:5(n-3)",
-        "C22:6(n-3)"
+        "18:2n-6t",
+        "18:2n-6c",
+        "18:3n-6",
+        "18:3n-3",
+        "18:4n-3",
+        "20:2n-6",
+        "20:4n-6",
+        "20:5n-3",
+        "22:5n-3",
+        "22:6n-3"
       )
     )
     ,
@@ -1077,7 +1080,7 @@ Treatments <-
   FA_Snails_absolute $ treatment[FA_Snails_absolute $ fa == "C16:0"]
 
 # add treatment column to NMDS scores
-data.scores_snail_absolute$treatment = Treatments
+data.scores_snail_absolute$Treatment = Treatments
 
 # vectors for SAFA, MUFA and PUFA
 SAFAs_coord_cont_sa = as.data.frame(scores(FA_variables.SAFAs_sa, "vectors")) * ordiArrowMul(FA_variables.SAFAs_sa)
@@ -1088,39 +1091,48 @@ PUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.PUFAs_sa, "vectors")) * 
 
 Plot NMDS:
 
+@VS: ich hab viel herumprobiert mit anderen Plots, base R plots ausprobiert und mit ggplot ordination plots gemacht. Ich finde diese Darstellung allerdings weiterhin am besten.
+
 ```{r}
 # plot
 absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
   geom_point(
-    aes(shape = treatment, color = treatment),
+    aes(shape = Treatment, color = Treatment),
     size = 5,
     alpha = 1,
-    stroke = 2,
     show.legend = TRUE
   ) +
   scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
   scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) +
   stat_conf_ellipse(
-    aes(colour = treatment, fill = treatment),
+    aes(colour = Treatment, fill = Treatment),
     alpha = 0.3,
     geom = "polygon",
     show.legend = FALSE
   ) +
   scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) +  
   scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) + 
-  geom_segment(aes(x = 0, y = 0, xend = NMDS1 * 0.1, yend = NMDS2 * 0.1), 
-               data = PUFAs_coord_cont_sa, linewidth =1, alpha = 0.5, colour = "black") +
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1 * 0.2, yend = NMDS2 * 0.2), 
+               data = PUFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
+    geom_segment(aes(x = 0, y = 0, xend = NMDS1 * 0.2, yend = NMDS2 * 0.2), 
+               data = MUFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
+      geom_segment(aes(x = 0, y = 0, xend = NMDS1 * 0.1, yend = NMDS2 * 0.1), 
+               data = SAFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
   geom_text_repel(
     data = PUFAs_coord_cont_sa, 
-    aes(x = NMDS1 * 0.1, y = NMDS2 * 0.1, label = row.names(PUFAs_coord_cont_sa)), 
+    aes(x = NMDS1 * 0.2, y = NMDS2 * 0.2, label = row.names(PUFAs_coord_cont_sa)), 
     colour = "grey30",
-    size = 3,
-    segment.color = "black",  # Color of the segment connecting the label to its point
-    segment.size = 0.5,  # Size of the segment connecting the label to its point
-    direction = "both",  # Allow labels to repel in both directions
-    force = 2.5,  # Strength of the repulsion
-    box.padding = unit(0.15, "lines")  # Padding around labels
-  ) +
+    size = 3) +
+    geom_text_repel(
+    data = MUFAs_coord_cont_sa, 
+    aes(x = NMDS1 * 0.2, y = NMDS2 * 0.2, label = row.names(MUFAs_coord_cont_sa)), 
+    colour = "grey30",
+    size = 3) +
+      geom_text_repel(
+    data = SAFAs_coord_cont_sa, 
+    aes(x = NMDS1 * 0.1, y = NMDS2 * 0.1, label = row.names(SAFAs_coord_cont_sa)), 
+    colour = "grey30",
+    size = 3) +
   theme_bw() +
   theme(
     axis.title = element_text(
@@ -1146,14 +1158,14 @@ absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS
     ),
     panel.grid.major = element_line(colour = "grey95", size = 0.4),
     panel.grid.minor = element_line(colour = "grey95", size = 0.2)
-  ) #+
-  #annotate(
-  #  "text",
-  #  x = -0.23,
-  #  y = -0.19,
-  #  label = paste("stress:", NMDS_Snails_absolute$stress %>% round(2)),
-  #  size = 3.5
-  #)
+  ) +
+  annotate(
+    "text",
+    x = 0.35,
+    y = -0.19,
+    label = paste("stress:", NMDS_Snails_absolute$stress %>% round(2)),
+    size = 3.5
+  ) 
 
 
 absol_Snail
@@ -1163,12 +1175,6 @@ absol_Snail
 ggsave(absol_Snail, 
        filename = "NMDS_snails_absolute.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
-```
-
-New try NMDS:
-
-```{r}
-
 ```
 
 #### Permanova FA Snails
@@ -1378,6 +1384,16 @@ print(mean_total_FA_ba)
 Change table to wide format:
 
 ```{r}
+# add prefix (week) 1,2 or 3 to treatments for later subgrouping
+FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
+  mutate(treatment = if_else(week == "1", paste("1_", treatment, sep = ""), treatment))
+
+FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
+  mutate(treatment = if_else(week == "2", paste("2_", treatment, sep = ""), treatment))
+
+FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
+  mutate(treatment = if_else(week == "3", paste("3_", treatment, sep = ""), treatment))
+
 # change table to wide format
 FA_Biofilm_absolute_filtered <- FA_Biofilm_absolute %>%
    dplyr::select(-log_fa_conc)
@@ -1400,6 +1416,38 @@ View(FA_Biofilm_absolute_wide)
 Perform metaMDS:
 
 ```{r}
+#add treatment column and ease colnames for later NMDS plot
+colnames(FA_Biofilm_absolute_wide) <-
+  c(
+    "8:0",
+    "10:0",
+    "12:0",
+    "13:0",
+    "14:0",
+    "15:0",
+    "16:0",
+    "16:1",
+    "17:0",
+    "17:1",
+    "18:0",
+    "18:1",
+    "18:2n-6t",
+    "18:2n-6c",
+    "18:3n-6",
+    "18:3n-3",
+    "18:4n-3",
+    "20:0",
+    "20:1",
+    "20:2n-6",
+    "20:3n-6",
+    "20:4n-6",
+    "20:5n-3",
+    "22:0",
+    "22:5n-3",
+    "22:6n-3",
+    "24:0"
+  )
+
 NMDS_Biofilm_absolute <-
   metaMDS(
     FA_Biofilm_absolute_wide,
@@ -1412,41 +1460,9 @@ NMDS_Biofilm_absolute <-
 NMDS_Biofilm_absolute$stress
 ```
 
-Create NMDS:
+Create fa vectors
 
 ```{r}
-#add treatment column
-colnames(FA_Biofilm_absolute_wide) <-
-  c(
-    "C08:0",
-    "C10:0",
-    "C12:0",
-    "C13:0",
-    "C14:0",
-    "C15:0",
-    "C16:0",
-    "C16:1",
-    "C17:0",
-    "C17:1",
-    "C18:0",
-    "C18:1",
-    "C18:2(n-6t)",
-    "C18:2(n-6c)",
-    "C18:3(n-6)",
-    "C18:3(n-3)",
-    "C18:4(n-3)",
-    "C20:0",
-    "C20:1",
-    "C20:2(n-6)",
-    "C20:3(n-6)",
-    "C20:4(n-6)",
-    "C20:5(n-3)",
-    "C22:0",
-    "C22:5(n-3)",
-    "C22:6(n-3)",
-    "C24:0"
-  )
-
 # separation in SAFA; MUFA & PUFA to build vectors in NMDS
 # "ba" = biofilm absolute
 FA_variables.SAFAs_ba <-
@@ -1455,18 +1471,18 @@ FA_variables.SAFAs_ba <-
     subset(
       FA_Biofilm_absolute_wide,
       select = c(
-        "C08:0",
-        "C10:0",
-        "C12:0",
-        "C13:0",
-        "C14:0",
-        "C15:0",
-        "C16:0",
-        "C17:0",
-        "C18:0",
-        "C20:0",
-        "C22:0",
-        "C24:0"
+        "8:0",
+        "10:0",
+        "12:0",
+        "13:0",
+        "14:0",
+        "15:0",
+        "16:0",
+        "17:0",
+        "18:0",
+        "20:0",
+        "22:0",
+        "24:0"
       )
     )
     ,
@@ -1480,10 +1496,10 @@ FA_variables.MUFAs_ba <-
     subset(
       FA_Biofilm_absolute_wide,
       select = c(
-        "C16:1",
-        "C17:1",
-        "C18:1",
-        "C20:1"
+        "16:1",
+        "17:1",
+        "18:1",
+        "20:1"
       )
     )
     ,
@@ -1497,17 +1513,17 @@ FA_variables.PUFAs_ba <-
     subset(
       FA_Biofilm_absolute_wide,
       select = c(
-        "C18:2(n-6t)",
-        "C18:2(n-6c)",
-        "C18:3(n-6)",
-        "C18:3(n-3)",
-        "C18:4(n-3)",
-        "C20:2(n-6)",
-        "C20:3(n-6)",
-        "C20:4(n-6)",
-        "C20:5(n-3)",
-        "C22:5(n-3)",
-        "C22:6(n-3)"
+        "18:2n-6t",
+        "18:2n-6c",
+        "18:3n-6",
+        "18:3n-3",
+        "18:4n-3",
+        "20:2n-6",
+        "20:3n-6",
+        "20:4n-6",
+        "20:5n-3",
+        "22:5n-3",
+        "22:6n-3"
       )
     )
     ,
@@ -1522,38 +1538,60 @@ Treatments <-
   FA_Biofilm_absolute$treatment[FA_Biofilm_absolute$fa == "C16:0"]
 
 # add treatment column to NMDS scores
-data.scores_biofilm_absolute$treatment = Treatments
+data.scores_biofilm_absolute$Treatment = Treatments
+
+# vectors for SAFA, MUFA and PUFA
+SAFAs_coord_cont_ba = as.data.frame(scores(FA_variables.SAFAs_ba, "vectors")) * ordiArrowMul(FA_variables.SAFAs_ba)
+MUFAs_coord_cont_ba = as.data.frame(scores(FA_variables.MUFAs_ba, "vectors")) * ordiArrowMul(FA_variables.MUFAs_ba)
+PUFAs_coord_cont_ba = as.data.frame(scores(FA_variables.PUFAs_ba, "vectors")) * ordiArrowMul(FA_variables.PUFAs_ba)
 
 # create weeks as subgroups for plotting
 data.scores_biofilm_absolute <- data.scores_biofilm_absolute %>%
-  mutate(subgroup = case_when(
-    str_detect(treatment, "^1_") ~ "Week1",
-    str_detect(treatment, "^2_") ~ "Week2",
-    str_detect(treatment, "^3_") ~ "Week3",
+  mutate(time.point = case_when(
+    str_detect(Treatment, "^1_") ~ "Week1",
+    str_detect(Treatment, "^2_") ~ "Week2",
+    str_detect(Treatment, "^3_") ~ "Week3",
     TRUE ~ "Other"
   ))
 
 ```
 
+```{r}
+# first delete 1_, 2_ & 3_ prefix in treatments
+data.scores_biofilm_absolute $ Treatment <- sub("1_", "", data.scores_biofilm_absolute $ Treatment)
+data.scores_biofilm_absolute $ Treatment <- sub("2_", "", data.scores_biofilm_absolute $ Treatment)
+data.scores_biofilm_absolute $ Treatment <- sub("3_", "", data.scores_biofilm_absolute $ Treatment)
+```
+
 Plot NMDS:
 
 ```{r}
-# @VS: wird noch geändert, nicht beachten
-
 absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = NMDS2)) +
-  geom_point(
-    data = data.scores_biofilm_absolute,
-    aes(colour = subgroup),
+  geom_point( aes(shape = time.point, color = Treatment),
     size = 5,
-    alpha = 0.5
+    alpha = 1
   ) +
+  scale_shape_manual(values = c(15, 16, 17)) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#F0E442")) +
+  labs(shape = "Week", color = "Treatment") +
+  geom_segment(data = PUFAs_coord_cont_ba, aes(x = 0, y = 0, xend = NMDS1 * 0.3, yend = NMDS2 * 0.3), linewidth = 0.5, alpha = 0.2, colour = "black") +
+  geom_segment(data = MUFAs_coord_cont_ba, aes(x = 0, y = 0, xend = NMDS1 * 0.2, yend = NMDS2 * 0.2), linewidth = 0.5, alpha = 0.2, colour = "black") +
+  geom_segment(data = SAFAs_coord_cont_ba, aes(x = 0, y = 0, xend = NMDS1 * 0.3, yend = NMDS2 * 0.3), linewidth = 0.5, alpha = 0.2, colour = "black") +
   geom_text_repel(
-    aes(label = str_sub(treatment, start = 3)),
-    box.padding = 0.5, # increase padding around text
-    force = 10, # increase the repulsion strength
-    segment.color = NA, # to remove connecting line
-    size = 3
-  ) +
+    data = PUFAs_coord_cont_ba, 
+    aes(x = NMDS1 * 0.3, y = NMDS2 * 0.3, label = row.names(PUFAs_coord_cont_ba)), 
+    colour = "grey30",
+    size = 3) +
+  geom_text_repel(
+    data = MUFAs_coord_cont_ba, 
+    aes(x = NMDS1 * 0.2, y = NMDS2 * 0.2, label = row.names(MUFAs_coord_cont_ba)), 
+    colour = "grey30",
+    size = 3) +
+  geom_text_repel(
+    data = SAFAs_coord_cont_ba, 
+    aes(x = NMDS1 * 0.3, y = NMDS2 * 0.3, label = row.names(SAFAs_coord_cont_ba)), 
+    colour = "grey30",
+    size = 3) +
   theme_bw() +
   theme(
     axis.title = element_text(
@@ -1584,20 +1622,23 @@ absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = N
   ) +
   annotate(
     "text",
-    x = 0.3,
-    y = -0.15,
+    x = 0.32,
+    y = -0.3,
     label = paste("stress:", NMDS_Biofilm_absolute$stress %>% round(2)),
     size = 3
   )
-
+  
+  
 absol_Biofilm
 
-# VS wenn ich es richtig verstanden habe, ist das nur der Plot? Dann fehlt noch die Statistik dazu. z.B. Permanova oder Anova
-# VS Im Meeting hatten wir auch darüber gesprochen, dass du im Moment nur die Woche codest und das Treatment daneben steht
-# VS Ich würde vorschlagen Zeitpunkt und Treatment als Farbe und Form zu definieren. Dabei sollte das in der Hypothese wichtigere als Farbe gecoded werden. Das sieht man schneller / besser
-# VS zudem solltest du rot und grün in einem Plot vermeiden, weil Farbenblinde das nicht unterscheiden können
+
+
+
 
 # save the plot
+ggsave(absol_Biofilm, 
+       filename = "NMDS_Biofilm_absolute.png", 
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
 #### Permanova FA Biofilm
