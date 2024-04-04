@@ -771,6 +771,10 @@ ggsave(growth_snails_boxplot,
 
 # 6 Fatty acid composition snails
 
+Statistics for fatty acid composition of snails in 6.1 absolute (µg fatty acid / mg dry weight snail) values and 6.2 relative (%) values.
+
+### 6.1 Absolute values
+
 ```{r}
 # insert data
 FA_Snails_absolute <-
@@ -1223,7 +1227,143 @@ Explanatory variable "treatment" significant, now perform pairwise comparisons
 
 ```
 
+### 6.2 Relative values
+
+Calculate the relative amount of one fatty acid in a snail in relation to the total amount of fatty acids in this one snail.
+
+```{r}
+FA_Snails_relative <- FA_Snails_absolute_filtered %>%
+  group_by(replicate) %>%
+  mutate(fa_conc_rel = (fa_conc / sum(fa_conc)) * 100)
+print(FA_Snails_relative)
+```
+
+#### Histogram FA Snails (relative)
+
+```{r}
+hist(FA_Snails_relative $ fa_conc_rel)
+skewness(FA_Snails_relative $ fa_conc_rel, na.rm = TRUE)
+shapiro.test(FA_Snails_relative $ fa_conc_rel)
+```
+
+Not normal distributed and right skewed.
+
+#### Model FA Snails (relative)
+
+```{r}
+# Log10 transformation; adding 0.001
+FA_Snails_relative <- FA_Snails_relative %>%
+  mutate(log_fa_conc_rel = log10(fa_conc_rel + 0.001))
+
+# response variable: log_fa_conc
+# fixed effects: treatment + fa + treatment:fa
+# random effect with constant intercept: (1|replicate)
+FA_Snails_relative_lmer <- lmer(log_fa_conc_rel ~ treatment + fa + treatment:fa + (1|replicate), data = FA_Snails_relative) 
+
+plot(FA_Snails_relative_lmer) # @ VS: siehe oben bei FA Snails, wegen den 0-Werten sieht das komisch aus, oder ist das als Normalverteilung noch ok?
+qreference(residuals(FA_Snails_relative_lmer)) 
+
+anova(FA_Snails_relative_lmer)
+```
+
+```{r}
+FA_snails_relative_inter <- lsmeans(FA_Snails_relative_lmer, ~ treatment | fa)
+FA_snails_relative_inter
+
+
+FA_snails_relative_inter_dunn1 <- contrast(FA_snails_relative_inter, 'pairwise')
+
+FA_snails_relative_inter_dunn_sum1 <- summary(FA_snails_relative_inter_dunn1, infer = TRUE, adjust = 'mvt')
+
+FA_snails_relative_inter_dunn_sum1
+```
+
+Results quite similar to absolute values. Except the following marks, fatty acid concentration of the 4 treatments quite similar:
+
+-   C12:0 : Ciprofloxacin treatment to Mix and NC (and almost to Pro) significantly different
+
+-   C13:0 : Ciprofloxacin to all other treatments significantly different. Mix and Pro also different
+
+-   Mix to all treatments different
+
+-   C18:3(n-6) : Cip-NC almost different
+
+-   C22:1 : NC different to all chemical treatments. Mix and Pro also different.
+
+#### Total SAFA, MUFA & PUFA content (relative)
+
+1\) Total SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; sr = "snail relative"
+# total SAFA content
+# filter saturated fatty acids in new table
+SAFA_sr <- FA_Snails_relative %>%
+    filter(fa %in% c("C08:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C24:0"))
+
+# calculate the total SAFA content per snail
+total_SAFA_per_snail_relative <- SAFA_sr %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_SAFA = sum(fa_conc_rel))
+
+print(total_SAFA_per_snail_relative)
+
+# mean
+mean_SAFA_sr <- total_SAFA_per_snail_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
+print(mean_SAFA_sr)
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_sr <- FA_Snails_relative %>%
+  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
+
+# total MUFA content per snail
+total_MUFA_per_snail_relative <- MUFA_sr %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_MUFA = sum(fa_conc_rel))
+
+print(total_MUFA_per_snail_relative)
+
+# mean
+mean_MUFA_sr <- total_MUFA_per_snail_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
+print(mean_MUFA_sr)
+```
+
+3\) PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_sr <- FA_Snails_relative %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
+  
+# calculate total PUFA content per snail
+total_PUFA_per_snail_relative <- PUFA_sr %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_PUFA = sum(fa_conc_rel))
+
+print(total_PUFA_per_snail_relative)
+
+# mean
+mean_PUFA_sr <- total_PUFA_per_snail_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
+print(mean_PUFA_sr)
+```
+
+4\) Total FA (relative) per snail = 100 %.
+
 # 7 Fatty acid composition biofilm
+
+Statistics for fatty acid composition of the biofilm in 6.1 absolute (µg fatty acid / mg dry weight biofilm) values and 6.2 relative (%) values.
+
+### 7.1 Absolute values
 
 ```{r}
 # insert data
@@ -1269,7 +1409,7 @@ FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
 FA_Biofilm_absolute $ replicate <- as.factor(FA_Biofilm_absolute $ replicate)
 FA_Biofilm_absolute $ week <- as.factor(FA_Biofilm_absolute $ week)
 
-FA_Biofilm_lmer <- lmer(log_fa_conc ~ treatment + fa + + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_absolute)
+FA_Biofilm_lmer <- lmer(log_fa_conc ~ treatment + fa + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_absolute)
 # @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
 ```
 
@@ -1632,9 +1772,6 @@ absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = N
 absol_Biofilm
 
 
-
-
-
 # save the plot
 ggsave(absol_Biofilm, 
        filename = "NMDS_Biofilm_absolute.png", 
@@ -1647,9 +1784,119 @@ ggsave(absol_Biofilm,
 # @ VS: Hier muss die Woche als explanatory variable wieder dazu, oder? Dann muss ich die Tabellen wahrscheinlich anders formen, als für die FA der Schnecken?
 ```
 
+### 7.2 Relative values
+
+```{r}
+FA_Biofilm_relative <- FA_Biofilm_absolute %>%
+  group_by(replicate) %>%
+  mutate(fa_conc_rel = (fa_conc / sum(fa_conc)) * 100)
+print(FA_Biofilm_relative)
+
+# Remove the "log_fa_conc" column
+FA_Biofilm_relative <- FA_Biofilm_relative[, !names(FA_Biofilm_relative) %in% "log_fa_conc"]
+```
+
+#### Histogram FA Biofilm (relative)
+
+```{r}
+hist(FA_Biofilm_relative $ fa_conc_rel)
+skewness(FA_Biofilm_relative $ fa_conc_rel, na.rm = TRUE)
+shapiro.test(FA_Biofilm_relative $ fa_conc_rel)
+```
+
+Not normal distributed and right skewed.
+
+#### Model FA Biofilm (relative)
+
+Hier weitermachen, wie Verena für Model FA Biofilm vorschlägt.
+
+```{r}
+# log10 transformation; adding 0.001 
+# FA_Biofilm_relative <- FA_Biofilm_relative %>%
+  #mutate(log_fa_conc_rel = log10(fa_conc_rel + 0.001))
+
+# response variable: log_fa_conc
+# fixed effects: treatment + fa +  + week + treatment:fa + week:fa + treatment:week
+# random effect with constant intercept: (1|replicate)
+#FA_Biofilm_relative_lmer <- lmer(log_fa_conc_rel ~ treatment + fa + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_relative)
+# @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
+
+#plot(FA_Biofilm_relative_lmer) # @ VS: siehe oben, ist das normal verteilt?
+#qreference(residuals(FA_Biofilm_relative_lmer)) 
+
+#anova(FA_Biofilm_relative_lmer)
+```
+
+#### Total SAFA, MUFA & PUFA content (relative)
+
+1\) SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; br = "biofilm relative"
+# total SAFA content
+# filter saturated fatty acids in new table
+SAFA_br <- FA_Biofilm_relative %>%
+    filter(fa %in% c("C08:0", "C10:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C22:0", "C24:0"))
+
+# calculate the total SAFA content per replicate
+total_SAFA_per_replicate_relative <- SAFA_br %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_SAFA = sum(fa_conc_rel))
+
+print(total_SAFA_per_replicate_relative)
+
+# mean
+mean_SAFA_br <- total_SAFA_per_replicate_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
+print(mean_SAFA_br)
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_br <- FA_Biofilm_relative %>%
+  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1"))
+
+# total MUFA content per replicate
+total_MUFA_per_replicate_relative <- MUFA_br %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_MUFA = sum(fa_conc_rel))
+
+print(total_MUFA_per_replicate_relative)
+
+# mean
+mean_MUFA_br <- total_MUFA_per_replicate_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
+print(mean_MUFA_br)
+```
+
+3\) Total PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_br <- FA_Biofilm_relative %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:3(n-3)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
+  
+# calculate total PUFA content per replicate
+total_PUFA_per_replicate_relative <- PUFA_br %>%
+  group_by(replicate, treatment) %>%
+  summarize(sum_PUFA = sum(fa_conc_rel))
+
+print(total_PUFA_per_replicate_relative)
+
+# mean
+mean_PUFA_br <- total_PUFA_per_replicate_relative %>%
+  group_by(treatment) %>%
+  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
+print(mean_PUFA_br)
+```
+
 # 8 Temperature and light conditions
 
-@ VS: Dieses Skript ist nur zum plotten der Temperatur und Lichtverhältnisse dar. Mirco möchte diese Plots gerne in den Anhang.
+\@ VS: Dieses Skript ist nur zum plotten der Temperatur und Lichtverhältnisse dar. Mirco möchte diese Plots gerne in den Anhang.
 
 ## 8.1 Biofilm colonisation and contamination
 
