@@ -327,7 +327,7 @@ ggsave(chlc,
 
 ## 3.2 AFDW after colonisation
 
-#### Calculate mean afdw of each treatment for manuscript.
+#### Calculate mean AFDW of each treatment for manuscript.
 
 ```{r}
 mean_afdw_after_colonisation <- biofilm_endpoints %>%
@@ -337,7 +337,7 @@ mean_afdw_after_colonisation <- biofilm_endpoints %>%
 print(mean_afdw_after_colonisation)
 ```
 
-#### Histogram afdw after colonisation
+#### Histogram AFDW after colonisation
 
 ```{r}
 hist(biofilm_endpoints $ afdw_after_colonisation) 
@@ -346,7 +346,7 @@ skewness(biofilm_endpoints $ afdw_after_colonisation, na.rm = TRUE)
 
 Not normal distributed and right skewed. Log10 transformation for model
 
-#### Model afdw after colonisation
+#### Model AFDW after colonisation
 
 Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.
 
@@ -401,7 +401,7 @@ afdw_after_colonisation_inter_dunn2 <- contrast(afdw_after_colonisation_inter2, 
 
     -   Week 1 & 2 similar; week 1 & 3 and 2 & 3 different.
 
-#### Boxplot afdw after colonisation
+#### Boxplot AFDW after colonisation
 
 ```{r}
 afdw_after_colonisation_boxplot <- ggplot(data = biofilm_endpoints, 
@@ -804,8 +804,7 @@ FA_Snails_absolute <-
 
 View(FA_Snails_absolute)
 
-# remove NAs, measurement < LOQ
-FA_Snails_absolute <- na.omit(FA_Snails_absolute)
+any(is.na(FA_Snails_absolute))
 ```
 
 Following fatty acids were not considered for FA content in snails due to too less values (less than 3 findings): C10:0, C11:0, C14:1, C15:1, C17:1, C20:0 and C22:0.
@@ -899,7 +898,7 @@ mean_total_FA_sa <- total_FA_per_snail %>%
 print(mean_total_FA_sa)
 ```
 
-#### Histogram FA Snails
+#### Histogram FA snails
 
 ```{r}
 hist(FA_Snails_absolute $ fa_conc) 
@@ -914,7 +913,7 @@ Fatty acid concentration not normal distributed and right skewed.
 Change table to wide format:
 
 ```{r}
-# change table to wide format (sqrt = square root transformation in next step)
+# change table to wide format (sqrt for square root transformation in next step)
 FA_Snails_absolute_wide_sqrt <-
   pivot_wider(FA_Snails_absolute,
               names_from = fa,
@@ -925,6 +924,7 @@ FA_Snails_absolute_wide_sqrt[, 3:28] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:28
 
 any(is.na(FA_Snails_absolute_wide_sqrt))
 ```
+Check for outlier:
 
 ```{r}
 #Run function one time, after that you can use the shortcut outlierKD (your subset, variable)
@@ -993,12 +993,12 @@ outlierKD_multiple <- function(dt, id_col = "replicate", start_col = 3, end_col 
 # Call the function and store the results
 outlier_info_combined <- outlierKD_multiple(FA_Snails_absolute_wide_sqrt, id_col = "replicate", start_col = 3, end_col = 28)
 
-# Print the combined outlier information
+
 print(outlier_info_combined)
 
 
-# Assuming outlier_info_combined is the combined outlier data frame
-outlier_info_combined <- outlier_info_combined  # If not already assigned
+
+outlier_info_combined <- outlier_info_combined  
 
 # Count the number of outliers for each replicate
 outlier_counts <- table(outlier_info_combined$Replicate)
@@ -1010,7 +1010,7 @@ colnames(outlier_counts_df) <- c("Replicate", "Outlier_Count")
 # Sort the results by the number of outliers (descending)
 outlier_counts_df_sorted <- outlier_counts_df[order(-outlier_counts_df$Outlier_Count), ]
 
-# Print the result
+
 print(outlier_counts_df_sorted)
 
 ```
@@ -1260,7 +1260,7 @@ ggsave(plot = absol_Snail,
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
-#### PERMANOVA FA Snails
+#### PERMANOVA FA snails
 
 Create distance matrix with fatty acids:
 
@@ -1308,7 +1308,7 @@ print(pairwise_results)
 
 All treatments except of Pro_vs_Mix significant differences.
 
-#### SIMPER FA Snails
+#### SIMPER FA snails
 
 ```{r}
 # Upload extra table with treatments
@@ -1357,7 +1357,6 @@ simper_results_snails %>%
   dplyr::arrange(desc(n)) %>%
   print()
 
-
 ```
 
 # 7 Fatty acid composition biofilm
@@ -1372,87 +1371,19 @@ FA_Biofilm_absolute <-
 
 View(FA_Biofilm_absolute)
 
-# remove NAs, measurement < LOQ
-FA_Biofilm_absolute <- na.omit(FA_Biofilm_absolute)
+any(is.na(FA_Biofilm_absolute))
 ```
 
-Following fatty acids were not considered for biofilm analysis due to too less values: C11:0, C14:1, C15:1, C21:0, C22:1 and C24:1.
+Following fatty acids were not considered for biofilm analysis due to too less values: C10:0, C11:0, C14:1.
 
 Therefore, delete rows with respective fatty acids:
 
 ```{r}
 FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
-  filter(!fa %in% c("C11:0", "C14:1", "C15:1", "C21:0", "C22:1", "C24:1"))
+  filter(!fa %in% c("C10:0", "C11:0", "C14:1"))
 ```
 
-#### Histogram FA Biofilm
 
-```{r}
-hist(FA_Biofilm_absolute $ fa_conc) 
-skewness(FA_Biofilm_absolute $ fa_conc, na.rm = TRUE) 
-shapiro.test(FA_Biofilm_absolute $ fa_conc)
-```
-
-Fatty acid concentration not normal distributed and right skewed.
-
-#### Model FA Biofilm
-
-```{r}
-# try out Simper
-biofilm_treatments_table <-
-  read.table(file.path(prj, "data\\biofilm_treatments_table.txt"),
-             header = TRUE, sep = "\t")
-
-View(biofilm_treatments_table)
-
-# drei erste Spalten weg vor Simper (generell wide format muss chronologisch hier darüber)
-FA_Biofilm_absolute_wide <- FA_Biofilm_absolute_wide[, -c(1, 2, 3)]
-
-simper_FA_Snails <- with(biofilm_treatments_table, simper(FA_Biofilm_absolute_wide, treatment,  permutations = 999))
-
-summary(simper_FA_Snails)
-```
-
-```{r}
-# log10 transformation; adding 0.001 
-FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
-  mutate(log_fa_conc = log10(fa_conc + 0.001))
-
-# response variable: log_fa_conc
-# fixed effects: treatment + fa +  + week + treatment:fa + week:fa + treatment:week
-# random effect with constant intercept: (1|replicate); first change to factor
-FA_Biofilm_absolute $ replicate <- as.factor(FA_Biofilm_absolute $ replicate)
-FA_Biofilm_absolute $ week <- as.factor(FA_Biofilm_absolute $ week)
-FA_Biofilm_absolute $ treatment <- as.factor(FA_Biofilm_absolute $ treatment)
-FA_Biofilm_absolute $ fa <- as.factor(FA_Biofilm_absolute $ fa)
-
-FA_Biofilm_lmer <- lmer(log_fa_conc ~ treatment + fa + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_absolute)
-# @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
-```
-
-```{r}
-plot(FA_Biofilm_lmer) 
-# @ VS: das sieht nicht wirklich gleichmäßig verteilt aus, oder? Was würdest du jetzt machen?
-
-qreference(residuals(FA_Biofilm_lmer)) 
-# @ VS: das sieht schon wieder okay aus 
-
-anova(FA_Biofilm_lmer)
-
-drop1(FA_Biofilm_lmer, test = 'Chisq')
-```
-
-```{r}
-FA_Biofilm_inter <- lsmeans(FA_Biofilm_lmer, ~ treatment | fa)
-FA_Biofilm_inter
-
-FA_Biofilm_inter_dunn1 <- contrast(FA_Biofilm_inter, 'pairwise')
-
-FA_Biofilm_inter_dunn_sum1 <- summary(FA_Biofilm_inter_dunn1, infer = TRUE, adjust = 'mvt')
-
-FA_Biofilm_inter_dunn_sum1
-# @ VS hier kommen bei mir "Inf" Werte raus, irgendwie klappt das so nicht, ich habe nicht herausgefunden, was ich ändern muss
-```
 
 #### Total SAFA, MUFA & PUFA content
 
@@ -1536,7 +1467,17 @@ mean_total_FA_ba <- total_FA_per_replicate %>%
 print(mean_total_FA_ba)
 ```
 
-#### NMDS FA Biofilm
+#### Histogram FA biofilm
+
+```{r}
+hist(FA_Biofilm_absolute $ fa_conc) 
+skewness(FA_Biofilm_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Biofilm_absolute $ fa_conc)
+```
+Biofilm fatty acid concentration not normal distributed and right skewed.
+
+
+#### NMDS FA biofilm
 
 Change table to wide format:
 
@@ -1552,62 +1493,68 @@ FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
   mutate(treatment = if_else(week == "3", paste("3_", treatment, sep = ""), treatment))
 
 # change table to wide format
-FA_Biofilm_absolute_filtered <- FA_Biofilm_absolute %>%
-   dplyr::select(-log_fa_conc)
-
-
 FA_Biofilm_absolute_wide <-
-  pivot_wider(FA_Biofilm_absolute_filtered,
+  pivot_wider(FA_Biofilm_absolute,
               names_from = fa,
               values_from = fa_conc)
 
 # square root transformation, to reduce discriminatory power of dominant fa groups
-FA_Biofilm_absolute_wide <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2, 3)])
-View(FA_Biofilm_absolute_wide)
+FA_Biofilm_absolute_wide_sqrt <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2, 3)])
+View(FA_Biofilm_absolute_wide_sqrt)
 
-# set NA to 0 
-FA_Biofilm_absolute_wide[is.na(FA_Biofilm_absolute_wide)] <- 0
-View(FA_Biofilm_absolute_wide)
+any(is.na(FA_Biofilm_absolute_wide_sqrt))
+
 ```
+Check for outliers:
+```{r}
+# noch machen
+```
+
 
 Perform metaMDS:
 
 ```{r}
-#add treatment column and ease colnames for later NMDS plot
-colnames(FA_Biofilm_absolute_wide) <-
-  c(
-    "8:0",
-    "10:0",
-    "12:0",
-    "13:0",
-    "14:0",
-    "15:0",
-    "16:0",
-    "16:1",
-    "17:0",
-    "17:1",
-    "18:0",
-    "18:1",
-    "18:2n-6t",
-    "18:2n-6c",
-    "18:3n-6",
-    "18:3n-3",
-    "18:4n-3",
-    "20:0",
-    "20:1",
-    "20:2n-6",
-    "20:3n-6",
-    "20:4n-6",
-    "20:5n-3",
-    "22:0",
-    "22:5n-3",
-    "22:6n-3",
-    "24:0"
+# Rename and ease col-names for later NMDS plot
+FA_Biofilm_absolute_wide_sqrt <- FA_Biofilm_absolute_wide_sqrt %>%
+  rename(
+    `8:0`      = `C08:0`,   
+    `12:0`     = `C12:0`,   
+    `13:0`     = `C13:0`,
+    `14:0`     = `C14:0`,
+    `15:0`     = `C15:0`,
+    `15:1`     = `C15:1`,
+    `16:0`     = `C16:0`,
+    `16:1`     = `C16:1`,
+    `17:1`     = `C17:1`,
+    `18:0`     = `C18:0`,
+    `18:1`     = `C18:1`,
+    `18:2n-6t` = `C18:2(n-6t)`,
+    `18:2n-6c` = `C18:2(n-6c)`,
+    `18:3n-6`  = `C18:3(n-6)`,
+    `18:3n-3`  = `C18:3(n-3)`,
+    `18:4n-3`  = `C18:4(n-3)`,
+    `20:0`     = `C20:0`,
+    `20:1`     = `C20:1`,
+    `20:2n-6`  = `C20:2(n-6)`,
+    `20:3n-6`  = `C20:3(n-6)`,
+    `20:4n-6`  = `C20:4(n-6)`,
+    `20:3n-3`  = `C20:3(n-3)`,
+    `21:0`     = `C21:0`,
+    `20:5n-3`  = `C20:5(n-3)`,
+    `22:0`     = `C22:0`,
+    `22:1`     = `C22:1`,
+    `22:2`     = `C22:2`,
+    `22:5n-3`  = `C22:5(n-3)`,
+    `22:6n-3`  = `C22:6(n-3)`,
+    `24:0`     = `C24:0`,
+    `24:1`     = `C24:1`
   )
+
+
 
 NMDS_Biofilm_absolute <-
   metaMDS(
-    FA_Biofilm_absolute_wide,
+    FA_Biofilm_absolute_wide_sqrt,
     autotransform = FALSE,
     k = 2 ,
     distance = "bray",
@@ -1626,18 +1573,17 @@ FA_variables.SAFAs_ba <-
   envfit(
     NMDS_Biofilm_absolute,
     subset(
-      FA_Biofilm_absolute_wide,
+      FA_Biofilm_absolute_wide_sqrt,
       select = c(
         "8:0",
-        "10:0",
         "12:0",
         "13:0",
         "14:0",
         "15:0",
         "16:0",
-        "17:0",
         "18:0",
         "20:0",
+        "21:0",
         "22:0",
         "24:0"
       )
@@ -1651,12 +1597,15 @@ FA_variables.MUFAs_ba <-
   envfit(
     NMDS_Biofilm_absolute,
     subset(
-      FA_Biofilm_absolute_wide,
+      FA_Biofilm_absolute_wide_sqrt,
       select = c(
+        "15:1",
         "16:1",
         "17:1",
         "18:1",
-        "20:1"
+        "20:1",
+        "22:1",
+        "24:1"
       )
     )
     ,
@@ -1668,7 +1617,7 @@ FA_variables.PUFAs_ba <-
   envfit(
     NMDS_Biofilm_absolute,
     subset(
-      FA_Biofilm_absolute_wide,
+      FA_Biofilm_absolute_wide_sqrt,
       select = c(
         "18:2n-6t",
         "18:2n-6c",
@@ -1678,7 +1627,9 @@ FA_variables.PUFAs_ba <-
         "20:2n-6",
         "20:3n-6",
         "20:4n-6",
+        "20:3n-3",
         "20:5n-3",
+        "22:2",
         "22:5n-3",
         "22:6n-3"
       )
@@ -1788,18 +1739,46 @@ absol_Biofilm = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = N
   
 absol_Biofilm
 
+```
 
-# save the plot
+Save the plot
+```{r}
 ggsave(absol_Biofilm, 
        filename = "NMDS_Biofilm_absolute.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
-#### Permanova FA Biofilm
+
+
+
+#### PERMANOVA FA biofilm
+
+Create distance matrix with fatty acids:
+```{r}
+#FA_Snails_dist <- vegdist(FA_Snails_absolute_wide_sqrt, method = 'bray')
+```
+
+
+
+
+#### SIMPER FA biofilm
 
 ```{r}
-# @ VS: Hier muss die Woche als explanatory variable wieder dazu, oder? Dann muss ich die Tabellen wahrscheinlich anders formen, als für die FA der Schnecken?
+# try out Simper
+#biofilm_treatments_table <-
+ # read.table(file.path(prj, "data\\biofilm_treatments_table.txt"),
+            # header = TRUE, sep = "\t")
+
+#View(biofilm_treatments_table)
+
+# drei erste Spalten weg vor Simper (generell wide format muss chronologisch hier darüber)
+#FA_Biofilm_absolute_wide <- FA_Biofilm_absolute_wide[, -c(1, 2, 3)]
+
+#simper_FA_Snails <- with(biofilm_treatments_table, simper(FA_Biofilm_absolute_wide, treatment,  permutations = 999))
+
+#summary(simper_FA_Snails)
 ```
+
 
 # 8 Temperature and light conditions
 
