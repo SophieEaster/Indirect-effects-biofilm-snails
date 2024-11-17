@@ -2,24 +2,26 @@
 title: "Bottom-up effects of an herbicide and an antibiotic on *Potamopyrgus antipodarum*"
 format: 
   html:
+    self-contained: true
     toc: true
     style: "floating"
 ---
 
-Sophie Oster, Verena C. Schreiner, Tobias Schmitt, Patrick Fink, Markus Weitere, Ibrahim Arayoe, Ralf Schulz, Mirco Bundschuh
+Sophie Oster, Verena C. Schreiner, Tobias Schmitt, Patrick Fink, Markus Weitere, Ibrahim Araoye, Ralf Schulz, Mirco Bundschuh
 
 R script written by Sophie Oster\
-checked by Verena C. Schreiner\
+checked by Verena C. Schreiner
+
+\
 RPTU Kaiserslautern-Landau\
 Fortstrasse 7\
 76829 Landau in der Pfalz\
 GERMANY
 
-Corresponding authors email address:\
-1) Sophie Oster: oster\@rptu.de\
-2) Mirco Bundschuh: mirco.bundschuh\@rptu.de
+Corresponding author email address:\
+1) Mirco Bundschuh: mirco.bundschuh\@rptu.de
 
-This study was conducted with four treatments and three time points explanatory variables
+This study was conducted with four treatments and three time points explanatory variables depending on the endpoint:
 
 -   treatment (categorical)
     -   uncontaminated control (negative control, NC)
@@ -70,6 +72,7 @@ library(performance)
 library(emmeans)
 library(purrr)
 library(DT)
+library(pairwiseAdonis)
 ```
 
 # 2 Set working directory
@@ -146,8 +149,9 @@ All not normal distributed and right skewed -\> log10 transformation in model
 Linear model with treatment and week and their interaction (week:treatment) as explanatory variables.
 
 ```{r}
-# week as factor
+# week and treatment as factor
 biofilm_endpoints $ week <- factor(biofilm_endpoints $ week)
+biofilm_endpoints $ treatment <- factor(biofilm_endpoints $ treatment)
 
 model_chla <- lm(log10(chla) ~ week + treatment + week:treatment, data = biofilm_endpoints)
 
@@ -195,7 +199,7 @@ chla_inter_dunn2 <- contrast(chla_inter2, 'pairwise')
 -   Mix\
     -   all weeks different
 
-Week 1 & 2 quite similar, expect of Mix treatment. Week 3 quite different to week 1 & 2 despite of Cip tretment.
+Week 1 & 2 quite similar, expect of Mix treatment. Week 3 quite different to week 1 & 2 despite of Cip treatment.
 
 #### Model chlb
 
@@ -463,12 +467,10 @@ Feeding rate variable not normal distributed and right skewed -\> log10 transfor
 #### Model feeding rate
 
 ```{r}
-# week and beaker as factor
+# week, treatment and beaker as factor
 afdw_feeding_rate $ week <- factor(afdw_feeding_rate $ week)
-
+afdw_feeding_rate $ treatment <- factor(afdw_feeding_rate $ treatment)
 afdw_feeding_rate $ beaker <- factor(afdw_feeding_rate $ beaker)
-
-# @ VS: muss die explanatory variable "treatment" auch ein faktor sein? (Frage gilt auch für alle anderen Modelle)
 
 # log10 transformation; adding 0.001 to variable for samples with feeding rate = 0
 afdw_feeding_rate <- afdw_feeding_rate %>%
@@ -534,9 +536,9 @@ Weeks for all treatments similiar, only difference for treatment Pro week 1 & 2 
 #### Boxplot feeding rate after 7/14/21 days
 
 ```{r}
-afdw_after_feeding_boxplot <- ggplot(data = afdw_feeding_rate, 
+feeding_rate_boxplot <- ggplot(data = afdw_feeding_rate, 
        mapping = aes(x = factor(week), 
-                     y = afdw, 
+                     y = log_feeding_rate, 
                      fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
   geom_boxplot() +
   scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442")) + 
@@ -547,11 +549,11 @@ afdw_after_feeding_boxplot <- ggplot(data = afdw_feeding_rate,
   scale_y_continuous(trans = "log10") +
   labs(y = expression("Feeding rate (µg/day)" ~ log[10]))
 
-afdw_after_feeding_boxplot
+feeding_rate_boxplot
 
 # save the plot
-ggsave(afdw_after_feeding_boxplot, 
-       filename = "afdw_after_feeding_boxplot.png", 
+ggsave(feeding_rate_boxplot, 
+       filename = "feeding_rate_boxplot.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 
 
@@ -574,6 +576,7 @@ print(mean_afdw_after_feeding)
 ```{r}
 hist(afdw_feeding_rate $ afdw) 
 skewness(afdw_feeding_rate $ afdw, na.rm = TRUE) 
+shapiro.test(afdw_feeding_rate $ afdw)
 ```
 
 AFDW after feeding not normal distributed. Log10 transformation for model.
@@ -584,17 +587,22 @@ AFDW after feeding not normal distributed. Log10 transformation for model.
 # log10 transformation; adding 0.001 
 afdw_feeding_rate <- afdw_feeding_rate %>%
   mutate(log_afdw = log10(afdw + 0.001))
-# @ VS: Die Addition von 0.001 auch bei afdw machen, obwohl es keine 0-Werte gibt?
 
 # response variable: log_afdw
 # fixed effects: week + treatment + week:treatment
 # random effect with constant intercept: (1|beaker)
+# remove NAs
+afdw_feeding_rate <- na.omit(afdw_feeding_rate)
+
 afdw_after_feeding_lmer <- lmer(log_afdw ~ week + treatment + week:treatment + (1|beaker), data = afdw_feeding_rate)
 
-afdw_after_feeding_lmer %>% r2
-# Conditional R2: explained portion of the variance of the fixed and random effect together
-# Marginal R2: declared share of the variance of the fixed components alone
+#----- new try without random effect
+model_afdw2 <- lm(log_afdw ~ week + treatment + week:treatment, data = afdw_feeding_rate)
 
+drop1(model_afdw2, test = "Chisq")
+
+anova(model_afdw2)
+#----------
 plot(afdw_after_feeding_lmer) # point cloud looks evenly distributed --> normal distribution
 
 qreference(residuals(afdw_after_feeding_lmer)) # normality
@@ -640,8 +648,7 @@ afdw_after_feeding_boxplot <- ggplot(data = afdw_feeding_rate,
   theme_bw() +
   labs(x = NULL , fill = "Treatment") +
   scale_x_discrete(labels = c("Week 1", "Week 2", "Week 3")) +
-  scale_y_continuous(trans = "log10") +
-  labs(y = expression("AFDW (mg/cm"^"2"*")" ~ log[10]))
+  labs(y = expression("AFDW (mg/cm"^"2"*")"))
 
 afdw_after_feeding_boxplot
 
@@ -652,8 +659,6 @@ ggsave(afdw_after_feeding_boxplot,
 ```
 
 # 5 Dryweight and growth snails
-
-\@ VS: Ich hatte 20 Schnecken aus der Zucht eingewogen, um das Wachstum zu berechnen. Ich habe 3 Schnecken verloren, und die restlichen 7 (in der alten Tabelle, die du gesehen hast, waren es 10 Culture Schnecken) in der neuen Tabelle ergänzt. Die Schnecken wurden alle trocken gewogen. Also das ist das Gewicht nach Gefriertrocknung und ohne Schale, die habe ich bei allen Schnecken immer entfernt, da da teilweise Biofilm drauf gewachsen ist. Ich würde den Endpunkt an sich gerne drinlassen, du hast aber natürlich Recht, dass die Standardabweichung sehr groß ist, aber das stelle ich in den Boxplots ja dar.. was denkst du? Du hast da mehr Erfahrung, wenn du davon abrätst, dann nehme ich ihn raus. Ich habe die Schneckenzucht auch noch, also könnte ich noch mehr Culture snails einwiegen? Der Versuch aber dann 1 Jahr her.. Wahrscheinlich nicht mehr vergleichbar?
 
 ```{r}
 # insert data
@@ -692,6 +697,14 @@ percental_growth <- growth_snails %>%
 
 percental_growth
 
+# calculate effects size compared to control snails
+effect_size_growth <- growth_snails %>%
+  group_by(treatment) %>%
+  summarize(mean_dryweight = mean(dryweight_mg)) %>%
+  mutate(percental_growth = (mean_dryweight / mean_dryweight[treatment == "NC"]) * 100 - 100)
+
+effect_size_growth
+
 ```
 
 #### Histogram snail growth
@@ -711,6 +724,10 @@ Growth normal distributed.
 #### Model growth snails
 
 ```{r}
+# explanatory variable treatment as factor
+filtered_growth $ treatment <- factor(filtered_growth $ treatment)
+  
+  
 model_growth_snails <- lm(growth_µg_dw_per_day ~ treatment, data = filtered_growth)
 
 plot(model_growth_snails) # point cloud looks evenly distributed --> normal distribution
@@ -745,20 +762,26 @@ growth_snails_boxplot <- ggplot(data = filtered_growth,
                                               fill = factor(treatment, levels = c("NC", "Cip", "Pro", "Mix")))) +
   geom_boxplot() +
   scale_fill_manual(values = c("NC" = "#009E73", "Cip" = "#56B4E9", "Pro" = "#E69F00", "Mix" = "#F0E442"),
-                    breaks = c("NC", "Cip", "Pro", "Mix")) + 
+                    breaks = c("NC", "Cip", "Pro", "Mix")) +
+  geom_point() +
   scale_color_okabe_ito() + 
   theme_bw() +
   labs(x = NULL , y = "Growth (µg dryweight / day)", fill = "Treatment") +
+  ylim(-10, 90) +
   scale_x_discrete(labels = c("NC", "Cip", "Pro", "Mix")) +
   labs(title = expression(paste("Growth of ", italic("Potamopyrgus antipodarum"), " after 21-day feeding assay"))) +
-  annotate("text", x = 1.5, y = max(filtered_growth$growth_µg_dw_per_day) + 2.5, 
-           label = "*", size = 6) +
+  annotate("text", x = 1.5, y = max(filtered_growth$growth_µg_dw_per_day) + 5, 
+           label = "p=0.022*", size = 3) +
   geom_segment(aes(x = 1, xend = 2, y = max(growth_µg_dw_per_day) + 2, yend = max(growth_µg_dw_per_day) + 2),
-               lineend = "round", linewidth = 0.8) +
-  annotate("text", x = 2.5, y = max(filtered_growth$growth_µg_dw_per_day) + 6, 
-           label = "**", size = 6) +
-  geom_segment(aes(x = 1, xend = 4, y = max(growth_µg_dw_per_day) + 5, yend = max(growth_µg_dw_per_day) + 5),
-               lineend = "round", linewidth = 0.8) 
+               lineend = "round", linewidth = 0.7) +
+  annotate("text", x = 2.5, y = max(filtered_growth$growth_µg_dw_per_day) + 21, 
+           label = "p=0.005**", size = 3) +
+  geom_segment(aes(x = 1, xend = 4, y = max(growth_µg_dw_per_day) + 18, yend = max(growth_µg_dw_per_day) + 18),
+               lineend = "round", linewidth = 0.7) +
+    annotate("text", x = 2, y = max(filtered_growth$growth_µg_dw_per_day) + 13, 
+           label = "p=0.056", size = 3) +
+    geom_segment(aes(x = 1, xend = 3, y = max(growth_µg_dw_per_day) + 10, yend = max(growth_µg_dw_per_day) + 10),
+               lineend = "round", linewidth = 0.7) 
 
 
 growth_snails_boxplot
@@ -771,9 +794,7 @@ ggsave(growth_snails_boxplot,
 
 # 6 Fatty acid composition snails
 
-Statistics for fatty acid composition of snails in 6.1 absolute (µg fatty acid / mg dry weight snail) values and 6.2 relative (%) values.
-
-### 6.1 Absolute values
+Statistics for fatty acid composition of snails in absolute values (µg fatty acid / mg dry weight snail).
 
 ```{r}
 # insert data
@@ -787,97 +808,36 @@ View(FA_Snails_absolute)
 FA_Snails_absolute <- na.omit(FA_Snails_absolute)
 ```
 
-In FA_Snails_absolute.txt: Snail 13, 14 and 29 (S_13, S_14, S_29) removed due to strongly deviating measured values compared to other snails.
-
-Following fatty acids were not considered for FA content in snails due to too less values: C10:0, C11:0, C14:1, C15:1, C17:1, C20:3(n-3), C20:3(n-6), C21:0, C22:0 and C24:1.
+Following fatty acids were not considered for FA content in snails due to too less values (less than 3 findings): C10:0, C11:0, C14:1, C15:1, C17:1, C20:0 and C22:0.
 
 Therefore, delete rows with respective fatty acids:
 
 ```{r}
 FA_Snails_absolute <- FA_Snails_absolute %>%
-  filter(!fa %in% c("C10:0", "C11:0", "C14:1", "C15:1", "C17:1", "C20:3(n-3)", "C20:3(n-6)", "C21:0", "C22:0", "C24:1"))
+  filter(!fa %in% c("C10:0", "C11:0", "C14:1", "C15:1", "C17:1", "C20:0", "C22:0"))
 ```
-
-#### Histogram FA Snails
-
-```{r}
-hist(FA_Snails_absolute $ fa_conc) 
-skewness(FA_Snails_absolute $ fa_conc, na.rm = TRUE) 
-shapiro.test(FA_Snails_absolute $ fa_conc)
-```
-
-Fatty acid concentration not normal distributed and right skewed.
-
-#### Model FA Snails
-
-```{r}
-# log10 transformation; adding 0.001 
-FA_Snails_absolute <- FA_Snails_absolute %>%
-  mutate(log_fa_conc = log10(fa_conc + 0.001))
-
-# response variable: log_fa_conc
-# fixed effects: treatment + fa + treatment:fa
-# random effect with constant intercept: (1|replicate); first change to factor
-FA_Snails_absolute $ replicate <- as.factor(FA_Snails_absolute $ replicate)
-
-FA_snails_lmer <- lmer(log_fa_conc ~ treatment + fa + treatment:fa + (1|replicate), data = FA_Snails_absolute)
-```
-
-```{r}
-plot(FA_snails_lmer) 
-# @ VS: das sieht nicht wirklich gleichmäßig verteilt aus, oder? Was würdest du jetzt machen?
-
-qreference(residuals(FA_snails_lmer)) 
-# @ VS: das sieht schon wieder okay aus 
-
-anova(FA_snails_lmer)
-```
-
-```{r}
-FA_snails_inter <- lsmeans(FA_snails_lmer, ~ treatment | fa)
-FA_snails_inter
-
-FA_snails_inter_dunn1 <- contrast(FA_snails_inter, 'pairwise')
-
-FA_snails_inter_dunn_sum1 <- summary(FA_snails_inter_dunn1, infer = TRUE, adjust = 'mvt')
-
-FA_snails_inter_dunn_sum1
-
-```
-
-Except the following remarks, fatty acid concentration of the 4 treatments quite similar.
-
--   C12:0 : Ciprofloxacin treatment to Mix and NC (and almost to Pro) significantly different
-
--   C13:0 : Ciprofloxacin to all other treatments significantly different. Mix and Pro also different
-
--   C14:0 : Cip-Mix and Mix-NC different
-
--   C18:3(n-6) : Cip-NC and almost Mix-NC different
-
--   C22:1 : NC different to all chemical treatments. Mix and Pro also different.
 
 #### Total SAFA, MUFA & PUFA content
 
 1\) Total SAFA content
 
 ```{r}
-# total SAFA, MUFA, PUFA content; sa = "snail absolute"
-# total SAFA content
-# filter saturated fatty acids in new table
+# total SAFA, MUFA, PUFA content; sa = "snail absolute" 
+# total SAFA content 
+# filter saturated fatty acids in new table 
 SAFA_sa <- FA_Snails_absolute %>%
-    filter(fa %in% c("C08:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C24:0"))
+filter(fa %in% c("C08:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C21:0", "C24:0")) 
 
-# calculate the total SAFA content per snail
-total_SAFA_per_snail <- SAFA_sa %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_SAFA = sum(fa_conc))
-print(total_SAFA_per_snail)
+# calculate the total SAFA content per snail 
+total_SAFA_per_snail <- SAFA_sa %>% 
+  group_by(replicate, treatment) %>% 
+  summarize(sum_SAFA = sum(fa_conc)) 
+print(total_SAFA_per_snail) 
 
-# mean
-mean_SAFA_sa <- total_SAFA_per_snail %>%
-  group_by(treatment) %>%
-  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
+# mean 
+mean_SAFA_sa <- total_SAFA_per_snail %>% 
+  group_by(treatment) %>% 
+  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE)) 
 print(mean_SAFA_sa)
 ```
 
@@ -886,7 +846,7 @@ print(mean_SAFA_sa)
 ```{r}
 # filter mono-unsaturated fatty acids in new table
 MUFA_sa <- FA_Snails_absolute %>%
-  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
+  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1", "C24:1"))
 
 # total MUFA content per snail
 total_MUFA_per_snail <- MUFA_sa %>%
@@ -939,74 +899,178 @@ mean_total_FA_sa <- total_FA_per_snail %>%
 print(mean_total_FA_sa)
 ```
 
+#### Histogram FA Snails
+
+```{r}
+hist(FA_Snails_absolute $ fa_conc) 
+skewness(FA_Snails_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Snails_absolute $ fa_conc)
+```
+
+Fatty acid concentration not normal distributed and right skewed.
+
 #### NMDS FA snails
 
 Change table to wide format:
 
 ```{r}
-# change table to wide format
-FA_Snails_absolute_filtered <- FA_Snails_absolute %>%
-   dplyr::select(-log_fa_conc)
-
-
-FA_Snails_absolute_wide <-
-  pivot_wider(FA_Snails_absolute_filtered,
+# change table to wide format (sqrt = square root transformation in next step)
+FA_Snails_absolute_wide_sqrt <-
+  pivot_wider(FA_Snails_absolute,
               names_from = fa,
               values_from = fa_conc)
 
 # square root transformation, to reduce discriminatory power of dominant fa groups
-FA_Snails_absolute_wide <- sqrt(FA_Snails_absolute_wide[, -c(1, 2)])
-View(FA_Snails_absolute_wide)
+FA_Snails_absolute_wide_sqrt[, 3:28] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:28])
 
-#set NA to 0 
-FA_Snails_absolute_wide[is.na(FA_Snails_absolute_wide)] <- 0
-View(FA_Snails_absolute_wide)
+any(is.na(FA_Snails_absolute_wide_sqrt))
+```
+
+```{r}
+#Run function one time, after that you can use the shortcut outlierKD (your subset, variable)
+
+outlierKD_multiple <- function(dt, id_col = "replicate", start_col = 3, end_col = 28) {
+  # Initialize an empty list to store results for each column
+  outlier_results <- list()
+  
+  # Loop over each column from 3 to 28 (or specify your range)
+  for (i in start_col:end_col) {
+    col_name <- colnames(dt)[i]  # Get the column name
+    
+    # Extract the column values
+    var_name <- dt[[col_name]]
+    
+    # Check if the column is numeric
+    if (is.numeric(var_name)) {
+      na1 <- sum(is.na(var_name))
+      m1 <- mean(var_name, na.rm = TRUE)
+      
+      # Identify outliers using boxplot stats
+      outlier <- boxplot.stats(var_name)$out  
+      
+      # Find rows with outliers
+      outlier_rows <- which(var_name %in% outlier)
+      
+      # If no outliers, skip the rest of the loop
+      if (length(outlier_rows) == 0) next
+      
+      # Get replicate values for the outliers
+      id_values <- dt[[id_col]][outlier_rows]
+      
+      # Mean of outliers
+      mo <- mean(outlier)
+      
+      # Collect the outlier information for this column
+      outlier_results[[col_name]] <- data.frame(
+        Column = col_name,
+        Row = outlier_rows,
+        Replicate = id_values,
+        Outlier = outlier
+      )
+      
+      cat("\nOutliers for column:", col_name, "\n")
+      cat("Outliers identified:", length(outlier), "\n")
+      cat("Proportion (%) of outliers:", 
+          round(length(outlier) / sum(!is.na(var_name)) * 100, 1), "\n")
+      cat("Mean of the outliers:", round(mo, 2), "\n")
+      cat("Mean with outliers:", round(m1, 2), "\n")
+    }
+  }
+  
+  # Combine all outlier information into one data frame
+  if (length(outlier_results) > 0) {
+    combined_outliers <- do.call(rbind, outlier_results)
+  } else {
+    combined_outliers <- data.frame()  # If no outliers were found, return an empty data frame
+  }
+  
+  # Return combined data frame with outliers information
+  return(combined_outliers)
+}
+
+
+
+# Call the function and store the results
+outlier_info_combined <- outlierKD_multiple(FA_Snails_absolute_wide_sqrt, id_col = "replicate", start_col = 3, end_col = 28)
+
+# Print the combined outlier information
+print(outlier_info_combined)
+
+
+# Assuming outlier_info_combined is the combined outlier data frame
+outlier_info_combined <- outlier_info_combined  # If not already assigned
+
+# Count the number of outliers for each replicate
+outlier_counts <- table(outlier_info_combined$Replicate)
+
+# Convert to a data frame for better readability
+outlier_counts_df <- as.data.frame(outlier_counts)
+colnames(outlier_counts_df) <- c("Replicate", "Outlier_Count")
+
+# Sort the results by the number of outliers (descending)
+outlier_counts_df_sorted <- outlier_counts_df[order(-outlier_counts_df$Outlier_Count), ]
+
+# Print the result
+print(outlier_counts_df_sorted)
+
+```
+
+As the replicates S_1, S_13, S_25 and S_30 show more than 10 outliers within 26 fatty acids concentrations, these replicates will be removed.
+
+```{r}
+FA_Snails_absolute_wide_sqrt <- FA_Snails_absolute_wide_sqrt %>%
+  filter(!(replicate %in% c("S_1", "S_13", "S_25", "S_30")))
 ```
 
 Perform metaMDS:
 
 ```{r}
-# Add treatment column and rename (- C, - () ) fatty acids for later plot
-colnames(FA_Snails_absolute_wide) <-
-  c(
-    "8:0",
-    "12:0",
-    "13:0",
-    "14:0",
-    "15:0",
-    "16:0",
-    "16:1",
-    "17:0",
-    "18:0",
-    "18:1",
-    "18:2n-6t",
-    "18:2n-6c",
-    "18:3n-6",
-    "18:3n-3",
-    "18:4n-3",
-    "20:0",
-    "20:1",
-    "20:2n-6",
-    "20:4n-6",
-    "20:5n-3",
-    "22:1",
-    "22:2",
-    "22:5n-3",
-    "22:6n-3",
-    "24:0"
+# Remove first and second column for metaMDS
+FA_Snails_absolute_wide_sqrt <- FA_Snails_absolute_wide_sqrt[, -c(1, 2)]
+
+# Rename (- C, - () ) fatty acids for later plot
+FA_Snails_absolute_wide_sqrt <- FA_Snails_absolute_wide_sqrt %>%
+  rename(
+    `8:0`      = `C08:0`,   
+    `12:0`     = `C12:0`,   
+    `13:0`     = `C13:0`,
+    `14:0`     = `C14:0`,
+    `15:0`     = `C15:0`,
+    `16:0`     = `C16:0`,
+    `16:1`     = `C16:1`,
+    `18:0`     = `C18:0`,
+    `18:1`     = `C18:1`,
+    `18:2n-6t` = `C18:2(n-6t)`,
+    `18:2n-6c` = `C18:2(n-6c)`,
+    `18:3n-6`  = `C18:3(n-6)`,
+    `18:3n-3`  = `C18:3(n-3)`,
+    `18:4n-3`  = `C18:4(n-3)`,
+    `20:1`     = `C20:1`,
+    `20:2n-6`  = `C20:2(n-6)`,
+    `20:3n-6`  = `C20:3(n-6)`,
+    `20:4n-6`  = `C20:4(n-6)`,
+    `21:0`     = `C21:0`,
+    `20:5n-3`  = `C20:5(n-3)`,
+    `22:1`     = `C22:1`,
+    `22:2`     = `C22:2`,
+    `22:5n-3`  = `C22:5(n-3)`,
+    `22:6n-3`  = `C22:6(n-3)`,
+    `24:0`     = `C24:0`,
+    `24:1`     = `C24:1`
   )
+
 
 
 NMDS_Snails_absolute <-
   metaMDS(
-    FA_Snails_absolute_wide,
+    FA_Snails_absolute_wide_sqrt,
     autotransform = FALSE,
     k = 2 ,
     distance = "bray",
     na.rm = TRUE
   )
 
-NMDS_Snails_absolute$stress # stress = 0.098
+NMDS_Snails_absolute$stress
 ```
 
 Create fa vectors
@@ -1018,7 +1082,7 @@ FA_variables.SAFAs_sa <-
   envfit(
     NMDS_Snails_absolute,
     subset(
-      FA_Snails_absolute_wide,
+      FA_Snails_absolute_wide_sqrt,
       select = c(
         "8:0",
         "12:0",
@@ -1026,9 +1090,8 @@ FA_variables.SAFAs_sa <-
         "14:0",
         "15:0",
         "16:0",
-        "17:0",
         "18:0",
-        "20:0",
+        "21:0",
         "24:0"
       )
     )
@@ -1041,12 +1104,13 @@ FA_variables.MUFAs_sa <-
   envfit(
     NMDS_Snails_absolute,
     subset(
-      FA_Snails_absolute_wide,
+      FA_Snails_absolute_wide_sqrt,
       select = c(
         "16:1",
         "18:1",
         "20:1",
-        "22:1"
+        "22:1",
+        "24:1"
       )
     )
     ,
@@ -1058,7 +1122,7 @@ FA_variables.PUFAs_sa <-
   envfit(
     NMDS_Snails_absolute,
     subset(
-      FA_Snails_absolute_wide,
+      FA_Snails_absolute_wide_sqrt,
       select = c(
         "18:2n-6t",
         "18:2n-6c",
@@ -1066,8 +1130,10 @@ FA_variables.PUFAs_sa <-
         "18:3n-3",
         "18:4n-3",
         "20:2n-6",
+        "20:3n-6",
         "20:4n-6",
         "20:5n-3",
+        "22:2",
         "22:5n-3",
         "22:6n-3"
       )
@@ -1080,6 +1146,10 @@ FA_variables.PUFAs_sa <-
 # Extract NMDS scores 
 data.scores_snail_absolute = as.data.frame(scores(NMDS_Snails_absolute)$sites)
 
+# Remove S_1, S_13, S_25 and S_30 from first data frame "FA_Snails_absolute"
+FA_Snails_absolute <- FA_Snails_absolute %>%
+  filter(!(replicate %in% c("S_1", "S_13", "S_25", "S_30")))
+
 Treatments <-
   FA_Snails_absolute $ treatment[FA_Snails_absolute $ fa == "C16:0"]
 
@@ -1090,12 +1160,9 @@ data.scores_snail_absolute$Treatment = Treatments
 SAFAs_coord_cont_sa = as.data.frame(scores(FA_variables.SAFAs_sa, "vectors")) * ordiArrowMul(FA_variables.SAFAs_sa)
 MUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.MUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.MUFAs_sa)
 PUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.PUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.PUFAs_sa)
-
 ```
 
 Plot NMDS:
-
-@VS: ich hab viel herumprobiert mit anderen Plots, base R plots ausprobiert und mit ggplot ordination plots gemacht. Ich finde diese Darstellung allerdings weiterhin am besten.
 
 ```{r}
 # plot
@@ -1125,18 +1192,18 @@ absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS
   geom_text_repel(
     data = PUFAs_coord_cont_sa, 
     aes(x = NMDS1 * 0.2, y = NMDS2 * 0.2, label = row.names(PUFAs_coord_cont_sa)), 
-    colour = "grey30",
-    size = 3) +
-    geom_text_repel(
+    colour = "black",
+    size = 2.5) +
+  geom_text_repel(
     data = MUFAs_coord_cont_sa, 
     aes(x = NMDS1 * 0.2, y = NMDS2 * 0.2, label = row.names(MUFAs_coord_cont_sa)), 
-    colour = "grey30",
-    size = 3) +
-      geom_text_repel(
+    colour = "#996600",
+    size = 2.5) +
+  geom_text_repel(
     data = SAFAs_coord_cont_sa, 
     aes(x = NMDS1 * 0.1, y = NMDS2 * 0.1, label = row.names(SAFAs_coord_cont_sa)), 
-    colour = "grey30",
-    size = 3) +
+    colour = "#0000FF",
+    size = 2.5) +
   theme_bw() +
   theme(
     axis.title = element_text(
@@ -1153,13 +1220,13 @@ absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS
       colour = "grey30"
     ),
     legend.text = element_text(size = 10, colour = "grey30"),
-    plot.margin = margin(
-      t = 0.2,
-      b = 0.2,
-      l = 0.2,
-      r = 0.2,
-      unit = "cm"
-    ),
+    #plot.margin = margin(
+     # t = 0.2,
+    #  b = 0.2,
+    #  l = 0.2,
+    #  r = 0.2,
+    #  unit = "cm"
+  #  ),
     panel.grid.major = element_line(colour = "grey95", size = 0.4),
     panel.grid.minor = element_line(colour = "grey95", size = 0.2)
   ) +
@@ -1174,196 +1241,128 @@ absol_Snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS
 
 absol_Snail
 # position of FA names manually adjusted in vector graphic
+```
 
-# save the plot
+Save the plot as .png:
+
+```{r}
 ggsave(absol_Snail, 
        filename = "NMDS_snails_absolute.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
-#### Permanova FA Snails
-
-Create distance matrix with fatty acids
+Save the plot as vector graphic:
 
 ```{r}
-FA_Snails_dist <- vegdist(FA_Snails_absolute_wide, method = 'bray')
+ggsave(plot = absol_Snail,
+       "NMDS_snails_absolute.svg", 
+       device = "svg",
+       path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
-Separate explanatory variables from fatty acid information
+#### PERMANOVA FA Snails
+
+Create distance matrix with fatty acids:
 
 ```{r}
-expl_FA_Snails <-
-  pivot_wider(FA_Snails_absolute_filtered,
+FA_Snails_dist <- vegdist(FA_Snails_absolute_wide_sqrt, method = 'bray')
+```
+
+Separate explanatory variables from fatty acid information:
+
+```{r}
+# change initial table to wide format again
+FA_Snails_absolute_wide_permanova <-
+  pivot_wider(FA_Snails_absolute,
               names_from = fa,
               values_from = fa_conc)
 
+# square root transformation again, to reduce discriminatory power of dominant fa groups
+FA_Snails_absolute_wide_permanova[, 3:28] <- sqrt(FA_Snails_absolute_wide_permanova[, 3:28])
+
 # delete fa columns
-expl_FA_Snails <- expl_FA_Snails[, c(1, 2)]
-expl_FA_Snails$treatment <- as.factor(expl_FA_Snails$treatment)
+FA_Snails_absolute_wide_permanova <- FA_Snails_absolute_wide_permanova[, c(1, 2)]
+FA_Snails_absolute_wide_permanova $ treatment <- as.factor(FA_Snails_absolute_wide_permanova $ treatment)
 ```
 
-Make Permanova
+Perform PERMANOVA:
 
 ```{r}
-perm_FA_Snails <- adonis2(FA_Snails_dist ~ treatment, data = expl_FA_Snails, permutations = 999)
+perm_FA_Snails <- adonis2(FA_Snails_dist ~ treatment, data = FA_Snails_absolute_wide_permanova, permutations = 999)
+print(perm_FA_Snails)
 ```
 
-Make anova
+Pairwise comparisons (by: Martinez Arbizu, P. (2020). pairwiseAdonis: Pairwise multilevel comparison using adonis. R package version 0.4):
 
 ```{r}
-rda_FA_Snails_1 <- rda(decostand(FA_Snails_dist, "hellinger")
-                                   ~ treatment, data = expl_FA_Snails)
+pairwise_results <- pairwise.adonis2(
+  FA_Snails_dist ~ treatment,
+  data = FA_Snails_absolute_wide_permanova,
+  permutations = 999
+)
 
-summary(rda_FA_Snails_1, display = NULL)
-
-anova_result <- anova(rda_FA_Snails_1, by = "margin")
+# View the results
+print(pairwise_results)
 
 ```
 
-Explanatory variable "treatment" significant, now perform pairwise comparisons
+All treatments except of Pro_vs_Mix significant differences.
+
+#### SIMPER FA Snails
 
 ```{r}
-# @ VS: hier komme ich nicht weiter, ich hab multiconstrained und normale post-hoc tests probiert.. wie würdest du hier weitermachen?
+# Upload extra table with treatments
+snail_treatments_table <-
+  read.table(file.path(prj, "data\\snail_treatments_table.txt"),
+             header = TRUE, sep = "\t")
+
+View(snail_treatments_table)
+
+# Perform SIMPER
+simper_FA_Snails <- with(snail_treatments_table, simper(FA_Snails_absolute_wide_sqrt, treatment,  permutations = 999))
+
+summary(simper_FA_Snails)
+
+
+str(simper_FA_Snails)
+
+# Combine results into a data frame
+simper_results_snails <- do.call(rbind, lapply(simper_FA_Snails, function(x) {
+  # Check if the element contains valid data
+  if (!is.null(x$p)) {
+    data.frame(
+      fatty_acid = names(x$p),  
+      p = as.numeric(x$p),      
+      average = as.numeric(x$average),  
+      sd = as.numeric(x$sd),
+      ratio = as.numeric(x$ratio),
+      cusum = as.numeric(x$cusum),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL  # Skip if no p-values
+  }
+}))
+
+
+# Show only significant results
+simper_results_snails %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::select(fatty_acid, p, average, sd, ratio, cusum)  
+
+# How often do they occur
+simper_results_snails %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::count(fatty_acid) %>%
+  dplyr::arrange(desc(n)) %>%
+  print()
+
 
 ```
-
-### 6.2 Relative values
-
-Calculate the relative amount of one fatty acid in a snail in relation to the total amount of fatty acids in this one snail.
-
-```{r}
-FA_Snails_relative <- FA_Snails_absolute_filtered %>%
-  group_by(replicate) %>%
-  mutate(fa_conc_rel = (fa_conc / sum(fa_conc)) * 100)
-print(FA_Snails_relative)
-```
-
-#### Histogram FA Snails (relative)
-
-```{r}
-hist(FA_Snails_relative $ fa_conc_rel)
-skewness(FA_Snails_relative $ fa_conc_rel, na.rm = TRUE)
-shapiro.test(FA_Snails_relative $ fa_conc_rel)
-```
-
-Not normal distributed and right skewed.
-
-#### Model FA Snails (relative)
-
-```{r}
-# Log10 transformation; adding 0.001
-FA_Snails_relative <- FA_Snails_relative %>%
-  mutate(log_fa_conc_rel = log10(fa_conc_rel + 0.001))
-
-# response variable: log_fa_conc
-# fixed effects: treatment + fa + treatment:fa
-# random effect with constant intercept: (1|replicate)
-FA_Snails_relative_lmer <- lmer(log_fa_conc_rel ~ treatment + fa + treatment:fa + (1|replicate), data = FA_Snails_relative) 
-
-plot(FA_Snails_relative_lmer) # @ VS: siehe oben bei FA Snails, wegen den 0-Werten sieht das komisch aus, oder ist das als Normalverteilung noch ok?
-qreference(residuals(FA_Snails_relative_lmer)) 
-
-anova(FA_Snails_relative_lmer)
-```
-
-```{r}
-FA_snails_relative_inter <- lsmeans(FA_Snails_relative_lmer, ~ treatment | fa)
-FA_snails_relative_inter
-
-
-FA_snails_relative_inter_dunn1 <- contrast(FA_snails_relative_inter, 'pairwise')
-
-FA_snails_relative_inter_dunn_sum1 <- summary(FA_snails_relative_inter_dunn1, infer = TRUE, adjust = 'mvt')
-
-FA_snails_relative_inter_dunn_sum1
-```
-
-Results quite similar to absolute values. Except the following marks, fatty acid concentration of the 4 treatments quite similar:
-
--   C12:0 : Ciprofloxacin treatment to Mix and NC (and almost to Pro) significantly different
-
--   C13:0 : Ciprofloxacin to all other treatments significantly different. Mix and Pro also different
-
--   Mix to all treatments different
-
--   C18:3(n-6) : Cip-NC almost different
-
--   C22:1 : NC different to all chemical treatments. Mix and Pro also different.
-
-#### Total SAFA, MUFA & PUFA content (relative)
-
-1\) Total SAFA content
-
-```{r}
-# total SAFA, MUFA, PUFA content; sr = "snail relative"
-# total SAFA content
-# filter saturated fatty acids in new table
-SAFA_sr <- FA_Snails_relative %>%
-    filter(fa %in% c("C08:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C24:0"))
-
-# calculate the total SAFA content per snail
-total_SAFA_per_snail_relative <- SAFA_sr %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_SAFA = sum(fa_conc_rel))
-
-print(total_SAFA_per_snail_relative)
-
-# mean
-mean_SAFA_sr <- total_SAFA_per_snail_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
-print(mean_SAFA_sr)
-```
-
-2\) Total MUFA content
-
-```{r}
-# filter mono-unsaturated fatty acids in new table
-MUFA_sr <- FA_Snails_relative %>%
-  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
-
-# total MUFA content per snail
-total_MUFA_per_snail_relative <- MUFA_sr %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_MUFA = sum(fa_conc_rel))
-
-print(total_MUFA_per_snail_relative)
-
-# mean
-mean_MUFA_sr <- total_MUFA_per_snail_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
-print(mean_MUFA_sr)
-```
-
-3\) PUFA content
-
-```{r}
-# filter poly-unsaturated fatty acids in new table
-PUFA_sr <- FA_Snails_relative %>%
-  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
-  
-# calculate total PUFA content per snail
-total_PUFA_per_snail_relative <- PUFA_sr %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_PUFA = sum(fa_conc_rel))
-
-print(total_PUFA_per_snail_relative)
-
-# mean
-mean_PUFA_sr <- total_PUFA_per_snail_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
-print(mean_PUFA_sr)
-```
-
-4\) Total FA (relative) per snail = 100 %.
 
 # 7 Fatty acid composition biofilm
 
-Statistics for fatty acid composition of the biofilm in 6.1 absolute (µg fatty acid / mg dry weight biofilm) values and 6.2 relative (%) values.
-
-### 7.1 Absolute values
+Statistics for fatty acid composition of the biofilm in absolute values (µg fatty acid / mg dry weight biofilm).
 
 ```{r}
 # insert data
@@ -1399,6 +1398,22 @@ Fatty acid concentration not normal distributed and right skewed.
 #### Model FA Biofilm
 
 ```{r}
+# try out Simper
+biofilm_treatments_table <-
+  read.table(file.path(prj, "data\\biofilm_treatments_table.txt"),
+             header = TRUE, sep = "\t")
+
+View(biofilm_treatments_table)
+
+# drei erste Spalten weg vor Simper (generell wide format muss chronologisch hier darüber)
+FA_Biofilm_absolute_wide <- FA_Biofilm_absolute_wide[, -c(1, 2, 3)]
+
+simper_FA_Snails <- with(biofilm_treatments_table, simper(FA_Biofilm_absolute_wide, treatment,  permutations = 999))
+
+summary(simper_FA_Snails)
+```
+
+```{r}
 # log10 transformation; adding 0.001 
 FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
   mutate(log_fa_conc = log10(fa_conc + 0.001))
@@ -1408,6 +1423,8 @@ FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
 # random effect with constant intercept: (1|replicate); first change to factor
 FA_Biofilm_absolute $ replicate <- as.factor(FA_Biofilm_absolute $ replicate)
 FA_Biofilm_absolute $ week <- as.factor(FA_Biofilm_absolute $ week)
+FA_Biofilm_absolute $ treatment <- as.factor(FA_Biofilm_absolute $ treatment)
+FA_Biofilm_absolute $ fa <- as.factor(FA_Biofilm_absolute $ fa)
 
 FA_Biofilm_lmer <- lmer(log_fa_conc ~ treatment + fa + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_absolute)
 # @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
@@ -1548,7 +1565,7 @@ FA_Biofilm_absolute_wide <-
 FA_Biofilm_absolute_wide <- sqrt(FA_Biofilm_absolute_wide[, -c(1, 2, 3)])
 View(FA_Biofilm_absolute_wide)
 
-#set NA to 0 
+# set NA to 0 
 FA_Biofilm_absolute_wide[is.na(FA_Biofilm_absolute_wide)] <- 0
 View(FA_Biofilm_absolute_wide)
 ```
@@ -1784,119 +1801,7 @@ ggsave(absol_Biofilm,
 # @ VS: Hier muss die Woche als explanatory variable wieder dazu, oder? Dann muss ich die Tabellen wahrscheinlich anders formen, als für die FA der Schnecken?
 ```
 
-### 7.2 Relative values
-
-```{r}
-FA_Biofilm_relative <- FA_Biofilm_absolute %>%
-  group_by(replicate) %>%
-  mutate(fa_conc_rel = (fa_conc / sum(fa_conc)) * 100)
-print(FA_Biofilm_relative)
-
-# Remove the "log_fa_conc" column
-FA_Biofilm_relative <- FA_Biofilm_relative[, !names(FA_Biofilm_relative) %in% "log_fa_conc"]
-```
-
-#### Histogram FA Biofilm (relative)
-
-```{r}
-hist(FA_Biofilm_relative $ fa_conc_rel)
-skewness(FA_Biofilm_relative $ fa_conc_rel, na.rm = TRUE)
-shapiro.test(FA_Biofilm_relative $ fa_conc_rel)
-```
-
-Not normal distributed and right skewed.
-
-#### Model FA Biofilm (relative)
-
-Hier weitermachen, wie Verena für Model FA Biofilm vorschlägt.
-
-```{r}
-# log10 transformation; adding 0.001 
-# FA_Biofilm_relative <- FA_Biofilm_relative %>%
-  #mutate(log_fa_conc_rel = log10(fa_conc_rel + 0.001))
-
-# response variable: log_fa_conc
-# fixed effects: treatment + fa +  + week + treatment:fa + week:fa + treatment:week
-# random effect with constant intercept: (1|replicate)
-#FA_Biofilm_relative_lmer <- lmer(log_fa_conc_rel ~ treatment + fa + week + week:fa + treatment:week + treatment:fa + (1|replicate), data = FA_Biofilm_relative)
-# @ VS: ist das richtig so? alle 3 explanatory variables und jeweils alle interaktionen zu testen?
-
-#plot(FA_Biofilm_relative_lmer) # @ VS: siehe oben, ist das normal verteilt?
-#qreference(residuals(FA_Biofilm_relative_lmer)) 
-
-#anova(FA_Biofilm_relative_lmer)
-```
-
-#### Total SAFA, MUFA & PUFA content (relative)
-
-1\) SAFA content
-
-```{r}
-# total SAFA, MUFA, PUFA content; br = "biofilm relative"
-# total SAFA content
-# filter saturated fatty acids in new table
-SAFA_br <- FA_Biofilm_relative %>%
-    filter(fa %in% c("C08:0", "C10:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C22:0", "C24:0"))
-
-# calculate the total SAFA content per replicate
-total_SAFA_per_replicate_relative <- SAFA_br %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_SAFA = sum(fa_conc_rel))
-
-print(total_SAFA_per_replicate_relative)
-
-# mean
-mean_SAFA_br <- total_SAFA_per_replicate_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_SAFA = mean(sum_SAFA, na.rm = TRUE))
-print(mean_SAFA_br)
-```
-
-2\) Total MUFA content
-
-```{r}
-# filter mono-unsaturated fatty acids in new table
-MUFA_br <- FA_Biofilm_relative %>%
-  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1"))
-
-# total MUFA content per replicate
-total_MUFA_per_replicate_relative <- MUFA_br %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_MUFA = sum(fa_conc_rel))
-
-print(total_MUFA_per_replicate_relative)
-
-# mean
-mean_MUFA_br <- total_MUFA_per_replicate_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_MUFA = mean(sum_MUFA, na.rm = TRUE))
-print(mean_MUFA_br)
-```
-
-3\) Total PUFA content
-
-```{r}
-# filter poly-unsaturated fatty acids in new table
-PUFA_br <- FA_Biofilm_relative %>%
-  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:3(n-3)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
-  
-# calculate total PUFA content per replicate
-total_PUFA_per_replicate_relative <- PUFA_br %>%
-  group_by(replicate, treatment) %>%
-  summarize(sum_PUFA = sum(fa_conc_rel))
-
-print(total_PUFA_per_replicate_relative)
-
-# mean
-mean_PUFA_br <- total_PUFA_per_replicate_relative %>%
-  group_by(treatment) %>%
-  summarize(mean_PUFA = mean(sum_PUFA, na.rm = TRUE))
-print(mean_PUFA_br)
-```
-
 # 8 Temperature and light conditions
-
-\@ VS: Dieses Skript ist nur zum plotten der Temperatur und Lichtverhältnisse dar. Mirco möchte diese Plots gerne in den Anhang.
 
 ## 8.1 Biofilm colonisation and contamination
 
