@@ -18,9 +18,6 @@ Fortstrasse 7\
 76829 Landau in der Pfalz\
 GERMANY
 
-Corresponding author email address:\
-1) Mirco Bundschuh: mirco.bundschuh\@rptu.de
-
 This study was conducted with four treatments and three time points explanatory variables depending on the endpoint:
 
 -   treatment (categorical)
@@ -101,45 +98,67 @@ View(biofilm_endpoints)
 
 ## 3.1 Chlorophyll
 
-#### Caclulate mean chla, chlb + chlc of each treatment, to compare in manuscript
+Caclulate mean chla, chlb + chlc of each treatment with distinction of the weeks:
 
 ```{r, message = FALSE, warning = FALSE}
 #chl a
-mean_chlorophyll_a <- biofilm_endpoints %>%
-  group_by(week, treatment) %>%
-  summarize(mean_chlorophyll_a = mean(chla))
-
-print(mean_chlorophyll_a)
+biofilm_endpoints %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_chlorophyll_a = mean(chla)) %>%
+  print(mean_chlorophyll_a)
 
 # chl b
-mean_chlorophyll_b <- biofilm_endpoints %>%
-  group_by(week, treatment) %>%
-  summarize(mean_chlorophyll_b = mean(chlb))
-
-print(mean_chlorophyll_b)
+biofilm_endpoints %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_chlorophyll_b = mean(chlb)) %>%
+  print(mean_chlorophyll_b)
 
 # chl c
-mean_chlorophyll_c <- biofilm_endpoints %>%
-  group_by(week, treatment) %>%
-  summarize(mean_chlorophyll_c = mean(chlc))
+biofilm_endpoints %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_chlorophyll_c = mean(chlc)) %>%
+  print(mean_chlorophyll_c)
+```
 
-print(mean_chlorophyll_c)
+Now calculate mean chla, chlb + chlc of each treatment without taking into account the different weekly colonizations:
+
+```{r}
+#chl a
+biofilm_endpoints %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(mean_chlorophyll_a = mean(chla)) %>%
+  print(mean_chlorophyll_a)
+
+# chl b
+biofilm_endpoints %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(mean_chlorophyll_b = mean(chlb)) %>%
+  print(mean_chlorophyll_b)
+
+# chl c
+biofilm_endpoints %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(mean_chlorophyll_c = mean(chlc)) %>%
+  print(mean_chlorophyll_c)
 ```
 
 #### Histogram chlorophyll a, b + c
 
 ```{r}
 # chl a
-a <- hist(biofilm_endpoints $ chla) 
-skewness(biofilm_endpoints $ chla, na.rm = TRUE) 
+hist(biofilm_endpoints $ chla) 
+skewness(biofilm_endpoints $ chla, na.rm = TRUE)
+shapiro.test(biofilm_endpoints $ chla)
 
 # chl b
-b <- hist(biofilm_endpoints $ chlb) 
+hist(biofilm_endpoints $ chlb) 
 skewness(biofilm_endpoints $ chlb, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ chlb)
 
 # chl c
-c <- hist(biofilm_endpoints $ chlc) 
+hist(biofilm_endpoints $ chlc) 
 skewness(biofilm_endpoints $ chlc, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ chlc)
 ```
 
 All not normal distributed and right skewed -\> log10 transformation in model
@@ -260,7 +279,26 @@ chlc_inter_dunn1 <- contrast(chlc_inter, 'pairwise')
 (chlc_inter_dunn_sum1 <- summary(chlc_inter_dunn1, infer = TRUE, adjust = 'mvt'))
 ```
 
-No differences between treatments for chlorophyll c.
+No differences between treatments for chlorophyll c. Now check for differences between weeks:
+
+```{r}
+anova(model_chlc)
+
+# week variable significant (p=0.01332)
+
+chlc_inter2 <- lsmeans(model_chlc, ~ week |  treatment)
+chlc_inter_dunn3 <- contrast(chlc_inter2, 'pairwise')
+(chlc_inter_dunn_sum3 <- summary(chlc_inter_dunn3, infer = TRUE, adjust = 'mvt'))
+```
+
+-   NC\
+    -   all weeks similar
+-   Cip\
+    -   all weeks similar
+-   Pro\
+    -   all weeks similar
+-   Mix\
+    -   Week 1 & 2, and 2 & 3 different
 
 #### Boxplots chlorophyll a, b + c
 
@@ -327,14 +365,22 @@ ggsave(chlc,
 
 ## 3.2 AFDW after colonisation
 
-#### Calculate mean AFDW of each treatment for manuscript.
+Calculate mean AFDW of each treatment with distinction of the 3 weeks.
 
 ```{r}
-mean_afdw_after_colonisation <- biofilm_endpoints %>%
-  group_by(week, treatment) %>%
-  summarize(mean_afdw_after_colonisation = mean(afdw_after_colonisation))
+biofilm_endpoints %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_afdw_after_colonisation = mean(afdw_after_colonisation)) %>%
+  print(mean_afdw_after_colonisation)
+```
 
-print(mean_afdw_after_colonisation)
+Now calculate mean AFDW of each treatment without taking into account the different weekly colonizations:
+
+```{r}
+biofilm_endpoints %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(mean_afdw_after_colonisation = mean(afdw_after_colonisation)) %>%
+  print(mean_afdw_after_colonisation)
 ```
 
 #### Histogram AFDW after colonisation
@@ -342,6 +388,7 @@ print(mean_afdw_after_colonisation)
 ```{r}
 hist(biofilm_endpoints $ afdw_after_colonisation) 
 skewness(biofilm_endpoints $ afdw_after_colonisation, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ afdw_after_colonisation)
 ```
 
 Not normal distributed and right skewed. Log10 transformation for model
@@ -417,7 +464,6 @@ afdw_after_colonisation_boxplot <- ggplot(data = biofilm_endpoints,
 
 afdw_after_colonisation_boxplot 
 
-# @ VS: Hier auch log Skala, um die Daten besser zu sehen?
 
 # save the plot
 ggsave(afdw_after_colonisation_boxplot, 
@@ -448,11 +494,19 @@ View(afdw_feeding_rate)
 #### Calculate mean feeding rate for each week
 
 ```{r}
-mean_feeding_rate <- afdw_feeding_rate %>%
-  group_by(week, treatment) %>%
-  summarize(mean_feeding_rate = mean(feeding_rate, na.rm = TRUE))
+afdw_feeding_rate %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_feeding_rate = mean(feeding_rate, na.rm = TRUE)) %>%
+  print(mean_feeding_rate)
+```
 
-print(mean_feeding_rate)
+Now calculate mean feeding for each treatment:
+
+```{r}
+afdw_feeding_rate %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(mean_feeding_rate = mean(feeding_rate, na.rm = TRUE)) %>%
+  print(mean_feeding_rate)
 ```
 
 #### Histogram feeding rate
@@ -460,6 +514,7 @@ print(mean_feeding_rate)
 ```{r}
 hist(afdw_feeding_rate $ feeding_rate) 
 skewness(afdw_feeding_rate $ feeding_rate, na.rm = TRUE) 
+shapiro.test(afdw_feeding_rate $ feeding_rate)
 ```
 
 Feeding rate variable not normal distributed and right skewed -\> log10 transformation for model
@@ -564,11 +619,10 @@ ggsave(feeding_rate_boxplot,
 #### Calculate mean of afdw after feeding for each week
 
 ```{r}
-mean_afdw_after_feeding <- afdw_feeding_rate %>%
-  group_by(week, treatment) %>%
-  summarize(mean_afdw_after_feeding = mean(afdw))
-
-print(mean_afdw_after_feeding)
+afdw_feeding_rate %>%
+  dplyr::group_by(week, treatment) %>%
+  dplyr::summarize(mean_afdw_after_feeding = mean(afdw)) %>%
+  print(mean_afdw_after_feeding)
 ```
 
 #### Histogram afdw after feeding
@@ -660,8 +714,10 @@ ggsave(afdw_after_feeding_boxplot,
 
 # 5 Dryweight and growth snails
 
+Unit of dry weight = mg
+
 ```{r}
-# insert data
+# insert data (Culture snails from in-house breeding)
 dryweight_snails <-
   read.table(file.path(prj, "data\\dryweight_snails.txt"),
              header = TRUE, sep = "\t")
@@ -701,7 +757,7 @@ percental_growth
 effect_size_growth <- growth_snails %>%
   group_by(treatment) %>%
   summarize(mean_dryweight = mean(dryweight_mg)) %>%
-  mutate(percental_growth = (mean_dryweight / mean_dryweight[treatment == "NC"]) * 100 - 100)
+  mutate(effect_size = (mean_dryweight / mean_dryweight[treatment == "NC"]) * 100 - 100)
 
 effect_size_growth
 
@@ -924,6 +980,7 @@ FA_Snails_absolute_wide_sqrt[, 3:28] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:28
 
 any(is.na(FA_Snails_absolute_wide_sqrt))
 ```
+
 Check for outlier:
 
 ```{r}
@@ -1383,8 +1440,6 @@ FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
   filter(!fa %in% c("C10:0", "C11:0", "C14:1"))
 ```
 
-
-
 #### Total SAFA, MUFA & PUFA content
 
 1\) Total SAFA content
@@ -1394,7 +1449,7 @@ FA_Biofilm_absolute <- FA_Biofilm_absolute %>%
 # total SAFA content
 # filter saturated fatty acids in new table
 SAFA_ba <- FA_Biofilm_absolute %>%
-    filter(fa %in% c("C08:0", "C10:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C17:0", "C18:0", "C20:0", "C22:0", "C24:0"))
+    filter(fa %in% c("C08:0", "C10:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0", "C22:0", "C24:0"))
 
 # calculate the total SAFA content per replicate
 total_SAFA_per_replicate <- SAFA_ba %>%
@@ -1414,7 +1469,7 @@ print(mean_SAFA_ba)
 ```{r}
 # filter mono-unsaturated fatty acids in new table
 MUFA_ba <- FA_Biofilm_absolute %>%
-  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1"))
+  filter(fa %in% c("C15:1", "C16:1", "C17:1", "C18:1", "C20:1","C22:1", "C24:1"))
 
 # total MUFA content per replicate
 total_MUFA_per_replicate <- MUFA_ba %>%
@@ -1474,8 +1529,8 @@ hist(FA_Biofilm_absolute $ fa_conc)
 skewness(FA_Biofilm_absolute $ fa_conc, na.rm = TRUE) 
 shapiro.test(FA_Biofilm_absolute $ fa_conc)
 ```
-Biofilm fatty acid concentration not normal distributed and right skewed.
 
+Biofilm fatty acid concentration not normal distributed and right skewed.
 
 #### NMDS FA biofilm
 
@@ -1505,11 +1560,6 @@ View(FA_Biofilm_absolute_wide_sqrt)
 any(is.na(FA_Biofilm_absolute_wide_sqrt))
 
 ```
-Check for outliers:
-```{r}
-# noch machen
-```
-
 
 Perform metaMDS:
 
@@ -1742,24 +1792,20 @@ absol_Biofilm
 ```
 
 Save the plot
+
 ```{r}
 ggsave(absol_Biofilm, 
        filename = "NMDS_Biofilm_absolute.png", 
        path = 'C:\\Users\\Oster Test\\OneDrive\\Desktop\\Promotion\\Bioassays\\Schneckenversuch 2023\\Bottom_up_effects_biofilm_grazer\\output')
 ```
 
-
-
-
 #### PERMANOVA FA biofilm
 
 Create distance matrix with fatty acids:
+
 ```{r}
 #FA_Snails_dist <- vegdist(FA_Snails_absolute_wide_sqrt, method = 'bray')
 ```
-
-
-
 
 #### SIMPER FA biofilm
 
@@ -1779,7 +1825,6 @@ Create distance matrix with fatty acids:
 #summary(simper_FA_Snails)
 ```
 
-
 # 8 Temperature and light conditions
 
 ## 8.1 Biofilm colonisation and contamination
@@ -1798,11 +1843,10 @@ mean(colonisation_temp_light $ temperature_colonisation)
 
 # mean light intensity
 # filter only daytime
-average_light_intensity_colonisation <- colonisation_temp_light %>%
+colonisation_temp_light %>%
   dplyr::filter(light_intensity_colonisation > 0) %>%
-  summarize(average_light_intensity_colonisation = mean(light_intensity_colonisation))
-
-print(average_light_intensity_colonisation)
+  dplyr::summarize(average_light_intensity_colonisation = mean(light_intensity_colonisation)) %>%
+  print(average_light_intensity_colonisation)
 # 14019.26 lux
 
 # temperature plot
@@ -1883,11 +1927,10 @@ mean(feeding_assay_temp_light $ temperature)
 
 # mean light intensity
 # filter only daytime
-average_light_intensity_feeding <- feeding_assay_temp_light %>%
+feeding_assay_temp_light %>%
   dplyr::filter(light_intensity > 0) %>%
-  summarize(average_light_intensity_feeding = mean(light_intensity))
-
-print(average_light_intensity_feeding)
+  dplyr::summarize(average_light_intensity_feeding = mean(light_intensity)) %>%
+  print(average_light_intensity_feeding)
 # 330.3552 lux
 
 # temperature plot
