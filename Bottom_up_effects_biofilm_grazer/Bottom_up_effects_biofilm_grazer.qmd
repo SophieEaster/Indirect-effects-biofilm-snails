@@ -1,0 +1,2535 @@
+---
+title: "Bottom-up effects of an herbicide and an antibiotic on *Potamopyrgus antipodarum*"
+format: 
+  html:
+    self-contained: true
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    style: "floating"
+editor_options: 
+  chunk_output_type: console
+---
+
+Sophie Oster, Patrick Fink, Tobias Schmitt, Verena C. Schreiner & Mirco Bundschuh
+
+R script written by Sophie Oster\
+checked by Verena C. Schreiner
+
+\
+RPTU Kaiserslautern-Landau\
+Fortstrasse 7\
+76829 Landau in der Pfalz\
+GERMANY
+
+This study was conducted with four chemical treatments, as explanatory variables:
+
+-   treatment (categorical)
+    -   uncontaminated control (negative control, NC)
+    -   herbicide propyzamide 10 ug / L (Pro)
+    -   antibiotic ciprofloxacin 100 ug / L (Cip)
+    -   mixture of 10 ug / L  propyzamide and 100 ug / L ciprofloxacin (Mix)
+
+
+# R version 4.3.2
+
+R version used for this script: 4.3.2, use the following code chunk to download the correct version.
+
+```{r}
+# Check the current R version
+current_r_version <- as.character(getRversion())
+
+# Specify the required R version
+required_r_version <- "4.3.2"
+
+if (current_r_version != required_r_version) {
+  # Install 'rig' if not already installed
+  if (!requireNamespace("rig", quietly = TRUE)) {
+    install.packages("rig")
+  }
+  
+  # Load the 'rig' package
+  library(rig)
+  
+  # Check if the required R version is installed
+  installed_versions <- rig::rig_ls()
+  if (!(required_r_version %in% installed_versions$version)) {
+    # Install the required R version using 'rig'
+    rig::rig_add(required_r_version)
+  }
+  
+  # Set the required R version as default
+  rig::rig_default(required_r_version)
+  
+  # Notify the user about the version change
+  stop(paste("Please restart R using version", required_r_version, "and rerun the script."))
+} else {
+  message("You are already using the correct R version:", required_r_version)
+}
+
+```
+
+# Packages in a reproducible environment
+
+```{r, message = FALSE, warning = FALSE}
+# Restore the environment:
+# renv::restore()
+
+library(stats)
+library(rstatix)
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(broom)
+library(dunn.test)
+library(patchwork)
+library(vegan)
+library(data.table)
+library(ggplot2)
+library(ggrepel)
+library(ggforce)
+library(concaveman)
+library(gridExtra)
+library(stringr)
+library(shades)
+library(ggpubr)
+library(base)
+library(ggokabeito)
+library(multcomp)
+library(car)
+library(asbio)
+library(plotrix)
+library(lmtest)
+library(boot)
+library(moments)
+library(lme4)
+library(DAAG)
+library(performance)
+library(emmeans)
+library(purrr)
+library(DT)
+library(Hmisc)
+
+if (!requireNamespace("devtools", quietly = TRUE)) {
+  install.packages("devtools")
+}
+
+library(devtools)
+
+if (!requireNamespace("pairwiseAdonis", quietly = TRUE)) {
+  devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+}
+
+library(pairwiseAdonis)
+
+# renv::snapshot()
+```
+
+# Biofilm endpoints
+
+Chlorophyll concentrations and ash free dry weigh (AFDW) of biofilm
+
+-   Unit chlorophyll a, b & c: µg chlorophyll / cm²
+
+-   Unit afdw: mg / cm²
+
+```{r}
+# insert data
+biofilm_endpoints <-
+  read.table(file.path("data\\biofilm_endpoints.txt"),
+             header = TRUE, sep = "\t")
+
+View(biofilm_endpoints)
+```
+
+##  Chlorophyll a, b and c concentrations
+
+Caclulate mean, sd and 95% CI chla, chlb + chlc of each treatment:
+
+```{r}
+# chla
+mean_chla <- biofilm_endpoints %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_chla = mean(chla, na.rm = TRUE),
+    n = sum(!is.na(chla)),
+    se = sd(chla, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_chla - t_crit * se,
+    ci_upper = mean_chla + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_chla, ci_lower, ci_upper, se)
+
+print(mean_chla)
+
+#chlb
+mean_chlb <- biofilm_endpoints %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_chlb = mean(chlb, na.rm = TRUE),
+    n = sum(!is.na(chlb)),
+    se = sd(chlb, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_chlb - t_crit * se,
+    ci_upper = mean_chlb + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_chlb, ci_lower, ci_upper, se)
+
+print(mean_chlb)
+
+#chlc
+mean_chlc <- biofilm_endpoints %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_chlc = mean(chlc, na.rm = TRUE),
+    n = sum(!is.na(chlc)),
+    se = sd(chlc, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_chlc - t_crit * se,
+    ci_upper = mean_chlc + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_chlc, ci_lower, ci_upper, se)
+
+print(mean_chlc)
+```
+
+
+### Histogram chlorophyll a, b + c
+
+```{r}
+# chl a
+hist(biofilm_endpoints $ chla) 
+skewness(biofilm_endpoints $ chla, na.rm = TRUE)
+shapiro.test(biofilm_endpoints $ chla)
+
+# chl b
+hist(biofilm_endpoints $ chlb) 
+skewness(biofilm_endpoints $ chlb, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ chlb)
+
+# chl c
+hist(biofilm_endpoints $ chlc) 
+skewness(biofilm_endpoints $ chlc, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ chlc)
+```
+
+All not normal distributed, right skewed but skewness \< 1.5 therefore no data transformation for model
+
+### Model chla
+
+Linear model with treatment as explanatory variable.
+
+```{r}
+# treatment as factor
+biofilm_endpoints $ treatment <- factor(biofilm_endpoints $ treatment)
+
+model_chla <- lm(chla ~ treatment, data = biofilm_endpoints)
+
+par(mfrow = c(2, 2))
+
+plot(model_chla) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chla)) 
+
+drop1(model_chla, test = 'F')
+
+anova(model_chla)
+
+chla_inter2 <- lsmeans(model_chla, ~ treatment)
+chla_inter_dunn2 <- contrast(chla_inter2, 'pairwise')
+(chla_inter_dunn_sum2 <- summary(chla_inter_dunn2, infer = TRUE, adjust = 'mvt'))
+```
+No significant differences between chemical treatments in chlorophyll a concentrations.
+
+### Model chlb
+
+```{r}
+model_chlb <- lm(chlb ~ treatment, data = biofilm_endpoints)
+
+par(mfrow = c(2, 2))
+
+plot(model_chlb) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chlb)) # normal distribution assumed
+
+drop1(model_chlb, test = 'F')
+
+anova(model_chlb)
+
+chlb_inter <- lsmeans(model_chlb, ~ treatment)
+chlb_inter_dunn1 <- contrast(chlb_inter, 'pairwise')
+(chlb_inter_dunn_sum1 <- summary(chlb_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+No significant differences between chemical treatments in chlorophyll b concentrations.
+
+### Model chlc
+
+```{r}
+model_chlc <- lm(chlc ~ treatment, data = biofilm_endpoints)
+
+par(mfrow = c(2, 2))
+
+plot(model_chlc) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_chlc)) # normal distribution assumed
+
+drop1(model_chlc, test = 'F')
+
+anova(model_chlc)
+
+chlc_inter <- lsmeans(model_chlc, ~ treatment)
+chlc_inter_dunn1 <- contrast(chlc_inter, 'pairwise')
+(chlc_inter_dunn_sum1 <- summary(chlc_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+No significant differences between chemical treatments in chlorophyll c concentrations.
+
+### Graphs chlorophyll a, b + c
+
+```{r}
+# chl a
+chla_plot <-
+  ggplot(data = biofilm_endpoints,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = chla)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+  geom_point(
+    aes(color = treatment),
+    position = position_jitter(width = 0.25, height = 0),
+    alpha = 0.8,
+    size = 2
+  ) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = NULL,
+       y = expression(bold("Chl a (µg/cm" ^ "2" * ")")),
+       color = "") +
+  scale_x_discrete(labels = NULL) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title.y = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+  ),
+    axis.text.x = element_text(size = 12),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+# Chlorophyll b
+chlb_plot <-
+  ggplot(data = biofilm_endpoints,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = chlb)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+  geom_point(
+    aes(color = treatment),
+    position = position_jitter(width = 0.25, height = 0),
+    alpha = 0.8,
+    size = 2
+  ) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = NULL,
+       y = expression(bold("Chl b (µg/cm" ^ "2" * ")")),
+       color = "") +
+  scale_x_discrete(labels = NULL) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    axis.text.x = element_text(size = 12),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+# Chlorophyll c
+chlc_plot <-
+  ggplot(data = biofilm_endpoints,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = chlc)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+  geom_point(
+    aes(color = treatment),
+    position = position_jitter(width = 0.25, height = 0),
+    alpha = 0.8,
+    size = 2
+  ) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = "Treatment",
+       y = expression(bold("Chl c (µg/cm" ^ "2" * ")")),
+       color = "") +
+  scale_x_discrete(labels = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    axis.text.x = element_text(size = 11),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+# combine and save with AFDW plot later
+```
+
+## AFDW 
+
+Calculate mean, sd and 95% CI AFDW of each treatment.
+
+```{r}
+mean_afdw <- biofilm_endpoints %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_afdw = mean(afdw, na.rm = TRUE),
+    n = sum(!is.na(afdw)),
+    se = sd(afdw, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_afdw - t_crit * se,
+    ci_upper = mean_afdw + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_afdw, ci_lower, ci_upper, se)
+
+print(mean_afdw)
+```
+
+### Histogram AFDW after colonisation
+
+```{r}
+hist(biofilm_endpoints $ afdw) 
+skewness(biofilm_endpoints $ afdw, na.rm = TRUE) 
+shapiro.test(biofilm_endpoints $ afdw)
+```
+
+Not normal distributed, right skewed but skewness \<1.5 therefore no data transformation for model.
+
+### Model AFDW 
+
+```{r}
+model_afdw <- lm(afdw ~ treatment, data = biofilm_endpoints)
+
+par(mfrow = c(2, 2))
+
+plot(model_afdw) # not perfectly even distributed, but ok
+
+qreference(residuals(model_afdw)) # normal distribution assumed
+
+drop1(model_afdw, test = 'F')
+
+anova(model_afdw)
+
+afdw_inter <- lsmeans(model_afdw, ~ treatment)
+
+afdw_inter_dunn1 <- contrast(afdw_inter, 'pairwise')
+
+(afdw_inter_dunn_sum1 <- summary(afdw_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+```
+
+No significant differences for treatment variable of total biofilm biomass.
+
+### Boxplot AFDW 
+
+```{r}
+afdw_boxplot <-
+  ggplot(data = biofilm_endpoints,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = afdw)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+  geom_point(
+    aes(color = treatment),
+    position = position_jitter(width = 0.25, height = 0),
+    alpha = 0.8,
+    size = 2
+  ) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = "Treatment",
+       y = expression(bold("AFDW (mg/cm"^"2"*")")),
+       color = "") +
+  scale_x_discrete(labels = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    axis.text.x = element_text(size = 11),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+
+afdw_boxplot 
+
+# Now combine with chlorophyll plots
+combined_plot <- chla_plot / chlb_plot / chlc_plot / afdw_boxplot + 
+  plot_layout(ncol = 2) 
+
+# save the plot
+ggsave(
+  "output/biofilm_endpoints.png",
+  plot = combined_plot,
+  width = 25,
+  height = 30,
+  units = "cm",
+  dpi = 600
+)
+
+```
+
+# Fatty acid composition biofilm
+
+Statistics for fatty acid composition of the biofilm in absolute values (µg fatty acid / mg dry weight biofilm).
+
+```{r}
+# insert data
+FA_Biofilm_absolute <-
+  read.table(file.path("data\\FA_Biofilm_absolute.txt"),
+             header = TRUE,
+             sep = "\t")
+
+View(FA_Biofilm_absolute)
+```
+
+## Total SAFA, MUFA & PUFA content
+
+1\) Total SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; ba = "biofilm absolute"
+# total SAFA content
+# filter saturated fatty acids in new table
+SAFA_ba <- FA_Biofilm_absolute %>%
+    filter(fa %in% c("C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0", "C22:0", "C24:0"))
+
+# Sum SAFA per replicate and treatment
+total_SAFA_per_replicate <- SAFA_ba %>%
+  dplyr::group_by(replicate, treatment) %>%
+  dplyr::summarize(sum_SAFA = sum(fa_conc), .groups = "drop")
+print(total_SAFA_per_replicate)
+
+# Statistical differences
+hist(total_SAFA_per_replicate $ sum_SAFA) # normal distributed
+shapiro.test(total_SAFA_per_replicate $ sum_SAFA) # normal distributed
+leveneTest(sum_SAFA ~ treatment, data = total_SAFA_per_replicate) # homogenous
+anova_SAFA <- aov(sum_SAFA ~ treatment, data = total_SAFA_per_replicate)
+summary(anova_SAFA)
+TukeyHSD(anova_SAFA)
+
+# Calculate mean and 95% CI per treatment
+mean_SAFA_ba <- total_SAFA_per_replicate %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_SAFA = mean(sum_SAFA, na.rm = TRUE),
+    n = sum(!is.na(sum_SAFA)),
+    se = sd(sum_SAFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_SAFA - t_crit * se,
+    ci_upper = mean_SAFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_SAFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_SAFA_ba <- mean_SAFA_ba %>%
+  filter(treatment == "NC") %>%
+  pull(mean_SAFA)
+
+# Calculate percental difference from control
+mean_SAFA_ba <- mean_SAFA_ba %>%
+  mutate(percent_diff_from_NC = 100 * (mean_SAFA - control_mean_SAFA_ba) / control_mean_SAFA_ba)
+
+print(mean_SAFA_ba)
+
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_ba <- FA_Biofilm_absolute %>%
+  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1","C22:1"))
+
+# Sum MUFA per replicate and treatment
+total_MUFA_per_replicate <- MUFA_ba %>%
+  dplyr::group_by(replicate, treatment) %>%
+  dplyr::summarize(sum_MUFA = sum(fa_conc), .groups = "drop")
+print(total_MUFA_per_replicate)
+
+# Statistical differences
+hist(total_MUFA_per_replicate $ sum_MUFA) # normal distributed
+shapiro.test(total_MUFA_per_replicate $ sum_MUFA) # normal distributed
+leveneTest(sum_MUFA ~ treatment, data = total_MUFA_per_replicate) # homogenous
+anova_MUFA <- aov(sum_MUFA ~ treatment, data = total_MUFA_per_replicate)
+summary(anova_MUFA)
+TukeyHSD(anova_MUFA)
+
+# Calculate mean and 95% CI per treatment
+mean_MUFA_ba <- total_MUFA_per_replicate %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_MUFA = mean(sum_MUFA, na.rm = TRUE),
+    n = sum(!is.na(sum_MUFA)),
+    se = sd(sum_MUFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_MUFA - t_crit * se,
+    ci_upper = mean_MUFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_MUFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_MUFA_ba <- mean_MUFA_ba %>%
+  filter(treatment == "NC") %>%
+  pull(mean_MUFA)
+
+# Calculate percental difference from control
+mean_MUFA_ba <- mean_MUFA_ba %>%
+  mutate(percent_diff_from_NC = 100 * (mean_MUFA - control_mean_MUFA_ba) / control_mean_MUFA_ba)
+
+print(mean_MUFA_ba)
+```
+
+3\) Total PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_ba <- FA_Biofilm_absolute %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:6(n-3)"))
+  
+# Sum PUFA per replicate and treatment
+total_PUFA_per_replicate <- PUFA_ba %>%
+  dplyr::group_by(replicate, treatment) %>%
+  dplyr::summarize(sum_PUFA = sum(fa_conc), .groups = "drop")
+print(total_PUFA_per_replicate)
+
+# Statistical differences
+hist(total_PUFA_per_replicate $ sum_PUFA) # normal distributed
+shapiro.test(total_PUFA_per_replicate $ sum_PUFA) # normal distributed
+leveneTest(sum_PUFA ~ treatment, data = total_PUFA_per_replicate) # homogenous
+anova_PUFA <- aov(sum_PUFA ~ treatment, data = total_PUFA_per_replicate)
+summary(anova_PUFA)
+TukeyHSD(anova_PUFA)
+
+# Calculate mean and 95% CI per treatment
+mean_PUFA_ba <- total_PUFA_per_replicate %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_PUFA = mean(sum_PUFA, na.rm = TRUE),
+    n = sum(!is.na(sum_PUFA)),
+    se = sd(sum_PUFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_PUFA - t_crit * se,
+    ci_upper = mean_PUFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_PUFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_PUFA_ba <- mean_PUFA_ba %>%
+  filter(treatment == "NC") %>%
+  pull(mean_PUFA)
+
+# Calculate percental difference from control
+mean_PUFA_ba <- mean_PUFA_ba %>%
+  mutate(percent_diff_from_NC = 100 * (mean_PUFA - control_mean_PUFA_ba) / control_mean_PUFA_ba)
+
+print(mean_PUFA_ba)
+```
+
+4\) Total FA content
+
+```{r}
+# total FA 
+total_FA_biofilm <- bind_rows(total_SAFA_per_replicate, total_MUFA_per_replicate, total_PUFA_per_replicate)
+
+total_FA_per_replicate <- total_FA_biofilm %>%
+  dplyr::group_by(replicate, treatment) %>%
+  dplyr::summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
+print(total_FA_per_replicate)
+
+# statistical differences will be calculated by PERMANOVA
+
+# Calculate mean and 95% CI per treatment
+mean_FA_ba <- total_FA_per_replicate %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_FA = mean(sum_FA, na.rm = TRUE),
+    n = sum(!is.na(sum_FA)),
+    se = sd(sum_FA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_FA - t_crit * se,
+    ci_upper = mean_FA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_FA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_FA_ba <- mean_FA_ba %>%
+  filter(treatment == "NC") %>%
+  pull(mean_FA)
+
+# Calculate percental difference from control
+mean_FA_ba <- mean_FA_ba %>%
+  mutate(percent_diff_from_NC = 100 * (mean_FA - control_mean_FA_ba) / control_mean_FA_ba)
+
+print(mean_FA_ba)
+```
+
+## Histogram FA biofilm
+
+```{r}
+hist(FA_Biofilm_absolute $ fa_conc) 
+skewness(FA_Biofilm_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Biofilm_absolute $ fa_conc)
+```
+
+Biofilm fatty acid concentration not normal distributed and right skewed.
+
+## NMDS FA biofilm
+
+Change table to wide format:
+
+```{r}
+# change table to wide format
+FA_Biofilm_absolute_wide_sqrt <-
+  pivot_wider(FA_Biofilm_absolute,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation, to reduce discriminatory power of dominant fa groups
+FA_Biofilm_absolute_wide_sqrt[, 4:37] <- sqrt(FA_Biofilm_absolute_wide_sqrt[, 4:37])
+
+View(FA_Biofilm_absolute_wide_sqrt)
+
+# Only keep columns/FAs with more than 5 non-zero values (fatty acids that have just been found in 5 replicates will be removed)
+FA_Biofilm_absolute_wide_sqrt <-
+  FA_Biofilm_absolute_wide_sqrt %>%
+  dplyr::select(
+    1:3,
+    where(~sum(. !=0, na.rm = TRUE)>5)
+  )
+```
+
+Perform metaMDS:
+
+```{r}
+# Rename and ease col-names for later NMDS plot
+FA_Biofilm_absolute_wide_sqrt <- FA_Biofilm_absolute_wide_sqrt %>%
+  rename(
+    `12:0`     = `C12:0`,   
+    `13:0`     = `C13:0`,
+    `14:0`     = `C14:0`,
+    `15:0`     = `C15:0`,
+    `16:0`     = `C16:0`,
+    `16:1`     = `C16:1`,
+    `17:1`     = `C17:1`,
+    `18:0`     = `C18:0`,
+    `18:1`     = `C18:1`,
+    `18:2n-6c` = `C18:2(n-6c)`,
+    `18:3n-6`  = `C18:3(n-6)`,
+    `18:3n-3`  = `C18:3(n-3)`,
+    `18:4n-3`  = `C18:4(n-3)`,
+    `20:0`     = `C20:0`,
+    `20:1`     = `C20:1`,
+    `20:2n-6`  = `C20:2(n-6)`,
+    `20:4n-6`  = `C20:4(n-6)`,
+    `20:5n-3`  = `C20:5(n-3)`,
+    `22:0`     = `C22:0`,
+    `22:1`     = `C22:1`,
+    `22:6n-3`  = `C22:6(n-3)`,
+    `24:0`     = `C24:0`
+  )
+
+# Remove columns 1:3 for metaMDS
+FA_Biofilm_absolute_wide_sqrt <- FA_Biofilm_absolute_wide_sqrt[, -c(1, 2, 3)]
+
+NMDS_Biofilm_absolute <-
+  metaMDS(
+    FA_Biofilm_absolute_wide_sqrt,
+    autotransform = FALSE,
+    k = 2 ,
+    distance = "bray",
+    na.rm = TRUE
+  )
+
+NMDS_Biofilm_absolute$stress
+```
+
+Create fa vectors:
+
+```{r}
+# separation in SAFA; MUFA & PUFA to build vectors in NMDS
+# "ba" = biofilm absolute
+FA_variables.SAFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide_sqrt,
+      select = c(
+        "12:0",
+        "13:0",
+        "14:0",
+        "15:0",
+        "16:0",
+        "18:0",
+        "20:0",
+        "22:0",
+        "24:0"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.MUFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide_sqrt,
+      select = c(
+        "16:1",
+        "17:1",
+        "18:1",
+        "20:1",
+        "22:1"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.PUFAs_ba <-
+  envfit(
+    NMDS_Biofilm_absolute,
+    subset(
+      FA_Biofilm_absolute_wide_sqrt,
+      select = c(
+        "18:2n-6c",
+        "18:3n-6",
+        "18:3n-3",
+        "18:4n-3",
+        "20:2n-6",
+        "20:4n-6",
+        "20:5n-3",
+        "22:6n-3"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+# Extract NMDS scores
+data.scores_biofilm_absolute = as.data.frame(scores(NMDS_Biofilm_absolute)$sites)
+
+Treatments <-
+  FA_Biofilm_absolute$treatment[FA_Biofilm_absolute$fa == "C16:0"]
+
+# add treatment column to NMDS scores
+data.scores_biofilm_absolute$Treatment = Treatments
+
+# vectors for SAFA, MUFA and PUFA
+SAFAs_coord_cont_ba = as.data.frame(scores(FA_variables.SAFAs_ba, "vectors")) * ordiArrowMul(FA_variables.SAFAs_ba)
+MUFAs_coord_cont_ba = as.data.frame(scores(FA_variables.MUFAs_ba, "vectors")) * ordiArrowMul(FA_variables.MUFAs_ba)
+PUFAs_coord_cont_ba = as.data.frame(scores(FA_variables.PUFAs_ba, "vectors")) * ordiArrowMul(FA_variables.PUFAs_ba)
+
+```
+
+Plot NMDS:
+
+```{r}
+# Reorder treatment variable for the plot
+data.scores_biofilm_absolute$Treatment <- factor(
+  data.scores_biofilm_absolute$Treatment,
+  levels = c("NC", "Pro", "Cip", "Mix")
+)
+
+# Compute convex hull for each Treatment
+polygon_data_biofilm_treatment <- data.scores_biofilm_absolute %>%
+  group_by(Treatment) %>%
+  summarise(hull_points = list(data.frame(
+    NMDS1 = NMDS1[chull(NMDS1, NMDS2)],
+    NMDS2 = NMDS2[chull(NMDS1, NMDS2)]
+  ))) %>%
+  unnest(hull_points)
+
+# plot
+absol_biofilm_with_vectors = ggplot(data = data.scores_biofilm_absolute, aes(x = NMDS1, y = NMDS2)) +
+  geom_polygon(
+    data = polygon_data_biofilm_treatment,
+    aes(
+      x = NMDS1,
+      y = NMDS2,
+      group = Treatment,
+      fill = Treatment
+    ),
+    alpha = 0.2,
+    show.legend = FALSE
+  ) +
+  geom_point(aes(shape = Treatment, color = Treatment),
+             size = 5,
+             alpha = 1,
+             show.legend = TRUE) +
+  scale_shape_manual(values = c(
+    "NC" = 16,
+    "Pro" = 17,
+    "Cip" = 18,
+    "Mix" = 15
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  ))  +
+  labs(color = "Treatment") +
+  geom_segment(
+    data = PUFAs_coord_cont_ba,
+    aes(
+      x = 0,
+      y = 0,
+      xend = NMDS1,
+      yend = NMDS2
+    ),
+    linewidth = 0.5,
+    alpha = 0.2,
+    colour = "black"
+  ) +
+  geom_segment(
+    data = MUFAs_coord_cont_ba,
+    aes(
+      x = 0,
+      y = 0,
+      xend = NMDS1,
+      yend = NMDS2
+    ),
+    linewidth = 0.5,
+    alpha = 0.2,
+    colour = "black"
+  ) +
+  geom_segment(
+    data = SAFAs_coord_cont_ba,
+    aes(
+      x = 0,
+      y = 0,
+      xend = NMDS1,
+      yend = NMDS2
+    ),
+    linewidth = 0.5,
+    alpha = 0.2,
+    colour = "black"
+  ) +
+  geom_text_repel(
+    data = PUFAs_coord_cont_ba,
+    aes(
+      x = NMDS1,
+      y = NMDS2,
+      label = row.names(PUFAs_coord_cont_ba)
+    ),
+    colour = "black",
+    size = 2.5
+  ) +
+  geom_text_repel(
+    data = MUFAs_coord_cont_ba,
+    aes(
+      x = NMDS1,
+      y = NMDS2,
+      label = row.names(MUFAs_coord_cont_ba)
+    ),
+    colour = "#996600",
+    size = 2.5
+  ) +
+  geom_text_repel(
+    data = SAFAs_coord_cont_ba,
+    aes(
+      x = NMDS1,
+      y = NMDS2,
+      label = row.names(SAFAs_coord_cont_ba)
+    ),
+    colour = "#0000FF",
+    size = 2.5
+  ) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    panel.background = element_blank(),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    legend.key = element_blank(),
+    legend.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    legend.text = element_text(size = 10, colour = "grey30"),
+    plot.margin = margin(
+      t = 0.2,
+      b = 0.2,
+      l = 0.2,
+      r = 0.2,
+      unit = "cm"
+    ),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  )
+
+absol_biofilm_with_vectors
+# position of FA names manually adjusted in vector graphic with Inkscape
+```
+
+Save the plot as .png:
+
+```{r}
+ggsave(
+  "output/NMDS_Biofilm_absolute.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+Save the plot as vector graphic:
+
+```{r}
+ggsave(
+  "output/NMDS_Biofilm_absolute.svg",
+  device = "svg",
+  width = 16.5,
+  height = 16,
+  units = "cm",
+  dpi = 600
+)
+```
+
+## PERMANOVA FA biofilm
+
+Create distance matrix with fatty acids:
+
+```{r}
+FA_biofilm_dist <- vegdist(FA_Biofilm_absolute_wide_sqrt, method = 'bray')
+```
+
+Separate explanatory variables from fatty acid information:
+
+```{r}
+FA_biofilm_absolute_wide_permanova <-
+  pivot_wider(FA_Biofilm_absolute,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation again, to reduce discriminatory power of dominant fa groups
+FA_biofilm_absolute_wide_permanova[, 4:37] <- sqrt(FA_biofilm_absolute_wide_permanova[, 4:37])
+
+# delete fa columns
+FA_biofilm_absolute_wide_permanova <-
+  FA_biofilm_absolute_wide_permanova[, c(1, 2, 3)]
+
+FA_biofilm_absolute_wide_permanova$treatment <-
+  as.factor(FA_biofilm_absolute_wide_permanova$treatment)
+```
+
+Perform PERMANOVA for treatments:
+
+```{r}
+# perform PERMANOVA for treatments
+perm_FA_biofilm_treatment <- adonis2(FA_biofilm_dist ~ treatment, data = FA_biofilm_absolute_wide_permanova, permutations = 999)
+print(perm_FA_biofilm_treatment)
+
+```
+
+No significant differences between biofilm treatments. Anyway pairwise comparisons (by: Martinez Arbizu, P. (2020). pairwiseAdonis: Pairwise multilevel comparison using adonis. R package version 0.4):
+
+```{r}
+pairwise_results_biofilm_treatment <- pairwise.adonis2(
+  FA_biofilm_dist ~ treatment,
+  data = FA_biofilm_absolute_wide_permanova,
+  permutations = 99
+)
+
+# View the results
+print(pairwise_results_biofilm_treatment)
+```
+
+## SIMPER FA biofilm
+
+```{r}
+# create extra table with treatments
+biofilm_treatments_table <- FA_biofilm_absolute_wide_permanova
+
+View(biofilm_treatments_table)
+
+# Perform SIMPER
+simper_FA_biofilm_treatments <-
+  with(
+    biofilm_treatments_table,
+    simper(FA_Biofilm_absolute_wide_sqrt, treatment,  permutations = 999)
+  )
+
+summary(simper_FA_biofilm_treatments)
+```
+
+```{r}
+simper_sum <- summary(simper_FA_biofilm_treatments)
+
+# save results
+out_dir <- "output"
+dir.create(out_dir, showWarnings = FALSE)
+
+safe_name <- function(x) gsub("[^A-Za-z0-9_]+", "_", x)
+
+iwalk(simper_sum, function(x, nm) {
+  if (is.null(x)) return(invisible(NULL))
+
+  # SIMPER summary as a data.frame:
+  # columns: average, sd, ratio, ava, avb, cumsum, p
+  # rownames are the fatty acid IDs
+  df <- as.data.frame(x)
+
+  # keep rows up to the first that reaches/exceeds 70%
+  idx <- which(df$cumsum >= 0.70)[1]
+  if (is.na(idx)) idx <- nrow(df)
+  out <- df[seq_len(idx), , drop = FALSE]
+
+  # just keep 3 decimals
+  out_write <- out
+  num_cols <- vapply(out_write, is.numeric, logical(1))
+  out_write[, num_cols] <- lapply(out_write[, num_cols, drop = FALSE],
+                                  function(col) formatC(col, format = "f", digits = 3))
+
+  file <- file.path(out_dir, paste0(safe_name(nm), "_top70.tsv"))
+  # write row names so the TSV mirrors the SIMPER structure
+  write.table(out_write, file, sep = "\t", quote = FALSE, col.names = NA)
+})
+```
+
+```{r}
+# Combine results into a data frame
+simper_results_biofilm_treatments <- do.call(rbind, lapply(simper_FA_biofilm_treatments, function(x) {
+  # Check if the element contains valid data
+  if (!is.null(x$p)) {
+    data.frame(
+      fatty_acid = names(x$p),  
+      p = as.numeric(x$p),      
+      average = as.numeric(x$average),  
+      sd = as.numeric(x$sd),
+      ratio = as.numeric(x$ratio),
+      cusum = as.numeric(x$cusum),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL  # Skip if no p-values
+  }
+}))
+
+# Show only significant results
+simper_results_biofilm_treatments %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::select(fatty_acid, p, average, sd, ratio, cusum)  
+```
+
+```{r}
+# How often do they occur
+simper_results_biofilm_treatments %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::count(fatty_acid) %>%
+  dplyr::arrange(desc(n)) %>%
+  print()
+```
+
+# Dryweight snails
+
+Unit of dry weight = mg
+
+```{r}
+# insert data (Culture snails from in-house breeding)
+dryweight_snails <-
+  read.table(file.path("data\\dryweight_snails.txt"),
+             header = TRUE, sep = "\t")
+
+View(dryweight_snails)
+# 3 snails from the 20 baseline (culture) snails were lost during the analyses.
+```
+
+## Calculate mean dryweight, sd and 95% CI of all treatment snails and the culture snails
+
+```{r}
+mean_dryweight_snails <- dryweight_snails %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_dryweight_snails = mean(dryweight_mg, na.rm = TRUE),
+    n = sum(!is.na(dryweight_mg)),
+    se = sd(dryweight_mg, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_dryweight_snails - t_crit * se,
+    ci_upper = mean_dryweight_snails + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_dryweight_snails, ci_lower, ci_upper, se)
+  
+print(mean_dryweight_snails)
+```
+
+Snails from feeding assay (fed with biofilm) on average heavier than snails from culture (fed with Tetraphyll flakes).
+
+```{r}
+#culture/baseline snails
+culture_snails <- dryweight_snails %>%
+  dplyr::filter(c(treatment == "Culture"))
+
+hist(culture_snails $ dryweight_mg) 
+skewness(culture_snails $ dryweight_mg, na.rm = TRUE) 
+shapiro.test(culture_snails $ dryweight_mg)
+# culture / baseline snails normal distributed
+
+# calculate differences in final dry weight in comparison to culture snails
+percentage_differences <- dryweight_snails %>%
+  group_by(treatment) %>%
+  dplyr::summarize(mean_dryweight = mean(dryweight_mg)) %>%
+  mutate(percentage_differences = (mean_dryweight / mean_dryweight[treatment == "Culture"]) * 100 - 100)
+
+percentage_differences
+```
+
+## Histograms
+
+```{r}
+# filter culture snails
+filtered_dry_weight <- dryweight_snails %>%
+  filter(!treatment %in% c("Culture"))
+
+hist(filtered_dry_weight $ dryweight_mg) 
+skewness(filtered_dry_weight $ dryweight_mg, na.rm = TRUE) 
+shapiro.test(filtered_dry_weight $ dryweight_mg)
+```
+
+Soft tissue dry weights normal distributed.
+
+## Model dry weight snails
+
+```{r}
+# explanatory variable treatment as factor
+filtered_dry_weight $ treatment <- factor(filtered_dry_weight $ treatment)
+  
+model_snails <- lm(dryweight_mg ~ treatment, data = filtered_dry_weight)
+
+plot(model_snails) # point cloud looks evenly distributed --> normal distribution
+
+qreference(residuals(model_snails)) # normal distribution
+
+anova(model_snails)
+```
+
+Explanatory variable "treatment" highly significant. 
+
+```{r}
+dw_snails_inter <- lsmeans(model_snails, ~ treatment)
+
+dw_snails_inter_dunn1 <- contrast(dw_snails_inter, 'pairwise')
+
+dw_snails_inter_dunn_sum1 <- summary(dw_snails_inter_dunn1, infer = TRUE, adjust = 'mvt')
+
+dw_snails_inter_dunn1
+```
+
+Significant difference between dry weight of Cip and Mix snails compared to NC; almost significant difference (p=0.0564) between Pro treatment and NC.
+
+## Boxplot dry weight snails
+
+```{r, warning = FALSE}
+# Plot
+snails_boxplot <-
+  ggplot(data = filtered_dry_weight,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = dryweight_mg)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+geom_point(
+  aes(color = treatment),
+  position = position_jitter(width = 0.25, height = 0),
+  alpha = 0.8,
+  size = 2
+) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = "Treatment", y = "Grazer Dry Weight (mg)", color = "") +
+ # scale_y_continuous(limits = c(0, 1.1)) +
+  scale_x_discrete(labels = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    axis.text.x = element_text(size = 12),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) +
+  # Significance annotations
+  annotate(
+    "text",
+    x = 1.5,
+    y = max(filtered_dry_weight$dryweight_mg) + 0.07,
+    label = "p=0.056",
+    size = 4,
+    color = "grey30"
+  ) +
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 2,
+      y = max(dryweight_mg) + 0.05,
+      yend = max(dryweight_mg) + 0.05
+    ),
+    lineend = "round",
+    linewidth = 0.5,
+    color = "grey30"
+  ) +
+  # Vertical tick on the left (x = 1)
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 1,
+      y = max(dryweight_mg) + 0.04,
+      yend = max(dryweight_mg) + 0.05
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  ) +
+  # # Vertical tick on the right (x = 4)
+  geom_segment(
+    aes(
+      x = 2,
+      xend = 2,
+      y = max(dryweight_mg) + 0.04,
+      yend = max(dryweight_mg) + 0.05
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = 2.5,
+    y = max(filtered_dry_weight$dryweight_mg) + 0.17,
+    label = "p=0.005**",
+    size = 4,
+    color = "grey30"
+  ) +
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 4,
+      y = max(dryweight_mg) + 0.15,
+      yend = max(dryweight_mg) + 0.15
+    ),
+    lineend = "round",
+    linewidth = 0.5,
+    color = "grey30"
+  ) +
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 1,
+      y = max(dryweight_mg) + 0.14,
+      yend = max(dryweight_mg) + 0.15
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  ) +
+  geom_segment(
+    aes(
+      x = 4,
+      xend = 4,
+      y = max(dryweight_mg) + 0.14,
+      yend = max(dryweight_mg) + 0.15
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  ) +
+  annotate(
+    "text",
+    x = 2,
+    y = max(filtered_dry_weight$dryweight_mg) + 0.12,
+    label = "p=0.022*",
+    size = 4,
+    color = "grey30"
+  ) +
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 3,
+      y = max(dryweight_mg) + 0.1,
+      yend = max(dryweight_mg) + 0.1
+    ),
+    lineend = "round",
+    linewidth = 0.5,
+    color = "grey30"
+  ) +
+  geom_segment(
+    aes(
+      x = 1,
+      xend = 1,
+      y = max(dryweight_mg) + 0.09,
+      yend = max(dryweight_mg) + 0.1
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  ) +
+  geom_segment(
+    aes(
+      x = 3,
+      xend = 3,
+      y = max(dryweight_mg) + 0.09,
+      yend = max(dryweight_mg) + 0.1
+    ),
+    color = "grey30",
+    linewidth = 0.5
+  )
+
+
+snails_boxplot
+```
+
+```{r, warning = FALSE}
+# save the plot
+ggsave(
+  "output/snails_boxplot.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+# Fatty acid composition snails
+
+Statistics for fatty acid composition of snails in absolute values (µg fatty acid / mg dry weight snail).
+
+```{r}
+# insert data
+FA_Snails_absolute <-
+  read.table(file.path("data\\FA_Snails_absolute.txt"),
+             header = TRUE, sep = "\t")
+
+View(FA_Snails_absolute)
+# Mix S_29 no data, fatty acid extraction did not work
+```
+
+## Total SAFA, MUFA & PUFA content
+
+1\) Total SAFA content
+
+```{r}
+# total SAFA, MUFA, PUFA content; sa = "snail absolute" 
+# total SAFA content 
+# filter saturated fatty acids in new table 
+SAFA_sa <- FA_Snails_absolute %>%
+filter(fa %in% c("C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0"))
+
+# Sum SAFA per replicate and treatment
+total_SAFA_per_snail <- SAFA_sa %>% 
+  dplyr::group_by(replicate, treatment) %>% 
+  dplyr::summarize(sum_SAFA = sum(fa_conc), .groups = "drop") 
+print(total_SAFA_per_snail) 
+
+# Statistical differences
+hist(total_SAFA_per_snail $ sum_SAFA) # normal distributed
+shapiro.test(total_SAFA_per_snail $ sum_SAFA) # normal distributed
+leveneTest(sum_SAFA ~ treatment, data = total_SAFA_per_snail) # homogenous
+anova_SAFA <- aov(sum_SAFA ~ treatment, data = total_SAFA_per_snail)
+summary(anova_SAFA)
+TukeyHSD(anova_SAFA)
+
+# Calculate mean and 95% CI per treatment
+mean_SAFA_sa <- total_SAFA_per_snail %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_SAFA = mean(sum_SAFA, na.rm = TRUE),
+    n = sum(!is.na(sum_SAFA)),
+    se = sd(sum_SAFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_SAFA - t_crit * se,
+    ci_upper = mean_SAFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_SAFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_SAFA_sa <- mean_SAFA_sa %>%
+  filter(treatment == "NC") %>%
+  pull(mean_SAFA)
+
+# Calculate percental difference from control
+mean_SAFA_sa <- mean_SAFA_sa %>%
+  mutate(percent_diff_from_NC = 100 * (mean_SAFA - control_mean_SAFA_sa) / control_mean_SAFA_sa)
+
+print(mean_SAFA_sa)
+```
+
+2\) Total MUFA content
+
+```{r}
+# filter mono-unsaturated fatty acids in new table
+MUFA_sa <- FA_Snails_absolute %>%
+  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
+
+# Sum MUFA per replicate and treatment
+total_MUFA_per_snail <- MUFA_sa %>% 
+  dplyr::group_by(replicate, treatment) %>% 
+  dplyr::summarize(sum_MUFA = sum(fa_conc), .groups = "drop") 
+print(total_MUFA_per_snail) 
+
+# Statistical differences
+hist(total_MUFA_per_snail $ sum_MUFA) 
+shapiro.test(total_MUFA_per_snail $ sum_MUFA) 
+leveneTest(sum_MUFA ~ treatment, data = total_MUFA_per_snail)
+pairwise.wilcox.test(total_MUFA_per_snail$sum_MUFA,
+                     total_MUFA_per_snail$treatment,
+                     p.adjust.method = "BH")
+
+# Calculate mean and 95% CI per treatment
+mean_MUFA_sa <- total_MUFA_per_snail %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_MUFA = mean(sum_MUFA, na.rm = TRUE),
+    n = sum(!is.na(sum_MUFA)),
+    se = sd(sum_MUFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_MUFA - t_crit * se,
+    ci_upper = mean_MUFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_MUFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_MUFA_sa <- mean_MUFA_sa %>%
+  filter(treatment == "NC") %>%
+  pull(mean_MUFA)
+
+# Calculate percental difference from control
+mean_MUFA_sa <- mean_MUFA_sa %>%
+  mutate(percent_diff_from_NC = 100 * (mean_MUFA - control_mean_MUFA_sa) / control_mean_MUFA_sa)
+
+print(mean_MUFA_sa)
+```
+
+3\) Total PUFA content
+
+```{r}
+# filter poly-unsaturated fatty acids in new table
+PUFA_sa <- FA_Snails_absolute %>%
+  filter(fa %in% c("C18:2(n-6c)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:5(n-3)", "C22:6(n-3)"))
+  
+# Sum PUFA per replicate and treatment
+total_PUFA_per_snail <- PUFA_sa %>% 
+  dplyr::group_by(replicate, treatment) %>% 
+  dplyr::summarize(sum_PUFA = sum(fa_conc), .groups = "drop") 
+print(total_PUFA_per_snail) 
+
+# statistics
+hist(total_PUFA_per_snail $ sum_PUFA)
+shapiro.test(total_PUFA_per_snail $ sum_PUFA) 
+leveneTest(sum_PUFA ~ treatment, data = total_PUFA_per_snail)
+anova_PUFA <- aov(sum_PUFA ~ treatment, data = total_PUFA_per_snail)
+summary(anova_PUFA)
+TukeyHSD(anova_PUFA)
+
+# Calculate mean and 95% CI per treatment
+mean_PUFA_sa <- total_PUFA_per_snail %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_PUFA = mean(sum_PUFA, na.rm = TRUE),
+    n = sum(!is.na(sum_PUFA)),
+    se = sd(sum_PUFA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_PUFA - t_crit * se,
+    ci_upper = mean_PUFA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_PUFA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_PUFA_sa <- mean_PUFA_sa %>%
+  filter(treatment == "NC") %>%
+  pull(mean_PUFA)
+
+# Calculate percental difference from control
+mean_PUFA_sa <- mean_PUFA_sa %>%
+  mutate(percent_diff_from_NC = 100 * (mean_PUFA - control_mean_PUFA_sa) / control_mean_PUFA_sa)
+
+print(mean_PUFA_sa)
+```
+
+4\) Total FA per snail
+
+```{r}
+# total FA 
+total_FA_snails <- bind_rows(total_SAFA_per_snail, total_MUFA_per_snail, total_PUFA_per_snail)
+
+total_FA_per_snail <- total_FA_snails %>%
+  dplyr::group_by(replicate, treatment) %>%
+  dplyr::summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
+print(total_FA_per_snail)
+
+# statistical differences will be calculated by PERMANOVA
+
+# Calculate mean and 95% CI per treatment
+mean_FA_sa <- total_FA_per_snail %>%
+  dplyr::group_by(treatment) %>%
+  dplyr::summarize(
+    mean_FA = mean(sum_FA, na.rm = TRUE),
+    n = sum(!is.na(sum_FA)),
+    se = sd(sum_FA, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_FA - t_crit * se,
+    ci_upper = mean_FA + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_FA, ci_lower, ci_upper, se)
+
+# Extract mean of control group for percental difference
+control_mean_FA_sa <- mean_FA_sa %>%
+  filter(treatment == "NC") %>%
+  pull(mean_FA)
+
+# Calculate percental difference from control
+mean_FA_sa <- mean_FA_sa %>%
+  mutate(percent_diff_from_NC = 100 * (mean_FA - control_mean_FA_sa) / control_mean_FA_sa)
+
+print(mean_FA_sa)
+```
+
+## Histogram FA snails
+
+```{r}
+hist(FA_Snails_absolute $ fa_conc) 
+skewness(FA_Snails_absolute $ fa_conc, na.rm = TRUE) 
+shapiro.test(FA_Snails_absolute $ fa_conc)
+```
+
+Fatty acid concentration not normal distributed and right skewed.
+
+## NMDS FA snails
+
+Change table to wide format:
+
+```{r}
+# change table to wide format (sqrt for square root transformation in next step)
+FA_Snails_absolute_wide_sqrt <-
+  pivot_wider(FA_Snails_absolute,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation, to reduce discriminatory power of dominant FA groups
+FA_Snails_absolute_wide_sqrt[, 3:23] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:23])
+
+# Only keep columns/FAs with more than 5 non-zero values (fatty acids that have just been found in 5 replicates will be removed)
+FA_Snails_absolute_wide_sqrt <-
+  FA_Snails_absolute_wide_sqrt %>%
+  dplyr::select(
+    1:2,
+    where(~sum(. !=0, na.rm = TRUE)>5)
+  )
+```
+
+Perform metaMDS:
+
+```{r}
+# Remove first and second column for metaMDS
+FA_Snails_absolute_wide_sqrt <- FA_Snails_absolute_wide_sqrt[, -c(1, 2)]
+
+# Rename (- C, - () ) fatty acids for later plot
+FA_Snails_absolute_wide_sqrt <- FA_Snails_absolute_wide_sqrt %>%
+  rename(
+    `12:0`     = `C12:0`,   
+    `13:0`     = `C13:0`,
+    `14:0`     = `C14:0`,
+    `15:0`     = `C15:0`,
+    `16:0`     = `C16:0`,
+    `16:1`     = `C16:1`,
+    `18:0`     = `C18:0`,
+    `18:1`     = `C18:1`,
+    `18:2n-6c` = `C18:2(n-6c)`,
+    `18:3n-6`  = `C18:3(n-6)`,
+    `18:3n-3`  = `C18:3(n-3)`,
+    `18:4n-3`  = `C18:4(n-3)`,
+    `20:0`     = `C20:0`,
+    `20:1`     = `C20:1`,
+    `20:2n-6`  = `C20:2(n-6)`,
+    `20:3n-6`  = `C20:3(n-6)`,
+    `20:4n-6`  = `C20:4(n-6)`,
+    `20:5n-3`  = `C20:5(n-3)`,
+    `22:1`     = `C22:1`,
+    `22:5n-3`  = `C22:5(n-3)`,
+    `22:6n-3`  = `C22:6(n-3)`
+)
+
+
+NMDS_Snails_absolute <-
+  metaMDS(
+    FA_Snails_absolute_wide_sqrt,
+    autotransform = FALSE,
+    k = 2 ,
+    distance = "bray",
+    na.rm = TRUE
+  )
+
+NMDS_Snails_absolute$stress
+```
+
+Create fa vectors:
+
+```{r}
+# separation in SAFA; MUFA & PUFA to build vectors in NMDS
+# "sa" = snail absolute
+FA_variables.SAFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide_sqrt,
+      select = c(
+        "12:0",
+        "13:0",
+        "14:0",
+        "15:0",
+        "16:0",
+        "18:0",
+        "20:0"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.MUFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide_sqrt,
+      select = c(
+        "16:1",
+        "18:1",
+        "20:1",
+        "22:1"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+FA_variables.PUFAs_sa <-
+  envfit(
+    NMDS_Snails_absolute,
+    subset(
+      FA_Snails_absolute_wide_sqrt,
+      select = c(
+        "18:2n-6c",
+        "18:3n-6",
+        "18:3n-3",
+        "18:4n-3",
+        "20:2n-6",
+        "20:3n-6",
+        "20:4n-6",
+        "20:5n-3",
+        "22:5n-3",
+        "22:6n-3"
+      )
+    )
+    ,
+    permutations = 999,
+    na.rm = TRUE
+  )
+
+# Extract NMDS scores 
+data.scores_snail_absolute = as.data.frame(scores(NMDS_Snails_absolute)$sites)
+
+Treatments <-
+  FA_Snails_absolute $ treatment[FA_Snails_absolute $ fa == "C16:0"]
+
+# add treatment column to NMDS scores
+data.scores_snail_absolute$Treatment = Treatments
+
+# vectors for SAFA, MUFA and PUFA
+SAFAs_coord_cont_sa = as.data.frame(scores(FA_variables.SAFAs_sa, "vectors")) * ordiArrowMul(FA_variables.SAFAs_sa)
+MUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.MUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.MUFAs_sa)
+PUFAs_coord_cont_sa = as.data.frame(scores(FA_variables.PUFAs_sa, "vectors")) * ordiArrowMul(FA_variables.PUFAs_sa)
+```
+
+Plot NMDS:
+
+```{r, warning=FALSE}
+# For the plot: reorder treatment variable in data.scores_snail_absolute
+data.scores_snail_absolute$Treatment <- factor(
+  data.scores_snail_absolute$Treatment,
+  levels = c("NC", "Pro", "Cip", "Mix")
+)
+
+# Compute convex hull for each Treatment
+polygon_data_snails <- data.scores_snail_absolute %>%
+  group_by(Treatment) %>%
+  summarise(hull_points = list(data.frame(
+    NMDS1 = NMDS1[chull(NMDS1, NMDS2)],
+    NMDS2 = NMDS2[chull(NMDS1, NMDS2)]
+  ))) %>%
+  unnest(hull_points)
+
+# Function to rescale coordinates
+rescale_vectors <- function(df, scale_factor = 1) {
+  df$length <- sqrt(df$NMDS1^2 + df$NMDS2^2)
+  max_length <- max(df$length)
+  df$NMDS1 <- df$NMDS1 / max_length * scale_factor
+  df$NMDS2 <- df$NMDS2 / max_length * scale_factor
+  df$length <- NULL
+  return(df)
+}
+
+# Apply to each group with same scale_factor (e.g. 0.2)
+PUFAs_coord_cont_sa <- rescale_vectors(PUFAs_coord_cont_sa, 0.4)
+MUFAs_coord_cont_sa <- rescale_vectors(MUFAs_coord_cont_sa, 0.4)
+SAFAs_coord_cont_sa <- rescale_vectors(SAFAs_coord_cont_sa, 0.4)
+
+# plot
+absol_snail_with_vectors <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
+    geom_polygon(
+    data = polygon_data_snails,
+    aes(x = NMDS1, y = NMDS2, group = Treatment, fill = Treatment),
+    alpha = 0.2,
+    show.legend = FALSE
+    ) +
+  geom_point(
+    aes(shape = Treatment, color = Treatment),
+    size = 5,
+    alpha = 1,
+    show.legend = TRUE
+  ) +
+  scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +
+  scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) + 
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               data = PUFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               data = MUFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
+  geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
+               data = SAFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
+  geom_text_repel(
+    data = PUFAs_coord_cont_sa, 
+    aes(x = NMDS1, y = NMDS2, label = row.names(PUFAs_coord_cont_sa)), 
+    colour = "black",
+    size = 2.5) +
+  geom_text_repel(
+    data = MUFAs_coord_cont_sa, 
+    aes(x = NMDS1, y = NMDS2, label = row.names(MUFAs_coord_cont_sa)), 
+    colour = "#996600",
+    size = 2.5) +
+  geom_text_repel(
+    data = SAFAs_coord_cont_sa, 
+    aes(x = NMDS1, y = NMDS2, label = row.names(SAFAs_coord_cont_sa)), 
+    colour = "#0000FF",
+    size = 2.5) +
+  theme_bw() +
+  theme(
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    panel.background = element_blank(),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    legend.key = element_blank(),
+    legend.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    legend.text = element_text(size = 10, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+absol_snail_with_vectors
+# position of FA names manually adjusted in vector graphic
+```
+
+Save the plot as .png:
+
+```{r}
+ggsave(
+  "output/NMDS_snails_absolute_vectors.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+Save the plot as vector graphic (minor adaptions for better readability with Inkscape):
+
+```{r}
+ggsave(
+  "output/NMDS_snails_absolute_vectors.svg",
+  device = "svg",
+  width = 16.5,
+  height = 16,
+  units = "cm",
+  dpi = 600
+)
+```
+
+Now plot NMDS without fatty acid vectors:
+
+```{r}
+# plot
+absol_snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
+    geom_polygon(
+    data = polygon_data_snails,
+    aes(x = NMDS1, y = NMDS2, group = Treatment, fill = Treatment),
+    alpha = 0.2,
+    show.legend = FALSE
+  ) +
+  geom_point(
+    aes(shape = Treatment, color = Treatment),
+    size = 5,
+    alpha = 1,
+    show.legend = TRUE
+  ) +
+  scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +
+  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +  
+  scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) + 
+  theme_bw() +
+  theme(
+    axis.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    panel.background = element_blank(),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    legend.key = element_blank(),
+    legend.title = element_text(
+      size = 11,
+      face = "bold",
+      colour = "grey30"
+    ),
+    legend.text = element_text(size = 10, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+absol_snail
+```
+
+Save the plot as .png:
+
+```{r}
+ggsave(
+  "output/NMDS_snails_absolute.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+Save the plot as vector graphic:
+
+```{r}
+ggsave(
+  "output/NMDS_snails_absolute.svg",
+  device = "svg",
+  width = 16.5,
+  height = 16,
+  units = "cm",
+  dpi = 600
+)
+```
+
+## PERMANOVA FA snails
+
+Create distance matrix with fatty acids:
+
+```{r}
+FA_Snails_dist <- vegdist(FA_Snails_absolute_wide_sqrt, method = 'bray')
+```
+
+Separate explanatory variables from fatty acid information:
+
+```{r}
+# change initial table to wide format again
+FA_Snails_absolute_wide_permanova <-
+  pivot_wider(FA_Snails_absolute,
+              names_from = fa,
+              values_from = fa_conc)
+
+# square root transformation again, to reduce discriminatory power of dominant fa groups
+FA_Snails_absolute_wide_permanova[, 3:28] <- sqrt(FA_Snails_absolute_wide_permanova[, 3:28])
+
+# Only keep columns/FAs with more than 5 non-zero values (fatty acids that have just been found in 5 replicates will be removed)
+FA_Snails_absolute_wide_permanova <-
+  FA_Snails_absolute_wide_permanova %>%
+  dplyr::select(
+    1:2,
+    where(~sum(. !=0, na.rm = TRUE)>5)
+  )
+
+# delete fa columns
+FA_Snails_absolute_wide_permanova <- FA_Snails_absolute_wide_permanova[, c(1, 2)]
+FA_Snails_absolute_wide_permanova $ treatment <- as.factor(FA_Snails_absolute_wide_permanova $ treatment)
+```
+
+Perform PERMANOVA:
+
+```{r}
+perm_FA_Snails <- adonis2(FA_Snails_dist ~ treatment, data = FA_Snails_absolute_wide_permanova, permutations = 999)
+print(perm_FA_Snails)
+```
+
+Pairwise comparisons (by: Martinez Arbizu, P. (2020). pairwiseAdonis: Pairwise multilevel comparison using adonis. R package version 0.4):
+
+```{r}
+pairwise_results <- pairwise.adonis2(
+  FA_Snails_dist ~ treatment,
+  data = FA_Snails_absolute_wide_permanova,
+  permutations = 999
+)
+
+# View the results
+print(pairwise_results)
+```
+
+All treatments except of Pro_vs_Mix significant differences.
+
+## SIMPER FA snails
+
+```{r}
+# Perform SIMPER
+simper_FA_Snails <-
+  with(
+    FA_Snails_absolute_wide_permanova,
+    simper(FA_Snails_absolute_wide_sqrt, treatment,  permutations = 999)
+  )
+
+summary(simper_FA_Snails)
+
+str(simper_FA_Snails)
+
+# save tsv tables of FAs which contribute > 70% to differences
+simper_sum_snails <- summary(simper_FA_Snails)
+
+out_dir <- "output"
+dir.create(out_dir, showWarnings = FALSE)
+
+# Safe filename helper
+safe_name <- function(x) gsub("[^A-Za-z0-9_]+", "_", x)
+
+iwalk(simper_sum_snails, function(x, nm) {
+  if (is.null(x)) return(invisible(NULL))
+
+  # SIMPER summary as a data.frame:
+  # columns: average, sd, ratio, ava, avb, cumsum, p
+  # rownames are the fatty acid IDs
+  df <- as.data.frame(x)
+
+  # keep rows up to the first that reaches/exceeds 70%
+  idx <- which(df$cumsum >= 0.70)[1]
+  if (is.na(idx)) idx <- nrow(df)
+  out <- df[seq_len(idx), , drop = FALSE]
+
+  # just keep 3 decimels
+  out_write <- out
+  num_cols <- vapply(out_write, is.numeric, logical(1))
+  out_write[, num_cols] <- lapply(out_write[, num_cols, drop = FALSE],
+                                  function(col) formatC(col, format = "f", digits = 3))
+
+  file <- file.path(out_dir, paste0(safe_name(nm), "_top70_snails.tsv"))
+  # write row names so the TSV mirrors the SIMPER structure
+  write.table(out_write, file, sep = "\t", quote = FALSE, col.names = NA)
+})
+
+# Combine results into a data frame
+simper_results_snails <- do.call(rbind, lapply(simper_FA_Snails, function(x) {
+  if (!is.null(x$p)) {
+    data.frame(
+      fatty_acid = names(x$p),  
+      p = as.numeric(x$p),      
+      average = as.numeric(x$average),  
+      sd = as.numeric(x$sd),
+      ratio = as.numeric(x$ratio),
+      cusum = as.numeric(x$cusum),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL  
+  }
+}))
+
+# Show only significant results
+simper_results_snails %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::select(fatty_acid, p, average, sd, ratio, cusum)  
+
+# How often do they occur
+simper_results_snails %>%
+  dplyr::filter(p <= 0.05) %>%
+  dplyr::count(fatty_acid) %>%
+  dplyr::arrange(desc(n)) %>%
+  print()
+```
+
+
+# Temperature and light conditions
+
+## Biofilm colonisation and contamination
+
+```{r, warning=FALSE}
+# insert data
+colonisation_temp_light <-
+  read.table(file.path("data\\colonisation_temp_light.txt"),
+             header = TRUE, sep = "\t")
+
+View(colonisation_temp_light)
+
+# average temperature
+mean(colonisation_temp_light $ temperature_colonisation)
+# 18.28751 °C
+
+# mean light intensity
+# filter only daytime
+average_light_intensity_colonisation <- colonisation_temp_light %>%
+  dplyr::filter(light_intensity_colonisation > 0) %>%
+  dplyr::summarize(average_light_intensity_colonisation = mean(light_intensity_colonisation))
+
+print(average_light_intensity_colonisation)
+# 14019.26 lux
+
+# temperature plot
+# add a small amount of random noise to the y-values
+colonisation_temp_light $ temperature_colonisation <- jitter(colonisation_temp_light $ temperature_colonisation)
+
+t2 <- ggplot(
+  data = colonisation_temp_light,
+  mapping = aes( x = day, y = temperature_colonisation, color = time_of_day)) +
+  geom_point(alpha = 0.5) +  # Individual measurements with transparency
+  geom_smooth() +
+  labs(
+    x = "Day", y = "Temperature (°C)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(0, 77, by = 5)) +
+  scale_color_continuous(
+    name = "Time of Day",  
+    breaks = c(0, 5, 10, 15, 20),
+    labels = c("08:00 pm", "03:00 pm", "10:00 am", "05:00 am", "0:00 am"),
+    limits = c(0, 22),
+  )
+
+t2 
+
+# save the plot
+ggsave(
+  "output/temperature_colonisation.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+
+# light intensity plot
+# Filter the data to include only rows where light_intensity > 0
+filtered_data2 <- colonisation_temp_light %>% 
+  filter(light_intensity_colonisation > 0)
+
+# add a small amount of random noise to the y-values
+filtered_data2 $ light_intensity_colonisation <- jitter(filtered_data2 $ light_intensity_colonisation)
+
+l2 <- ggplot(
+  data = filtered_data2,
+  mapping = aes( x = day, y = light_intensity_colonisation)) +
+  geom_point(size = 1) +  # Individual measurements with transparency
+  geom_smooth(color = "#E69F00", linewidth = 1) +
+  labs(
+    x = "Day", y = "Light intensity (lux)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = seq(0, 77, by = 5)) 
+
+l2 
+
+# save the plot
+ggsave(
+  "output/light_intensity_colonisation.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+## Feeding assay
+
+```{r, warning = FALSE}
+# insert data
+feeding_assay_temp_light <-
+  read.table(file.path("data\\feeding_assay_temp_light.txt"),
+             header = TRUE, 
+             sep = "\t"
+  )
+             
+View(feeding_assay_temp_light)
+
+# average temperature
+mean(feeding_assay_temp_light $ temperature)
+# 13.27927 °C
+
+# mean light intensity
+# filter only daytime
+average_light_intensity_feeding <- feeding_assay_temp_light %>%
+  dplyr::filter(light_intensity > 0) %>%
+  dplyr::summarize(average_light_intensity_feeding = mean(light_intensity))
+
+print(average_light_intensity_feeding)
+# 330.3552 lux
+
+# temperature plot
+# add a small amount of random noise to the y-values
+feeding_assay_temp_light $ temperature <- jitter(feeding_assay_temp_light $ temperature)
+
+t1 <- ggplot(
+  data = feeding_assay_temp_light,
+  mapping = aes( x = day, y = temperature, color = time_of_day)) +
+  geom_point(alpha = 0.5) +  # Individual measurements with transparency
+  geom_smooth() +
+  labs(
+    x = "Day", y = "Temperature (°C)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:21) +
+  scale_color_continuous(
+    name = "Time of Day",  
+    breaks = c(0, 5, 10, 15, 20),
+    labels = c("08:00 pm", "03:00 pm", "10:00 am", "05:00 am", "0:00 am"),
+    limits = c(0, 22),
+  )
+
+t1 
+
+# save the plot
+ggsave(
+  "output/temperature_feeding_assay.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+
+# light intensity plot
+# Filter the data to include only rows where light_intensity > 0
+filtered_data1 <- feeding_assay_temp_light %>% 
+  filter(light_intensity > 0)
+
+# add a small amount of random noise to the y-values
+filtered_data1 $ light_intensity <- jitter(filtered_data1 $ light_intensity)
+
+l1 <- ggplot(
+  data = filtered_data1,
+  mapping = aes( x = day, y = light_intensity)) +
+  geom_point(size = 1) +  # Individual measurements with transparency
+  geom_smooth(color = "#E69F00", linewidth = 1) +
+  labs(
+    x = "Day", y = "Light intensity (lux)"
+  ) +
+  theme_bw() +
+  scale_x_continuous(breaks = 0:21) 
+
+l1 
+
+# save the plot
+ggsave(
+  "output/light_intensity_feeding_assay.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```

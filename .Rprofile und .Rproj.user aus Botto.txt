@@ -1,0 +1,1 @@
+.Rprofile und .Rproj.user und .git und .RData aus Bottom up effects biofilm ausgeholt am 10.10.2025

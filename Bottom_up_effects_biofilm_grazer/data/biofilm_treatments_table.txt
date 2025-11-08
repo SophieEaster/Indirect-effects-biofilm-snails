@@ -1,0 +1,13 @@
+replicate	treatment
+B_1	NC
+B_2	Cip
+B_3	Pro
+B_4	Mix
+B_5	NC
+B_6	Cip
+B_7	Pro
+B_8	Mix
+B_9	NC
+B_10	Cip
+B_11	Pro
+B_12	Mix
