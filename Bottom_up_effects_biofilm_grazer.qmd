@@ -1,5 +1,5 @@
 ---
-title: "Bottom-up effects of an herbicide and an antibiotic on *Potamopyrgus antipodarum*"
+title: "Xenobiotics disrupt vertical energy transfer from photoautotrophic biofilms to grazers"
 format: 
   html:
     self-contained: true
@@ -11,7 +11,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-Sophie Oster, Patrick Fink, Tobias Schmitt, Verena C. Schreiner & Mirco Bundschuh
+Sophie Oster, Patrick Fink, Tobias Schmitt, Ralf Schulz, Verena C. Schreiner & Mirco Bundschuh
 
 R script written by Sophie Oster\
 checked by Verena C. Schreiner
@@ -127,7 +127,7 @@ library(pairwiseAdonis)
 
 # Biofilm endpoints
 
-Chlorophyll concentrations and ash free dry weigh (AFDW) of biofilm
+Chlorophyll content and ash free dry weight (AFDW) of biofilms
 
 -   Unit chlorophyll a, b & c: µg chlorophyll / cm²
 
@@ -142,7 +142,7 @@ biofilm_endpoints <-
 View(biofilm_endpoints)
 ```
 
-##  Chlorophyll a, b and c concentrations
+##  Chlorophyll a, b and c content
 
 Caclulate mean, sd and 95% CI chla, chlb + chlc of each treatment:
 
@@ -220,7 +220,7 @@ All not normal distributed, right skewed but skewness \< 1.5 therefore no data t
 
 ### Model chla
 
-Linear model with treatment as explanatory variable.
+Linear model with xenobiotic treatment as explanatory variable.
 
 ```{r}
 # treatment as factor
@@ -242,7 +242,7 @@ chla_inter2 <- lsmeans(model_chla, ~ treatment)
 chla_inter_dunn2 <- contrast(chla_inter2, 'pairwise')
 (chla_inter_dunn_sum2 <- summary(chla_inter_dunn2, infer = TRUE, adjust = 'mvt'))
 ```
-No significant differences between chemical treatments in chlorophyll a concentrations.
+No significant differences between chemical treatments in chlorophyll a content.
 
 ### Model chlb
 
@@ -264,7 +264,7 @@ chlb_inter_dunn1 <- contrast(chlb_inter, 'pairwise')
 (chlb_inter_dunn_sum1 <- summary(chlb_inter_dunn1, infer = TRUE, adjust = 'mvt'))
 ```
 
-No significant differences between chemical treatments in chlorophyll b concentrations.
+No significant differences between chemical treatments in chlorophyll b content.
 
 ### Model chlc
 
@@ -285,11 +285,11 @@ chlc_inter <- lsmeans(model_chlc, ~ treatment)
 chlc_inter_dunn1 <- contrast(chlc_inter, 'pairwise')
 (chlc_inter_dunn_sum1 <- summary(chlc_inter_dunn1, infer = TRUE, adjust = 'mvt'))
 ```
-No significant differences between chemical treatments in chlorophyll c concentrations.
+No significant differences between chemical treatments in chlorophyll c content.
 
 ### Graphs chlorophyll a, b + c
 
-```{r}
+```{r, Warning = FALSE}
 # chl a
 chla_plot <-
   ggplot(data = biofilm_endpoints,
@@ -593,7 +593,7 @@ No significant differences for treatment variable of total biofilm biomass.
 
 ### Boxplot AFDW 
 
-```{r}
+```{r, Warning = FALSE}
 afdw_boxplot <-
   ggplot(data = biofilm_endpoints,
          mapping = aes(x = factor(
@@ -1060,8 +1060,25 @@ Plot NMDS:
 # Reorder treatment variable for the plot
 data.scores_biofilm_absolute$Treatment <- factor(
   data.scores_biofilm_absolute$Treatment,
-  levels = c("NC", "Pro", "Cip", "Mix")
+  levels = c("NC", "Pro", "Cip", "Mix"),
+  labels  = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")
 )
+
+# Function to rescale coordinates
+rescale_vectors <- function(df, scale_factor = 1) {
+  df$length <- sqrt(df$NMDS1^2 + df$NMDS2^2)
+  max_length <- max(df$length)
+  df$NMDS1 <- df$NMDS1 / max_length * scale_factor
+  df$NMDS2 <- df$NMDS2 / max_length * scale_factor
+  df$length <- NULL
+  return(df)
+}
+
+# Apply to each group
+PUFAs_coord_cont_ba <- rescale_vectors(PUFAs_coord_cont_ba, 0.3)
+MUFAs_coord_cont_ba <- rescale_vectors(MUFAs_coord_cont_ba, 0.3)
+SAFAs_coord_cont_ba <- rescale_vectors(SAFAs_coord_cont_ba, 0.3)
+
 
 # Compute convex hull for each Treatment
 polygon_data_biofilm_treatment <- data.scores_biofilm_absolute %>%
@@ -1090,22 +1107,22 @@ absol_biofilm_with_vectors = ggplot(data = data.scores_biofilm_absolute, aes(x =
              alpha = 1,
              show.legend = TRUE) +
   scale_shape_manual(values = c(
-    "NC" = 16,
-    "Pro" = 17,
-    "Cip" = 18,
-    "Mix" = 15
+    "Control" = 16,
+    "Propyzamide" = 17,
+    "Ciprofloxacin" = 18,
+    "Mixture" = 15
   )) +
   scale_color_manual(values = c(
-    "NC" = "#009E73",
-    "Pro" = "#E69F00",
-    "Cip" = "#56B4E9",
-    "Mix" = "#999999"
+    "Control" = "#009E73",
+    "Propyzamide" = "#E69F00",
+    "Ciprofloxacin" = "#56B4E9",
+    "Mixture" = "#999999"
   )) +
   scale_fill_manual(values = c(
-    "NC" = "#009E73",
-    "Pro" = "#E69F00",
-    "Cip" = "#56B4E9",
-    "Mix" = "#999999"
+    "Control" = "#009E73",
+    "Propyzamide" = "#E69F00",
+    "Ciprofloxacin" = "#56B4E9",
+    "Mixture" = "#999999"
   ))  +
   labs(color = "Treatment") +
   geom_segment(
@@ -1367,7 +1384,7 @@ simper_results_biofilm_treatments %>%
 
 # Dryweight snails
 
-Unit of dry weight = mg
+Unit of soft body dry weight = mg
 
 ```{r}
 # insert data (Culture snails from in-house breeding)
@@ -1419,7 +1436,7 @@ percentage_differences <- dryweight_snails %>%
 percentage_differences
 ```
 
-## Histograms
+## Histogram
 
 ```{r}
 # filter culture snails
@@ -1527,7 +1544,6 @@ geom_point(
   
   # Theme and labels
   labs(x = "Treatment", y = "Grazer Dry Weight (mg)", color = "") +
- # scale_y_continuous(limits = c(0, 1.1)) +
   scale_x_discrete(labels = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")) +
   theme_minimal(base_size = 11) +
   theme(
@@ -1564,7 +1580,7 @@ geom_point(
     linewidth = 0.5,
     color = "grey30"
   ) +
-  # Vertical tick on the left (x = 1)
+  # Vertical tick on the left 
   geom_segment(
     aes(
       x = 1,
@@ -1575,7 +1591,7 @@ geom_point(
     color = "grey30",
     linewidth = 0.5
   ) +
-  # # Vertical tick on the right (x = 4)
+  # # Vertical tick on the right 
   geom_segment(
     aes(
       x = 2,
@@ -2042,7 +2058,8 @@ Plot NMDS:
 # For the plot: reorder treatment variable in data.scores_snail_absolute
 data.scores_snail_absolute$Treatment <- factor(
   data.scores_snail_absolute$Treatment,
-  levels = c("NC", "Pro", "Cip", "Mix")
+  levels = c("NC", "Pro", "Cip", "Mix"),
+  labels  = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")
 )
 
 # Compute convex hull for each Treatment
@@ -2064,7 +2081,7 @@ rescale_vectors <- function(df, scale_factor = 1) {
   return(df)
 }
 
-# Apply to each group with same scale_factor (e.g. 0.2)
+# Apply to each group 
 PUFAs_coord_cont_sa <- rescale_vectors(PUFAs_coord_cont_sa, 0.4)
 MUFAs_coord_cont_sa <- rescale_vectors(MUFAs_coord_cont_sa, 0.4)
 SAFAs_coord_cont_sa <- rescale_vectors(SAFAs_coord_cont_sa, 0.4)
@@ -2083,9 +2100,9 @@ absol_snail_with_vectors <- ggplot(data = data.scores_snail_absolute, aes(x = NM
     alpha = 1,
     show.legend = TRUE
   ) +
-  scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
-  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +
-  scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) + 
+  scale_shape_manual(values = c("Control" = 16, "Propyzamide" = 17, "Ciprofloxacin" = 18, "Mixture" = 15)) +
+  scale_color_manual(values = c("Control" = "#009E73", "Propyzamide" = "#E69F00", "Ciprofloxacin" = "#56B4E9", "Mixture" = "#999999")) +
+  scale_fill_manual(values = c("Control" = "#009E73", "Propyzamide" = "#E69F00", "Ciprofloxacin" = "#56B4E9", "Mixture" = "#999999")) + 
   geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
                data = PUFAs_coord_cont_sa, linewidth = 0.5, alpha = 0.2, colour = "black") +
   geom_segment(aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2), 
@@ -2173,10 +2190,10 @@ absol_snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS
     alpha = 1,
     show.legend = TRUE
   ) +
-  scale_shape_manual(values = c("NC" = 16, "Pro" = 17, "Cip" = 18, "Mix" = 15)) +
-  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +
-  scale_color_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) +  
-  scale_fill_manual(values = c("NC" = "#009E73", "Pro" = "#E69F00", "Cip" = "#56B4E9", "Mix" = "#999999")) + 
+  scale_shape_manual(values = c("Control" = 16, "Propyzamide" = 17, "Ciprofloxacin" = 18, "Mixture" = 15)) +
+  scale_color_manual(values = c("Control" = "#009E73", "Propyzamide" = "#E69F00", "Ciprofloxacin" = "#56B4E9", "Mixture" = "#999999")) +
+  scale_color_manual(values = c("Control" = "#009E73", "Propyzamide" = "#E69F00", "Ciprofloxacin" = "#56B4E9", "Mixture" = "#999999")) +  
+  scale_fill_manual(values = c("Control" = "#009E73", "Propyzamide" = "#E69F00", "Ciprofloxacin" = "#56B4E9", "Mixture" = "#999999")) + 
   theme_bw() +
   theme(
     axis.title = element_text(
@@ -2356,7 +2373,6 @@ simper_results_snails %>%
   dplyr::arrange(desc(n)) %>%
   print()
 ```
-
 
 # Temperature and light conditions
 
