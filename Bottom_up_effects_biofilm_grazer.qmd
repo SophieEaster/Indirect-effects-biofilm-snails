@@ -1,5 +1,5 @@
 ---
-title: "Xenobiotics disrupt vertical energy transfer from photoautotrophic biofilms to grazers"
+title: "Xenobiotics modify vertical energy transfer from photoautotrophic biofilms to grazers"
 format: 
   html:
     self-contained: true
@@ -43,30 +43,65 @@ current_r_version <- as.character(getRversion())
 required_r_version <- "4.3.2"
 
 if (current_r_version != required_r_version) {
-  # Install 'rig' if not already installed
-  if (!requireNamespace("rig", quietly = TRUE)) {
-    install.packages("rig")
+  
+  sysname <- Sys.info()[["sysname"]]
+  machine <- tolower(Sys.info()[["machine"]])
+  
+  # Choose the correct official CRAN download
+  download_url <- switch(
+    sysname,
+    "Windows" = sprintf(
+      "https://cran.r-project.org/bin/windows/base/old/%s/R-%s-win.exe",
+      required_r_version, required_r_version
+    ),
+    "Darwin" = if (grepl("arm64|aarch64", machine)) {
+      sprintf(
+        "https://cran.r-project.org/bin/macosx/big-sur-arm64/base/R-%s-arm64.pkg",
+        required_r_version
+      )
+    } else {
+      sprintf(
+        "https://cran.r-project.org/bin/macosx/big-sur-x86_64/base/R-%s-x86_64.pkg",
+        required_r_version
+      )
+    },
+    "Linux" = sprintf(
+      "https://cran.r-project.org/src/base/R-4/R-%s.tar.gz",
+      required_r_version
+    ),
+    stop("Unsupported operating system: ", sysname)
+  )
+  
+  destfile <- file.path(tempdir(), basename(download_url))
+  
+  message("This project requires R ", required_r_version,
+          ". Downloading it from CRAN now...")
+  
+  download.file(download_url, destfile = destfile, mode = "wb")
+  
+  message("Downloaded to: ", destfile)
+  
+  if (sysname == "Windows") {
+    shell.exec(normalizePath(destfile))
+  } else if (sysname == "Darwin") {
+    system2("open", shQuote(destfile), wait = FALSE)
+  } else if (sysname == "Linux") {
+    message(
+      "Linux detected: the R source tarball was downloaded.\n",
+      "Please install R ", required_r_version,
+      " using your distribution's preferred method, or build from source."
+    )
+    utils::browseURL("https://cran.r-project.org/doc/manuals/r-patched/R-admin.html")
   }
   
-  # Load the 'rig' package
-  library(rig)
+  stop(
+    "Please install R ", required_r_version,
+    ", restart R with that version, and rerun the script."
+  )
   
-  # Check if the required R version is installed
-  installed_versions <- rig::rig_ls()
-  if (!(required_r_version %in% installed_versions$version)) {
-    # Install the required R version using 'rig'
-    rig::rig_add(required_r_version)
-  }
-  
-  # Set the required R version as default
-  rig::rig_default(required_r_version)
-  
-  # Notify the user about the version change
-  stop(paste("Please restart R using version", required_r_version, "and rerun the script."))
 } else {
-  message("You are already using the correct R version:", required_r_version)
+  message("You are already using the correct R version: ", required_r_version)
 }
-
 ```
 
 # Packages in a reproducible environment
@@ -75,7 +110,6 @@ if (current_r_version != required_r_version) {
 # Restore the environment:
 # renv::restore()
 
-library(stats)
 library(rstatix)
 library(dplyr)
 library(tidyverse)
@@ -93,7 +127,6 @@ library(gridExtra)
 library(stringr)
 library(shades)
 library(ggpubr)
-library(base)
 library(ggokabeito)
 library(multcomp)
 library(car)
@@ -109,6 +142,12 @@ library(emmeans)
 library(purrr)
 library(DT)
 library(Hmisc)
+library(svglite)
+library(mgcv)       
+library(DHARMa)   
+library(marginaleffects)
+library(writexl)
+library(ARTool)
 
 if (!requireNamespace("devtools", quietly = TRUE)) {
   install.packages("devtools")
@@ -121,9 +160,193 @@ if (!requireNamespace("pairwiseAdonis", quietly = TRUE)) {
 }
 
 library(pairwiseAdonis)
-
-# renv::snapshot()
 ```
+
+To examine the interaction between both xenobiotics, we further analysed their combined effects using linear models based on presence or absence of each xenobiotic. When a significant interaction was detected, we applied the post-estimation inference framework proposed by Madge Pimentel and colleagues (2025). This approach assesses interaction strength relative to additive, multiplicative, and dominance null models, and tests deviations from zero using simulation-based confidence intervals.  
+
+Load these functions:
+```{r}
+# Madge Pimentel, I., Albini, D., Beermann, A. J., Leese, F., Macaulay, S. J., Matthaei, C. D., ... & Schäfer, R. B. (2025). Hypothesis‐Driven Research on Multiple Stressors: An Analytical Framework for Stressor Interactions. Ecology and evolution, 15(8), e71959.
+
+# hypothesis function
+hypothesis.function <- function(df.cf, stressor1, stressor2,
+                                strategy = c("average", "rowwise"),
+                                by = NULL,
+                                null = c("ad", "mu", "do", "all")) {
+  strategy <- match.arg(strategy)
+  null <- match.arg(null)
+
+  df <- df.cf |>
+    dplyr::arrange(dataset, rowidcf)
+
+  C.df <- dplyr::filter(df, dataset == "C")
+  S1.df <- dplyr::filter(df, dataset == "S1")
+  S2.df <- dplyr::filter(df, dataset == "S2")
+  S12.df <- dplyr::filter(df, dataset == "S12")
+
+  change_x1 <- as.numeric(S12.df[[stressor1]]) - as.numeric(C.df[[stressor1]])
+  change_x2 <- as.numeric(S12.df[[stressor2]]) - as.numeric(C.df[[stressor2]])
+
+  C <- C.df$estimate
+  S1 <- S1.df$estimate
+  S2 <- S2.df$estimate
+  S12 <- S12.df$estimate
+
+  if (null == "ad") {
+    row.est <- (S12 - S1 - S2 + C) / (change_x1 * change_x2)
+  } else if (null == "mu") {
+    row.est <- (log(S12) - log(S1) - log(S2) + log(C)) / (change_x1 * change_x2)
+  } else if (null == "do") {
+    row.est <- (pmin(S12, C) - pmin(S1, S2)) / (change_x1 * change_x2)
+  }
+
+  if (null != "all") {
+    rowwise <- C.df |>
+      dplyr::select(-estimate, -dataset) |>
+      dplyr::mutate(
+        estimate = row.est,
+        term = null,
+        change_x1 = change_x1,
+        change_x2 = change_x2,
+        .before = 1
+      )
+  }
+
+  if (null == "all") {
+    row.est.ad <- (S12 - S1 - S2 + C) / (change_x1 * change_x2)
+    row.est.mu <- (log(S12) - log(S1) - log(S2) + log(C)) / (change_x1 * change_x2)
+    row.est.do <- (pmin(S12, C) - pmin(S1, S2)) / (change_x1 * change_x2)
+
+    rowwise <- C.df |>
+      dplyr::select(-estimate, -dataset) |>
+      dplyr::mutate(
+        ad = row.est.ad,
+        mu = row.est.mu,
+        do = row.est.do,
+        change_x1 = change_x1,
+        change_x2 = change_x2
+      ) |>
+      tidyr::pivot_longer(cols = c("ad", "mu", "do"),
+                          names_to = "term", values_to = "estimate")
+  }
+
+  if (strategy == "average") {
+    grouping <- "term"
+    if (!is.null(by)) grouping <- c(grouping, by)
+    out <- rowwise |>
+      dplyr::group_by(dplyr::across(all_of(grouping))) |>
+      dplyr::summarise(estimate = mean(estimate), .groups = "drop")
+  } else {
+    out <- rowwise
+  }
+
+  return(out)
+} 
+
+# nd generator
+nd.generator <- function(df.ref, stressor1, stressor2, diff = NULL){
+    df.prep <- df.ref |>
+        dplyr::mutate(dataset = "C", rowidcf = dplyr::row_number())
+
+    if (is.null(diff)) {
+        df.out <- df.prep |>
+            tibble::add_case(
+                df.prep |> dplyr::mutate(
+                    !!stressor1 := factor(levels(.data[[stressor1]])[
+                        as.numeric(.data[[stressor1]]) + 1],
+                        levels = levels(.data[[stressor1]])
+                    ),
+                    dataset = "S1"
+                )
+            ) |>
+            tibble::add_case(
+                df.prep |> dplyr::mutate(
+                    !!stressor2 := factor(levels(.data[[stressor2]])[
+                        as.numeric(.data[[stressor2]]) + 1],
+                        levels = levels(.data[[stressor2]])
+                    ),
+                    dataset = "S2"
+                )
+            ) |>
+            tibble::add_case(
+                df.prep |> dplyr::mutate(
+                    !!stressor1 := factor(levels(.data[[stressor1]])[
+                        as.numeric(.data[[stressor1]]) + 1],
+                        levels = levels(.data[[stressor1]])
+                    ),
+                    !!stressor2 := factor(levels(.data[[stressor2]])[
+                        as.numeric(.data[[stressor2]]) + 1],
+                        levels = levels(.data[[stressor2]])
+                    ),
+                    dataset = "S12"
+                )
+            )
+    } else if (length(diff) == 1) {
+        if (is.factor(df.prep[[stressor1]])) {
+            df.out <- df.prep |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor1 := factor(levels(.data[[stressor1]])[
+                        as.numeric(.data[[stressor1]]) + 1],
+                        levels = levels(.data[[stressor1]])
+                    ),
+                    dataset = "S1"
+                )) |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor2 := .data[[stressor2]] + diff,
+                    dataset = "S2"
+                )) |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor1 := factor(levels(.data[[stressor1]])[
+                        as.numeric(.data[[stressor1]]) + 1],
+                        levels = levels(.data[[stressor1]])
+                    ),
+                    !!stressor2 := .data[[stressor2]] + diff,
+                    dataset = "S12"
+                ))
+        } else {
+            df.out <- df.prep |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor1 := .data[[stressor1]] + diff,
+                    dataset = "S1"
+                )) |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor2 := factor(levels(.data[[stressor2]])[
+                        as.numeric(.data[[stressor2]]) + 1],
+                        levels = levels(.data[[stressor2]])
+                    ),
+                    dataset = "S2"
+                )) |>
+                tibble::add_case(df.prep |> dplyr::mutate(
+                    !!stressor1 := .data[[stressor1]] + diff,
+                    !!stressor2 := factor(levels(.data[[stressor2]])[
+                        as.numeric(.data[[stressor2]]) + 1],
+                        levels = levels(.data[[stressor2]])
+                    ),
+                    dataset = "S12"
+                ))
+        }
+    } else if (length(diff) == 2) {
+        df.out <- df.prep |>
+            tibble::add_case(dplyr::mutate(df.prep,
+                !!stressor1 := .data[[stressor1]] + diff[1],
+                dataset = "S1")) |>
+            tibble::add_case(dplyr::mutate(df.prep,
+                !!stressor2 := .data[[stressor2]] + diff[2],
+                dataset = "S2")) |>
+            tibble::add_case(dplyr::mutate(df.prep,
+                !!stressor1 := .data[[stressor1]] + diff[1],
+                !!stressor2 := .data[[stressor2]] + diff[2],
+                dataset = "S12"))
+    }
+
+    if ("rowid" %in% names(df.out)) {
+        df.out <- dplyr::select(df.out, -rowid)
+    }
+
+    return(df.out)
+}
+```
+
 
 # Biofilm endpoints
 
@@ -144,7 +367,7 @@ View(biofilm_endpoints)
 
 ##  Chlorophyll a, b and c content
 
-Caclulate mean, sd and 95% CI chla, chlb + chlc of each treatment:
+Caclulate mean, se and 95% CI chla, chlb + chlc of each treatment:
 
 ```{r}
 # chla
@@ -216,31 +439,52 @@ skewness(biofilm_endpoints $ chlc, na.rm = TRUE)
 shapiro.test(biofilm_endpoints $ chlc)
 ```
 
-All not normal distributed, right skewed but skewness \< 1.5 therefore no data transformation for model
+All not normal distributed, right skewed but skewness max. 1.6 therefore no data transformation for model
 
 ### Model chla
 
 Linear model with xenobiotic treatment as explanatory variable.
-
 ```{r}
 # treatment as factor
 biofilm_endpoints $ treatment <- factor(biofilm_endpoints $ treatment)
 
 model_chla <- lm(chla ~ treatment, data = biofilm_endpoints)
-
 par(mfrow = c(2, 2))
+plot(model_chla) 
+qreference(residuals(model_chla)) # not normal distributed
 
-plot(model_chla) # point cloud looks evenly distributed --> normal distribution
+pairwise.wilcox.test(biofilm_endpoints$chla,
+                     biofilm_endpoints$treatment,
+                     p.adjust.method = "holm")
 
-qreference(residuals(model_chla)) 
+# add presence / absence
+# interaction effect model with presence / absence of single xenobiotics
+biofilm_endpoints$Cip <- ifelse(biofilm_endpoints$treatment %in% c("Cip", "Mix"),
+                                1, 0)
 
-drop1(model_chla, test = 'F')
+biofilm_endpoints$Cip <- factor(biofilm_endpoints$Cip, levels = c(0, 1))
 
-anova(model_chla)
+biofilm_endpoints$Pro <- ifelse(biofilm_endpoints$treatment %in% c("Pro", "Mix"),
+                                1, 0)
 
-chla_inter2 <- lsmeans(model_chla, ~ treatment)
-chla_inter_dunn2 <- contrast(chla_inter2, 'pairwise')
-(chla_inter_dunn_sum2 <- summary(chla_inter_dunn2, infer = TRUE, adjust = 'mvt'))
+biofilm_endpoints$Pro <- factor(biofilm_endpoints$Pro, levels = c(0, 1))
+
+# sanity check
+table(biofilm_endpoints$treatment,
+      biofilm_endpoints$Cip,
+      biofilm_endpoints$Pro)
+
+chla_mixture <- lm(chla ~ Cip * Pro, data = biofilm_endpoints)
+par(mfrow = c(2, 2))
+plot(chla_mixture) # not normally distributed
+qreference(residuals(chla_mixture)) 
+
+kruskal_chla_interaction <- biofilm_endpoints %>%
+  dplyr::mutate(treatment = interaction(Cip, Pro, sep = "_")) %>%
+  kruskal.test(chla ~ treatment, data = .)
+
+kruskal_chla_interaction
+# no significant interaction
 ```
 No significant differences between chemical treatments in chlorophyll a content.
 
@@ -248,16 +492,10 @@ No significant differences between chemical treatments in chlorophyll a content.
 
 ```{r}
 model_chlb <- lm(chlb ~ treatment, data = biofilm_endpoints)
-
 par(mfrow = c(2, 2))
-
-plot(model_chlb) # point cloud looks evenly distributed --> normal distribution
-
-qreference(residuals(model_chlb)) # normal distribution assumed
-
+plot(model_chlb)
+qreference(residuals(model_chlb)) # normality acceptable
 drop1(model_chlb, test = 'F')
-
-anova(model_chlb)
 
 chlb_inter <- lsmeans(model_chlb, ~ treatment)
 chlb_inter_dunn1 <- contrast(chlb_inter, 'pairwise')
@@ -265,27 +503,36 @@ chlb_inter_dunn1 <- contrast(chlb_inter, 'pairwise')
 ```
 
 No significant differences between chemical treatments in chlorophyll b content.
+Still assess potential interaction:
+```{r}
+chlb_mixture <- lm(chlb ~ Cip * Pro, data = biofilm_endpoints)
+par(mfrow = c(2, 2))
+plot(chlb_mixture) # normality acceptable
+qreference(residuals(chlb_mixture)) 
+drop1(chlb_mixture, test = 'F')
+# no significant interaction
+```
+
 
 ### Model chlc
 
 ```{r}
 model_chlc <- lm(chlc ~ treatment, data = biofilm_endpoints)
-
 par(mfrow = c(2, 2))
-
-plot(model_chlc) # point cloud looks evenly distributed --> normal distribution
-
-qreference(residuals(model_chlc)) # normal distribution assumed
-
+plot(model_chlc) # normality acceptable
+qreference(residuals(model_chlc))
 drop1(model_chlc, test = 'F')
-
-anova(model_chlc)
-
-chlc_inter <- lsmeans(model_chlc, ~ treatment)
-chlc_inter_dunn1 <- contrast(chlc_inter, 'pairwise')
-(chlc_inter_dunn_sum1 <- summary(chlc_inter_dunn1, infer = TRUE, adjust = 'mvt'))
 ```
 No significant differences between chemical treatments in chlorophyll c content.
+Still check for interactions of Cip * Pro:
+```{r}
+chlc_mixture <- lm(chlc ~ Cip * Pro, data = biofilm_endpoints)
+par(mfrow = c(2, 2))
+plot(chlc_mixture) # normality acceptable
+qreference(residuals(chlc_mixture)) 
+drop1(chlc_mixture, test = 'F')
+# no significant interaction
+```
 
 ### Graphs chlorophyll a, b + c
 
@@ -538,7 +785,7 @@ chlc_plot <-
 
 ## AFDW 
 
-Calculate mean, sd and 95% CI AFDW of each treatment.
+Calculate mean, se and 95% CI AFDW of each treatment.
 
 ```{r}
 mean_afdw <- biofilm_endpoints %>%
@@ -569,24 +816,15 @@ Not normal distributed, right skewed but skewness \<1.5 therefore no data transf
 
 ### Model AFDW 
 
-```{r}
+```{r, warning=FALSE}
 model_afdw <- lm(afdw ~ treatment, data = biofilm_endpoints)
-
 par(mfrow = c(2, 2))
+plot(model_afdw) # rather s shape
+qreference(residuals(model_afdw))
 
-plot(model_afdw) # not perfectly even distributed, but ok
-
-qreference(residuals(model_afdw)) # normal distribution assumed
-
-drop1(model_afdw, test = 'F')
-
-anova(model_afdw)
-
-afdw_inter <- lsmeans(model_afdw, ~ treatment)
-
-afdw_inter_dunn1 <- contrast(afdw_inter, 'pairwise')
-
-(afdw_inter_dunn_sum1 <- summary(afdw_inter_dunn1, infer = TRUE, adjust = 'mvt'))
+pairwise.wilcox.test(biofilm_endpoints$afdw,
+                     biofilm_endpoints$treatment,
+                     p.adjust.method = "holm")
 ```
 
 No significant differences for treatment variable of total biofilm biomass.
@@ -707,16 +945,16 @@ FA_Biofilm_absolute <-
 View(FA_Biofilm_absolute)
 ```
 
-## Total SAFA, MUFA & PUFA content
+## Absolute SAFA, MUFA & PUFA concentrations
 
 1\) Total SAFA content
 
-```{r}
+```{r, warning=FALSE}
 # total SAFA, MUFA, PUFA content; ba = "biofilm absolute"
 # total SAFA content
 # filter saturated fatty acids in new table
 SAFA_ba <- FA_Biofilm_absolute %>%
-    filter(fa %in% c("C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0", "C22:0", "C24:0"))
+    filter(fa %in% c("C08:0", "C10:0", "C11:0","C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0", "C21:0", "C22:0", "C24:0"))
 
 # Sum SAFA per replicate and treatment
 total_SAFA_per_replicate <- SAFA_ba %>%
@@ -732,7 +970,7 @@ anova_SAFA <- aov(sum_SAFA ~ treatment, data = total_SAFA_per_replicate)
 summary(anova_SAFA)
 TukeyHSD(anova_SAFA)
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_SAFA_ba <- total_SAFA_per_replicate %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -756,15 +994,14 @@ mean_SAFA_ba <- mean_SAFA_ba %>%
   mutate(percent_diff_from_NC = 100 * (mean_SAFA - control_mean_SAFA_ba) / control_mean_SAFA_ba)
 
 print(mean_SAFA_ba)
-
 ```
 
 2\) Total MUFA content
 
-```{r}
+```{r, warning=FALSE}
 # filter mono-unsaturated fatty acids in new table
 MUFA_ba <- FA_Biofilm_absolute %>%
-  filter(fa %in% c("C16:1", "C17:1", "C18:1", "C20:1","C22:1"))
+  filter(fa %in% c("C14:1", "C15:1","C16:1", "C17:1", "C18:1", "C20:1","C22:1", "C24:1"))
 
 # Sum MUFA per replicate and treatment
 total_MUFA_per_replicate <- MUFA_ba %>%
@@ -780,7 +1017,7 @@ anova_MUFA <- aov(sum_MUFA ~ treatment, data = total_MUFA_per_replicate)
 summary(anova_MUFA)
 TukeyHSD(anova_MUFA)
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_MUFA_ba <- total_MUFA_per_replicate %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -808,10 +1045,10 @@ print(mean_MUFA_ba)
 
 3\) Total PUFA content
 
-```{r}
+```{r, warning=FALSE}
 # filter poly-unsaturated fatty acids in new table
 PUFA_ba <- FA_Biofilm_absolute %>%
-  filter(fa %in% c("C18:2(n-6c)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:6(n-3)"))
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-3)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
   
 # Sum PUFA per replicate and treatment
 total_PUFA_per_replicate <- PUFA_ba %>%
@@ -827,7 +1064,7 @@ anova_PUFA <- aov(sum_PUFA ~ treatment, data = total_PUFA_per_replicate)
 summary(anova_PUFA)
 TukeyHSD(anova_PUFA)
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_PUFA_ba <- total_PUFA_per_replicate %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -853,9 +1090,152 @@ mean_PUFA_ba <- mean_PUFA_ba %>%
 print(mean_PUFA_ba)
 ```
 
+SAFA, MUFA & PUFA plot relative to control:
+```{r, warning=FALSE}
+prep_class_from_replicates <- function(df_rep, value_col, class_name){
+  df_rep %>%
+    group_by(treatment) %>%
+    summarise(
+      mean = mean(.data[[value_col]], na.rm = TRUE),
+      n    = sum(!is.na(.data[[value_col]])),
+      se   = sd(.data[[value_col]], na.rm = TRUE) / sqrt(n),
+      tcrit = qt(0.975, df = n - 1),
+      lwr  = mean - tcrit * se,
+      upr  = mean + tcrit * se,
+      .groups = "drop"
+    ) %>%
+    dplyr::mutate(Class = class_name) %>%
+    dplyr::select(treatment, Class, mean, lwr, upr)
+}
+
+biofilm_class_abs <- bind_rows(
+  prep_class_from_replicates(total_SAFA_per_replicate, "sum_SAFA", "SAFA"),
+  prep_class_from_replicates(total_MUFA_per_replicate, "sum_MUFA", "MUFA"),
+  prep_class_from_replicates(total_PUFA_per_replicate, "sum_PUFA", "PUFA")
+) %>%
+  mutate(
+    Class = factor(Class, levels = c("SAFA","PUFA","MUFA")),
+    treatment = factor(treatment, levels = c("NC", "Cip","Pro","Mix"))
+  )
+
+biofilm_class_abs
+
+# relative values
+biofilm_class_rel <- biofilm_class_abs %>%
+  group_by(Class) %>%
+  mutate(
+    ctrl_mean = mean[treatment == "NC"][1],
+    mean = mean / ctrl_mean,
+    lwr  = lwr  / ctrl_mean,
+    upr  = upr  / ctrl_mean
+  ) %>%
+  ungroup() %>%
+  dplyr::select(-ctrl_mean)
+
+
+plot_df <- biofilm_class_rel  
+
+col_xeno <- c(
+  "Pro" = "#E69F00",
+  "Cip" = "#56B4E9",
+  "Mix" = "#999999"
+)
+
+plot_df <- plot_df %>%
+  mutate(
+    show = ifelse(treatment == "NC", 0, 1),  
+    treatment = factor(treatment, levels = c("NC","Pro","Cip","Mix")),
+    Class = factor(Class, levels = c("PUFA", "MUFA", "SAFA")),
+    lwr = ifelse(lwr < 0, 0, lwr)
+  )
+
+# plot
+fa_biofilm_relative_changes <- ggplot(plot_df, aes(x = mean, y = Class)) +
+
+  geom_vline(xintercept = 1, linewidth = 1, colour = "grey30") +
+
+  geom_errorbarh(
+    aes(xmin = lwr, xmax = upr, group = treatment, alpha = show),
+    height = 0,
+    linewidth = 1,
+    colour = "grey30",
+    position = position_dodge(width = 0.45),
+    show.legend = FALSE
+  ) +
+
+  geom_errorbarh(
+    aes(xmin = lwr, xmax = upr, colour = treatment, alpha = show),
+    height = 0,
+    linewidth = 0.8,
+    position = position_dodge(width = 0.45),
+    show.legend = FALSE
+  ) +
+
+  geom_point(
+    aes(colour = treatment, alpha = show),
+    size = 4,
+    position = position_dodge(width = 0.45),
+    show.legend = FALSE
+  ) +
+
+  scale_colour_manual(
+    values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+    ),
+    labels = c(
+      "NC"  = "Control",
+      "Cip" = "Ciprofloxacin",
+      "Pro" = "Propyzamide",
+      "Mix" = "Mixture"
+    ),
+    name = "Treatment"
+  ) +
+
+  scale_alpha_identity() +
+
+  guides(
+    colour = guide_legend(override.aes = list(alpha = 1))
+  ) +
+
+  labs(
+    x = "Fold change relative to control",
+    y = NULL
+  ) +
+
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "right",
+    legend.title = element_text(size = 12, face = "bold", colour = "grey30"),
+    legend.text  = element_text(size = 11, colour = "grey30"),
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(size = 13, face = "bold", colour = "grey30"),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 13, face = "bold", colour = "grey30"),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  )
+
+fa_biofilm_relative_changes
+
+# save the plot
+ggsave(
+  "output/fa_biofilm_relative_changes.png",
+  plot = fa_biofilm_relative_changes,
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+
 4\) Total FA content
 
-```{r}
+```{r, warning=FALSE}
 # total FA 
 total_FA_biofilm <- bind_rows(total_SAFA_per_replicate, total_MUFA_per_replicate, total_PUFA_per_replicate)
 
@@ -866,7 +1246,7 @@ print(total_FA_per_replicate)
 
 # statistical differences will be calculated by PERMANOVA
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_FA_ba <- total_FA_per_replicate %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -1056,7 +1436,7 @@ PUFAs_coord_cont_ba = as.data.frame(scores(FA_variables.PUFAs_ba, "vectors")) * 
 
 Plot NMDS:
 
-```{r}
+```{r, warning=FALSE}
 # Reorder treatment variable for the plot
 data.scores_biofilm_absolute$Treatment <- factor(
   data.scores_biofilm_absolute$Treatment,
@@ -1219,7 +1599,7 @@ absol_biofilm_with_vectors = ggplot(data = data.scores_biofilm_absolute, aes(x =
   )
 
 absol_biofilm_with_vectors
-# position of FA names manually adjusted in vector graphic with Inkscape
+# position of FA names for publication were manually adjusted in vector graphic with the software Inkscape
 ```
 
 Save the plot as .png:
@@ -1294,6 +1674,37 @@ pairwise_results_biofilm_treatment <- pairwise.adonis2(
 
 # View the results
 print(pairwise_results_biofilm_treatment)
+
+# Cip*Pro interaction?
+# add presence / absence columns
+FA_biofilm_absolute_wide_permanova$Cip <- ifelse(FA_biofilm_absolute_wide_permanova$treatment %in% c("Cip", "Mix"),
+                                                 1,
+                                                 0)
+
+FA_biofilm_absolute_wide_permanova$Cip <- 
+  factor(FA_biofilm_absolute_wide_permanova$Cip, levels = c(0, 1))
+
+FA_biofilm_absolute_wide_permanova$Pro <- ifelse(FA_biofilm_absolute_wide_permanova$treatment %in% c("Pro", "Mix"),
+                                                 1,
+                                                 0)
+
+FA_biofilm_absolute_wide_permanova$Pro <- 
+  factor(FA_biofilm_absolute_wide_permanova$Pro, levels = c(0, 1))
+
+# sanity check
+table(FA_biofilm_absolute_wide_permanova$treatment,
+      FA_biofilm_absolute_wide_permanova$Cip)
+
+table(FA_biofilm_absolute_wide_permanova$treatment,
+      FA_biofilm_absolute_wide_permanova$Pro)
+
+# permanova
+perm_FA_biofilm_Cip_Pro <- adonis2(FA_biofilm_dist ~ Cip * Pro,
+        data = FA_biofilm_absolute_wide_permanova,
+        permutations = 999)
+
+print(perm_FA_biofilm_Cip_Pro)
+# no interaction
 ```
 
 ## SIMPER FA biofilm
@@ -1396,7 +1807,7 @@ View(dryweight_snails)
 # 3 snails from the 20 baseline (culture) snails were lost during the analyses.
 ```
 
-## Calculate mean dryweight, sd and 95% CI of all treatment snails and the culture snails
+## Calculate mean dryweight, se and 95% CI of all treatment snails and the culture snails
 
 ```{r}
 mean_dryweight_snails <- dryweight_snails %>%
@@ -1457,12 +1868,10 @@ Soft tissue dry weights normal distributed.
 filtered_dry_weight $ treatment <- factor(filtered_dry_weight $ treatment)
   
 model_snails <- lm(dryweight_mg ~ treatment, data = filtered_dry_weight)
-
-plot(model_snails) # point cloud looks evenly distributed --> normal distribution
-
-qreference(residuals(model_snails)) # normal distribution
-
-anova(model_snails)
+par(mfrow = c(2, 2))
+plot(model_snails) # normal distribution assumed
+qreference(residuals(model_snails)) 
+drop1(model_snails, test = 'F')
 ```
 
 Explanatory variable "treatment" highly significant. 
@@ -1477,7 +1886,76 @@ dw_snails_inter_dunn_sum1 <- summary(dw_snails_inter_dunn1, infer = TRUE, adjust
 dw_snails_inter_dunn1
 ```
 
-Significant difference between dry weight of Cip and Mix snails compared to NC; almost significant difference (p=0.0564) between Pro treatment and NC.
+Significant difference between dry weight of Cip and Mix snails compared to NC; almost significant difference between Pro treatment and NC.
+
+Test for interaction effects of Cip and Pro:
+```{r}
+# interaction effect model with presence / absence of single xenobiotics
+filtered_dry_weight$Cip <- ifelse(filtered_dry_weight$treatment %in% c("Cip", "Mix"),
+                                1, 0)
+
+filtered_dry_weight$Cip <- factor(filtered_dry_weight$Cip, levels = c(0, 1))
+
+filtered_dry_weight$Pro <- ifelse(filtered_dry_weight$treatment %in% c("Pro", "Mix"),
+                                1, 0)
+
+filtered_dry_weight$Pro <- factor(filtered_dry_weight$Pro, levels = c(0, 1))
+
+# sanity check
+table(filtered_dry_weight$treatment,
+      filtered_dry_weight$Cip,
+      filtered_dry_weight$Pro)
+
+# interaction model
+model_dryweight_interact <- lm(dryweight_mg ~ Cip * Pro, data = filtered_dry_weight)
+par(mfrow = c(2, 2))
+plot(model_dryweight_interact) # point cloud looks evenly distributed --> normal distribution
+qreference(residuals(model_dryweight_interact)) 
+drop1(model_dryweight_interact, test = 'F')
+# Cip:Pro interaction not significant
+```
+
+```{r}
+# df.ref only control values
+df.ref.dryweight<- filtered_dry_weight |>
+  dplyr::filter(Cip == 0, Pro == 0) 
+
+nd_dryweight_snails <- nd.generator(df.ref.dryweight, stressor1 = "Cip", stressor2 = "Pro", diff = NULL)
+
+#sanity check  
+table(nd_dryweight_snails$dataset, nd_dryweight_snails$Cip)
+table(nd_dryweight_snails$dataset, nd_dryweight_snails$Pro)
+
+#check for AD, MU (all values >0) and OD
+hyp_all_dryweight_snails <- predictions(
+  model_dryweight_interact,
+  newdata = nd_dryweight_snails,
+  hypothesis = function(x) {
+    hypothesis.function(
+      x,
+      stressor1 = "Cip",
+      stressor2 = "Pro",
+      null = "all",        # <- AD, MU, DO together
+      strategy = "average"
+    )
+  }
+) |>
+  inferences(method = "simulation")
+
+hyp_all_dryweight_snails
+
+hyp_all_dryweight_snails$term <- dplyr::recode(hyp_all_dryweight_snails$term,
+                                    "ad" = "AD",
+                                    "do" = "DO",
+                                    "mu" = "MU")
+
+ggplot(hyp_all_dryweight_snails, aes(x = term, y = estimate)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Null model", y = "Interaction estimate")
+```
+Both ciprofloxacin and propyzamide significantly affected snail dry weight in the additive model, whereas the interaction term was not significant. Post-estimation inference following Pimentel et al. (2025) showed that the additive, multiplicative, and dominance null models could not be rejected, indicating that the observed mixture response did not deviate significantly from any of these expectations. Together, these results suggest that the effects of both stressors on snail dry weight were largely independent and did not exhibit a detectable interaction.
 
 ## Boxplot dry weight snails
 
@@ -1696,9 +2174,307 @@ ggsave(
 )
 ```
 
+# Feeding rate snails
+
+-   NA's due to missing snail and zero values of feeding rate due to no measurable feeding in respective week
+
+-   Unit feeding rate: µg / day 
+
+-   Column "used_for_FA_analysis" highlights the ten snails used for FA analyses for each treatment
+
+```{r}
+# insert data
+afdw_feeding_rate <-
+  read.table(file.path("data\\feeding_assay_afdw_feeding_rate.txt"),
+             header = TRUE, sep = "\t")
+
+View(afdw_feeding_rate)
+```
+
+## Feeding rate snails
+
+#### Histogram feeding rate
+```{r}
+hist(afdw_feeding_rate $ feeding_rate) 
+skewness(afdw_feeding_rate $ feeding_rate, na.rm = TRUE) # skewness > 3
+shapiro.test(afdw_feeding_rate $ feeding_rate) # not normal distributed
+# following visual observation of absolute data & histogram, check for outliers
+```
+
+Outlier check:
+```{r}
+#Run function one time, after that you can use the shortcut outlierKD (your subset, variable)
+outlierKD_feeding_rate <- function(dt, id_col = "treatment", start_col = 6, end_col = 6) {
+  # Initialize an empty list to store results for each column
+  outlier_results <- list()
+  
+  
+  for (i in start_col:end_col) {
+    col_name <- colnames(dt)[i]  # Get the column name
+    
+    # Extract the column values
+    var_name <- dt[[col_name]]
+    
+    # Check if the column is numeric
+    if (is.numeric(var_name)) {
+      na1 <- sum(is.na(var_name))
+      m1 <- mean(var_name, na.rm = TRUE)
+      
+      # Identify outliers using boxplot stats
+      outlier <- boxplot.stats(var_name)$out  
+      
+      # Find rows with outliers
+      outlier_rows <- which(var_name %in% outlier)
+      
+      # If no outliers, skip the rest of the loop
+      if (length(outlier_rows) == 0) next
+      
+      # Get replicate values for the outliers
+      id_values <- dt[[id_col]][outlier_rows]
+      
+      # Mean of outliers
+      mo <- mean(outlier)
+      
+      # Collect the outlier information for this column
+      outlier_results[[col_name]] <- data.frame(
+        Column = col_name,
+        Row = outlier_rows,
+        Replicate = id_values,
+        Outlier = outlier
+      )
+      
+      cat("\nOutliers for column:", col_name, "\n")
+      cat("Outliers identified:", length(outlier), "\n")
+      cat("Proportion (%) of outliers:", 
+          round(length(outlier) / sum(!is.na(var_name)) * 100, 1), "\n")
+      cat("Mean of the outliers:", round(mo, 2), "\n")
+      cat("Mean with outliers:", round(m1, 2), "\n")
+    }
+  }
+  
+  # Combine all outlier information into one data frame
+  if (length(outlier_results) > 0) {
+    combined_outliers <- do.call(rbind, outlier_results)
+  } else {
+    combined_outliers <- data.frame()  # If no outliers were found, return an empty data frame
+  }
+  
+  # Return combined data frame with outliers information
+  return(combined_outliers)
+}
+
+# Call the function and store the results
+outlier_info_combined_feeding_rate <- outlierKD_feeding_rate(afdw_feeding_rate, id_col = "treatment", start_col = 5, end_col = 5)
+
+# Print the combined outlier information
+print(outlier_info_combined_feeding_rate)
+```
+
+```{r}
+# Assuming outlier_info_combined is the combined outlier data frame
+outlier_info_combined_feeding_rate <- outlier_info_combined_feeding_rate  # If not already assigned
+
+# Count the number of outliers for each replicate
+outlier_counts_feeding_rate <- table(outlier_info_combined_feeding_rate$Replicate)
+
+# Convert to a data frame for better readability
+outlier_counts_feeding_rate_df <- as.data.frame(outlier_counts_feeding_rate)
+colnames(outlier_counts_feeding_rate_df) <- c("Replicate", "Outlier_Count")
+
+View(outlier_counts_feeding_rate_df)
+```
+
+Remove outliers:
+```{r}
+# Extract the row numbers of the outliers
+outlier_rows_feeding_rate <- outlier_info_combined_feeding_rate$Row
+
+# Remove the outlier rows from the dataset
+afdw_feeding_rate_cleaned_1 <- afdw_feeding_rate[-outlier_rows_feeding_rate, ]
+# 38 outliers identified and removed
+
+# remove NAs
+afdw_feeding_rate_cleaned_1 <- na.omit(afdw_feeding_rate_cleaned_1)
+# 30 NAs removed
+```
+
+Histogram feeding rate again
+```{r}
+hist(afdw_feeding_rate_cleaned_1 $ feeding_rate) 
+skewness(afdw_feeding_rate_cleaned_1 $ feeding_rate, na.rm = TRUE) 
+shapiro.test(afdw_feeding_rate_cleaned_1 $ feeding_rate)
+```
+Feeding rate still not normal distributed, right skewed but skewness < 1.5, so no data transformation for model. 
+
+Calculate mean feeding rate + se + 95 CI for each treatment
+```{r}
+mean_feeding_rate <- afdw_feeding_rate_cleaned_1 %>%
+  group_by(treatment) %>%
+  dplyr::summarize(
+    mean_feeding = mean(feeding_rate, na.rm = TRUE),
+    n = sum(!is.na(feeding_rate)),
+    se = sd(feeding_rate, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_feeding - t_crit * se,
+    ci_upper = mean_feeding + t_crit * se,
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mean_feeding, ci_lower, ci_upper, se)
+
+print(mean_feeding_rate)
+```
+
+#### Model feeding rate
+```{r}
+# treatment and beaker as factor
+afdw_feeding_rate_cleaned_1 $ treatment <- factor(afdw_feeding_rate_cleaned_1 $ treatment)
+afdw_feeding_rate_cleaned_1 $ beaker <- factor(afdw_feeding_rate_cleaned_1 $ beaker)
+
+# response variable: feeding_rate
+# fixed effects: treatment
+# random effect with constant intercept: (1|beaker)
+feeding_rate_lmer <- lmer(feeding_rate ~ treatment + (1|beaker), data = afdw_feeding_rate_cleaned_1)
+par(mfrow = c(2, 2))
+plot(feeding_rate_lmer) 
+qreference(residuals(feeding_rate_lmer)) # rather S shape
+
+pairwise.wilcox.test(afdw_feeding_rate_cleaned_1$feeding_rate,
+                     afdw_feeding_rate_cleaned_1$treatment,
+                     p.adjust.method = "holm")
+# trend NC:Mix p = 0.059
+```
+
+Mix vs. Control trend p = 0.059   
+
+Ciprofloxacin x propyzamide interaction
+```{r}
+afdw_feeding_rate_cleaned_1$Cip <- ifelse(afdw_feeding_rate_cleaned_1$treatment %in% c("Cip", "Mix"),
+                                1, 0)
+
+afdw_feeding_rate_cleaned_1$Cip <- factor(afdw_feeding_rate_cleaned_1$Cip, levels = c(0, 1))
+
+afdw_feeding_rate_cleaned_1$Pro <- ifelse(afdw_feeding_rate_cleaned_1$treatment %in% c("Pro", "Mix"),
+                                1, 0)
+
+afdw_feeding_rate_cleaned_1$Pro <- factor(afdw_feeding_rate_cleaned_1$Pro, levels = c(0, 1))
+
+# sanity check
+table(afdw_feeding_rate_cleaned_1$treatment,
+      afdw_feeding_rate_cleaned_1$Cip,
+      afdw_feeding_rate_cleaned_1$Pro)
+
+# interaction model
+model_feeding_rate_interact <- lm(feeding_rate ~ Cip * Pro, data = afdw_feeding_rate_cleaned_1)
+par(mfrow = c(2, 2))
+plot(model_feeding_rate_interact) # not normal distributed, S shape
+qreference(residuals(model_feeding_rate_interact))
+
+kruskal_feeding_rate_interaction <- afdw_feeding_rate_cleaned_1 %>%
+  dplyr::mutate(treatment = interaction(Cip, Pro, sep = "_")) %>%
+  kruskal.test(feeding_rate ~ treatment, data = .)
+
+kruskal_feeding_rate_interaction
+```
+
+
+#### Boxplot feeding rate
+```{r}
+# Plot
+feeding_rate_boxplot <-
+  ggplot(data = afdw_feeding_rate_cleaned_1,
+         mapping = aes(x = factor(
+           treatment, levels = c("NC", "Pro", "Cip", "Mix")
+         ), y = feeding_rate)) +
+  # Mean
+  stat_summary(
+    fun = mean,
+    geom = "point",
+    aes(fill = treatment),
+    shape = 21,
+    size = 5,
+    color = "grey20",
+    stroke = 0.5
+  ) +
+  
+  # 95% CI
+  # Black outline (thicker, underneath)
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(group = treatment),
+    width = 0.2,
+    linewidth = 1,
+    color = "grey30"
+  ) +
+  
+  # Colored CI on top
+  stat_summary(
+    fun.data = mean_cl_normal,
+    geom = "errorbar",
+    aes(color = treatment),
+    width = 0.2,
+    linewidth = 0.8
+  ) +
+  
+  # Jittered
+geom_point(
+  aes(color = treatment),
+  position = position_jitter(width = 0.25, height = 0),
+  alpha = 0.8,
+  size = 2
+) +
+  
+  # Color scales
+  scale_fill_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  scale_color_manual(values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+  )) +
+  guides(fill = "none") +
+  
+  # Theme and labels
+  labs(x = "Treatment", y = "Grazer Feeding Rate (µg / day)", color = "") +
+  scale_x_discrete(labels = c("Control", "Propyzamide", "Ciprofloxacin", "Mixture")) +
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(
+      size = 13,
+      face = "bold",
+      colour = "grey30"
+    ),
+    axis.text.x = element_text(size = 12),  
+    axis.text.y = element_text(size = 12),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey85", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  ) 
+
+feeding_rate_boxplot
+```
+
+```{r, warning = FALSE}
+# save the plot
+ggsave(
+  "output/feeding_rate.png",
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
 # Fatty acid composition snails
 
-Statistics for fatty acid composition of snails in absolute values (µg fatty acid / mg dry weight snail).
+Statistics for fatty acid composition of snails in absolute values (µg fatty acid / mg dry weight snail (soft body)).
 
 ```{r}
 # insert data
@@ -1710,16 +2486,16 @@ View(FA_Snails_absolute)
 # Mix S_29 no data, fatty acid extraction did not work
 ```
 
-## Total SAFA, MUFA & PUFA content
+## Absolute SAFA, MUFA & PUFA concentrations
 
 1\) Total SAFA content
 
-```{r}
+```{r, warning=FALSE}
 # total SAFA, MUFA, PUFA content; sa = "snail absolute" 
 # total SAFA content 
 # filter saturated fatty acids in new table 
 SAFA_sa <- FA_Snails_absolute %>%
-filter(fa %in% c("C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0"))
+filter(fa %in% c("C08:0", "C10:0", "C11:0", "C12:0", "C13:0", "C14:0", "C15:0", "C16:0", "C18:0", "C20:0", "C21:0", "C22:0", "C24:0"))
 
 # Sum SAFA per replicate and treatment
 total_SAFA_per_snail <- SAFA_sa %>% 
@@ -1735,7 +2511,7 @@ anova_SAFA <- aov(sum_SAFA ~ treatment, data = total_SAFA_per_snail)
 summary(anova_SAFA)
 TukeyHSD(anova_SAFA)
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_SAFA_sa <- total_SAFA_per_snail %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -1763,10 +2539,10 @@ print(mean_SAFA_sa)
 
 2\) Total MUFA content
 
-```{r}
+```{r, warning=FALSE}
 # filter mono-unsaturated fatty acids in new table
 MUFA_sa <- FA_Snails_absolute %>%
-  filter(fa %in% c("C16:1", "C18:1", "C20:1", "C22:1"))
+  filter(fa %in% c("C14:1", "C15:1", "C16:1", "C17:1", "C18:1", "C20:1", "C22:1", "C24:1"))
 
 # Sum MUFA per replicate and treatment
 total_MUFA_per_snail <- MUFA_sa %>% 
@@ -1782,7 +2558,7 @@ pairwise.wilcox.test(total_MUFA_per_snail$sum_MUFA,
                      total_MUFA_per_snail$treatment,
                      p.adjust.method = "BH")
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_MUFA_sa <- total_MUFA_per_snail %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -1810,10 +2586,10 @@ print(mean_MUFA_sa)
 
 3\) Total PUFA content
 
-```{r}
+```{r, warning=FALSE}
 # filter poly-unsaturated fatty acids in new table
 PUFA_sa <- FA_Snails_absolute %>%
-  filter(fa %in% c("C18:2(n-6c)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:4(n-6)", "C20:5(n-3)", "C22:5(n-3)", "C22:6(n-3)"))
+  filter(fa %in% c("C18:2(n-6c)", "C18:2(n-6t)", "C18:3(n-3)", "C18:3(n-6)", "C18:4(n-3)", "C20:2(n-6)", "C20:3(n-6)", "C20:3(n-3)", "C20:4(n-6)", "C20:5(n-3)", "C22:2", "C22:5(n-3)", "C22:6(n-3)"))
   
 # Sum PUFA per replicate and treatment
 total_PUFA_per_snail <- PUFA_sa %>% 
@@ -1829,7 +2605,7 @@ anova_PUFA <- aov(sum_PUFA ~ treatment, data = total_PUFA_per_snail)
 summary(anova_PUFA)
 TukeyHSD(anova_PUFA)
 
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_PUFA_sa <- total_PUFA_per_snail %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -1855,8 +2631,125 @@ mean_PUFA_sa <- mean_PUFA_sa %>%
 print(mean_PUFA_sa)
 ```
 
-4\) Total FA per snail
+SAFA, MUFA & PUFA relative differences to control plot:
+```{r, warning=FALSE}
+snail_class_abs <- bind_rows(
+  prep_class_from_replicates(total_SAFA_per_snail, "sum_SAFA", "SAFA"),
+  prep_class_from_replicates(total_MUFA_per_snail, "sum_MUFA", "MUFA"),
+  prep_class_from_replicates(total_PUFA_per_snail, "sum_PUFA", "PUFA")
+) %>%
+  mutate(
+    Class = factor(Class, levels = c("SAFA","PUFA","MUFA")),
+    treatment = factor(treatment, levels = c("NC","Pro","Cip","Mix"))
+  )
 
+snail_class_abs
+
+# relative values
+snail_class_rel <- snail_class_abs %>%
+  group_by(Class) %>%
+  mutate(
+    ctrl_mean = mean[treatment == "NC"][1],
+    mean = mean / ctrl_mean,
+    lwr  = lwr  / ctrl_mean,
+    upr  = upr  / ctrl_mean
+  ) %>%
+  ungroup() %>%
+  dplyr::select(-ctrl_mean)
+
+
+plot_df_snails <- snail_class_rel  
+
+plot_df_snails <- plot_df_snails %>%
+  mutate(
+    show = ifelse(treatment == "NC", 0, 1),  
+    treatment = factor(treatment, levels = c("NC","Pro","Cip","Mix")),
+    Class = factor(Class, levels = c("PUFA", "MUFA", "SAFA")),
+    lwr = ifelse(lwr < 0, 0, lwr)
+  )
+
+# plot
+fa_snails_relative_changes <- ggplot(plot_df_snails, aes(x = mean, y = Class)) +
+  geom_vline(xintercept = 1,
+             linewidth = 1,
+             colour = "grey30") +
+  
+  # Black CI outline
+  geom_errorbarh(
+    aes(xmin = lwr, xmax = upr, group = treatment, alpha = show),
+    height = 0,
+    linewidth = 1,
+    colour = "grey30",
+    position = position_dodge(width = 0.45)
+  ) +
+  
+  # Colored CI overlay
+  geom_errorbarh(
+    aes(xmin = lwr, xmax = upr, colour = treatment, alpha = show),
+    height = 0,
+    linewidth = 0.8,
+    position = position_dodge(width = 0.45)
+  ) +
+  
+  geom_point(
+    aes(colour = treatment, alpha = show),
+    size = 4,
+    position = position_dodge(width = 0.45)
+  ) +
+  
+  scale_colour_manual(
+    values = c(
+    "NC" = "#009E73",
+    "Pro" = "#E69F00",
+    "Cip" = "#56B4E9",
+    "Mix" = "#999999"
+    ),
+    labels = c(
+      "NC"  = "Control",
+      "Pro" = "Propyzamide",
+      "Cip" = "Ciprofloxacin",
+      "Mix" = "Mixture"
+    ),
+    name = "Treatment"
+  ) +
+  scale_alpha_identity() +
+  guides(
+    colour = guide_legend(override.aes = list(alpha = 1))
+  ) +
+
+  labs(
+    x = "Fold change relative to control",
+    y = NULL
+  ) +
+
+  theme_minimal(base_size = 11) +
+  theme(
+    legend.position = "none",
+    legend.title = element_text(size = 12, face = "bold", colour = "grey30"),
+    legend.text  = element_text(size = 11, colour = "grey30"),
+    panel.background = element_rect(fill = "grey100"),
+    axis.title = element_text(size = 13, face = "bold", colour = "grey30"),
+    axis.text.x = element_text(size = 12),
+    axis.text.y = element_text(size = 13, face = "bold", colour = "grey30"),
+    panel.border = element_rect(fill = NA, colour = "grey30"),
+    panel.grid.major = element_line(colour = "grey95", size = 0.4),
+    panel.grid.minor = element_line(colour = "grey95", size = 0.2)
+  )
+
+fa_snails_relative_changes
+
+# save the plot
+ggsave(
+  "output/fa_snails_relative_changes.png",
+  plot = fa_snails_relative_changes,
+  width = 16.5,
+  height = 12,
+  units = "cm",
+  dpi = 600
+)
+```
+
+4\) Total FA per snail
 ```{r}
 # total FA 
 total_FA_snails <- bind_rows(total_SAFA_per_snail, total_MUFA_per_snail, total_PUFA_per_snail)
@@ -1866,9 +2759,7 @@ total_FA_per_snail <- total_FA_snails %>%
   dplyr::summarize(sum_FA = sum(sum_SAFA, sum_MUFA, sum_PUFA, na.rm = TRUE))
 print(total_FA_per_snail)
 
-# statistical differences will be calculated by PERMANOVA
-
-# Calculate mean and 95% CI per treatment
+# Calculate mean, se and 95% CI per treatment
 mean_FA_sa <- total_FA_per_snail %>%
   dplyr::group_by(treatment) %>%
   dplyr::summarize(
@@ -1892,7 +2783,105 @@ mean_FA_sa <- mean_FA_sa %>%
   mutate(percent_diff_from_NC = 100 * (mean_FA - control_mean_FA_sa) / control_mean_FA_sa)
 
 print(mean_FA_sa)
+
+# linear model with total FA per snail
+# treatment as factor
+total_FA_per_snail$treatment <- as.factor(total_FA_per_snail$treatment)
+
+model_FA_snails <- lm(sum_FA ~ treatment, data = total_FA_per_snail)
+par(mfrow = c(2, 2))
+plot(model_FA_snails) # normality acceptable
+qreference(residuals(model_FA_snails)) 
+drop1(model_FA_snails, test = 'F')
+# treatment highly significant 
+
+# conduct Tukey HSD-test for pairwise comparisons
+FA_snails_tukey <- lsmeans(model_FA_snails, ~ treatment)
+FA_snails_tukey
+
+FA_snails_tukey1 <- contrast(FA_snails_tukey, 'pairwise')
+FA_snails_tukey
+
+FA_snails_summary <- summary(FA_snails_tukey1, infer = TRUE, adjust = 'mvt')
+FA_snails_summary
+# Cip vs. Mix p = 0.0005
+# Cip vs. Pro p = 0.0095
+# Mix vs. Control p = 0.001
+# Control vs. Pro p = 0.02
 ```
+
+Look into interaction of Cip and Pro on total FA of snails:
+```{r}
+# interaction effect model with presence / absence of single xenobiotics
+total_FA_per_snail$Cip <- ifelse(total_FA_per_snail$treatment %in% c("Cip", "Mix"),
+                                1, 0)
+
+total_FA_per_snail$Cip <- factor(total_FA_per_snail$Cip, levels = c(0, 1))
+
+total_FA_per_snail$Pro <- ifelse(total_FA_per_snail$treatment %in% c("Pro", "Mix"),
+                                1, 0)
+
+total_FA_per_snail$Pro <- factor(total_FA_per_snail$Pro, levels = c(0, 1))
+
+# sanity check
+table(total_FA_per_snail$treatment,
+      total_FA_per_snail$Cip,
+      total_FA_per_snail$Pro)
+
+# interaction effect model
+model_mix_FA_snails <- lm(sum_FA ~ Cip * Pro, data = total_FA_per_snail)
+par(mfrow = c(2, 2))
+plot(model_mix_FA_snails) 
+qreference(residuals(model_mix_FA_snails)) # normality acceptable
+drop1(model_mix_FA_snails, test = 'F')
+# Cip:Pro interaction not significant
+
+# look deeper into interaction:
+# df.ref only control values
+df.ref.FA_snails <- total_FA_per_snail |>
+  dplyr::filter(Cip == 0, Pro == 0) 
+
+# remove grouping
+df.ref.FA_snails <- df.ref.FA_snails %>%
+  dplyr::ungroup()
+
+nd_FA_snails <- nd.generator(df.ref.FA_snails, stressor1 = "Cip", stressor2 = "Pro", diff = NULL)
+
+#sanity check  
+table(nd_FA_snails$dataset, nd_FA_snails$Cip)
+table(nd_FA_snails$dataset, nd_FA_snails$Pro)
+
+#check for AD, MU (all values >0) and OD
+hyp_all_FA_snails <- predictions(
+  model_mix_FA_snails,
+  newdata = nd_FA_snails,
+  hypothesis = function(x) {
+    hypothesis.function(
+      x,
+      stressor1 = "Cip",
+      stressor2 = "Pro",
+      null = "all",        # <- AD, MU, DO together
+      strategy = "average"
+    )
+  }
+) |>
+  inferences(method = "simulation")
+
+hyp_all_FA_snails
+
+hyp_all_FA_snails$term <- dplyr::recode(hyp_all_FA_snails$term,
+                                    "ad" = "AD",
+                                    "do" = "DO",
+                                    "mu" = "MU")
+
+ggplot(hyp_all_FA_snails, aes(x = term, y = estimate)) +
+  geom_point(size = 3) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(x = "Null model", y = "Interaction estimate")
+
+```
+Post-estimation inference following Pimentel et al. (2025) indicated that the additive, dominance, and multiplicative null models could not be rejected, as the confidence intervals of the interaction estimates overlapped zero. This suggests that the combined effect of ciprofloxacin and propyzamide did not deviate significantly from expectations based on independent single-stressor effects.
 
 ## Histogram FA snails
 
@@ -1916,7 +2905,7 @@ FA_Snails_absolute_wide_sqrt <-
               values_from = fa_conc)
 
 # square root transformation, to reduce discriminatory power of dominant FA groups
-FA_Snails_absolute_wide_sqrt[, 3:23] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:23])
+FA_Snails_absolute_wide_sqrt[, 3:36] <- sqrt(FA_Snails_absolute_wide_sqrt[, 3:36])
 
 # Only keep columns/FAs with more than 5 non-zero values (fatty acids that have just been found in 5 replicates will be removed)
 FA_Snails_absolute_wide_sqrt <-
@@ -1974,7 +2963,7 @@ NMDS_Snails_absolute$stress
 
 Create fa vectors:
 
-```{r}
+```{r, warning=FALSE}
 # separation in SAFA; MUFA & PUFA to build vectors in NMDS
 # "sa" = snail absolute
 FA_variables.SAFAs_sa <-
@@ -2145,12 +3134,11 @@ absol_snail_with_vectors <- ggplot(data = data.scores_snail_absolute, aes(x = NM
   ) 
 
 absol_snail_with_vectors
-# position of FA names manually adjusted in vector graphic
+# position of FA names were manually adjusted for publication in vector graphic in the software Inkscape
 ```
 
 Save the plot as .png:
-
-```{r}
+```{r, warning=FALSE}
 ggsave(
   "output/NMDS_snails_absolute_vectors.png",
   width = 16.5,
@@ -2161,8 +3149,7 @@ ggsave(
 ```
 
 Save the plot as vector graphic (minor adaptions for better readability with Inkscape):
-
-```{r}
+```{r, warning=FALSE}
 ggsave(
   "output/NMDS_snails_absolute_vectors.svg",
   device = "svg",
@@ -2174,7 +3161,6 @@ ggsave(
 ```
 
 Now plot NMDS without fatty acid vectors:
-
 ```{r}
 # plot
 absol_snail <- ggplot(data = data.scores_snail_absolute, aes(x = NMDS1, y = NMDS2)) +
@@ -2218,7 +3204,6 @@ absol_snail
 ```
 
 Save the plot as .png:
-
 ```{r}
 ggsave(
   "output/NMDS_snails_absolute.png",
@@ -2230,7 +3215,6 @@ ggsave(
 ```
 
 Save the plot as vector graphic:
-
 ```{r}
 ggsave(
   "output/NMDS_snails_absolute.svg",
@@ -2251,7 +3235,6 @@ FA_Snails_dist <- vegdist(FA_Snails_absolute_wide_sqrt, method = 'bray')
 ```
 
 Separate explanatory variables from fatty acid information:
-
 ```{r}
 # change initial table to wide format again
 FA_Snails_absolute_wide_permanova <-
@@ -2293,9 +3276,40 @@ pairwise_results <- pairwise.adonis2(
 
 # View the results
 print(pairwise_results)
+
+# Cip*Pro interaction?
+# add presence / absence columns
+FA_Snails_absolute_wide_permanova$Cip <- ifelse(FA_Snails_absolute_wide_permanova$treatment %in% c("Cip", "Mix"),
+                                                 1,
+                                                 0)
+
+FA_Snails_absolute_wide_permanova$Cip <- 
+  factor(FA_Snails_absolute_wide_permanova$Cip, levels = c(0, 1))
+
+FA_Snails_absolute_wide_permanova$Pro <- ifelse(FA_Snails_absolute_wide_permanova$treatment %in% c("Pro", "Mix"),
+                                                 1,
+                                                 0)
+
+FA_Snails_absolute_wide_permanova$Pro <- 
+  factor(FA_Snails_absolute_wide_permanova$Pro, levels = c(0, 1))
+
+# sanity check
+table(FA_Snails_absolute_wide_permanova$treatment,
+      FA_Snails_absolute_wide_permanova$Cip)
+
+table(FA_Snails_absolute_wide_permanova$treatment,
+      FA_Snails_absolute_wide_permanova$Pro)
+
+# permanova
+perm_FA_snails_Cip_Pro <- adonis2(FA_Snails_dist ~ Cip * Pro,
+        data = FA_Snails_absolute_wide_permanova,
+        permutations = 999)
+
+print(perm_FA_snails_Cip_Pro)
+# no interaction
 ```
 
-All treatments except of Pro_vs_Mix significant differences.
+All treatments except of Pro_vs_Mix significant differences. No Cip * Pro interaction.
 
 ## SIMPER FA snails
 
@@ -2549,3 +3563,41 @@ ggsave(
   dpi = 600
 )
 ```
+
+# Chemical analyses
+```{r, warning=FALSE}
+# insert data
+chemical_analyses <-
+  read.table(file.path("data\\chemical_analyses.txt"),
+             header = TRUE, sep = "\t")
+
+View(chemical_analyses)
+
+# LOQ to NA
+chemical_analyses[chemical_analyses == "<LOQ"] <- NA
+# concentration values as numeric
+chemical_analyses$concentration_ug_L <- as.numeric(
+  ifelse(chemical_analyses$concentration_ug_L == "<LOQ", NA, chemical_analyses$concentration_ug_L)
+)
+
+# calculate means, se, 95% CI
+chemical_means <- chemical_analyses %>%
+  filter(!is.na(concentration_ug_L)) %>% 
+  dplyr::mutate(percent_deviation = 100 * (concentration_ug_L - nominal_conc) / nominal_conc) %>%
+  dplyr::group_by(treatment, mixture) %>%
+  dplyr::summarize(
+    mean_concentration = mean(concentration_ug_L, na.rm = TRUE),
+    n = sum(!is.na(concentration_ug_L)),
+    se = sd(concentration_ug_L, na.rm = TRUE) / sqrt(n),
+    t_crit = qt(0.975, df = n - 1),
+    ci_lower = mean_concentration - t_crit * se,
+    ci_upper = mean_concentration + t_crit * se,
+    mean_percent_deviation = mean(percent_deviation, na.rm = TRUE),
+    se_percent_deviation = sd(percent_deviation, na.rm = TRUE) / sqrt(sum(!is.na(percent_deviation))),
+    .groups = "drop"
+  ) %>%
+  dplyr::select(treatment, mixture, mean_concentration, ci_lower, ci_upper, se, mean_percent_deviation, se_percent_deviation)
+
+print(chemical_means)
+```
+
